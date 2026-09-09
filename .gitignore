@@ -1,0 +1,9 @@
+node_modules
+.next
+next-env.d.ts
+*.log
+
+# Datos de pacientes y secretos: NO van en git.
+# Su copia es el respaldo cifrado (scripts/respaldar.sh).
+data/
+.env.local

@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* ── Marca Dr. Mario Guerra ──────────────────────────────────────────────────
+   Paleta tomada directamente del manual (los hex salen de las variantes del
+   logo): petróleo, gris azulado, nude y cobre.                                */
+@theme {
+  /* Neutros de la interfaz */
+  --color-papel:      #f5f1ee;
+  --color-papel-2:    #ece6e2;
+  --color-linea:      #e2dbd6;
+  /* Las tarjetas no son blanco puro: un hueso cálido que va con el nude. */
+  --color-tarjeta:    #fffdfb;
+
+  /* Tinta — petróleo del logo */
+  --color-tinta:      #061720;
+  --color-tinta-2:    #46545c;
+  --color-tinta-3:    #7f888e;
+
+  /* Acento principal: el gris azulado del sello */
+  --color-acento:     #2d383e;
+  --color-acento-2:   #46545c;
+  --color-acento-luz: #eceeef;
+
+  /* Cobre de marca — cifras positivas, enlaces y detalles */
+  --color-cobre:      #7c5943;
+  --color-cobre-luz:  #aa7553;
+  --color-cobre-fondo:#f4ece6;
+
+  /* Nude de marca — resaltes suaves */
+  --color-nude:       #d5c8c8;
+  --color-nude-luz:   #f3ecea;
+
+  /* Estados */
+  --color-alerta:     #9a3d2e;
+  --color-alerta-luz: #f8e9e5;
+  --color-aviso:      #8a6a1f;
+  --color-aviso-luz:  #f8f1de;
+
+  --font-sans: var(--fuente-marca), ui-sans-serif, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Curvas de entrada. Una sola familia para todo el sitio. */
+  --salida-quint: cubic-bezier(.23, 1, .32, 1);
+  --entrada-salida: cubic-bezier(.645, .045, .355, 1);
+}
+
+/* Todo lo propio va en capas: si se deja fuera, le gana a las utilidades de
+   Tailwind y rompe cosas como `hidden` sobre un `.btn` o `py-*` sobre un
+   contenedor. Las utilidades siempre deben poder mandar. */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  /* El encabezado fijo no puede tapar el título al que se salta. */
+  [id] { scroll-margin-top: 88px; }
+
+  /* El fondo no es un plano liso: un degradado tibio que baja del nude al papel,
+     más un grano finísimo — la textura del material impreso de la marca. */
+  body {
+    background-color: var(--color-papel);
+    background-image:
+      radial-gradient(1200px 420px at 50% -160px,
+        color-mix(in srgb, var(--color-nude) 42%, transparent) 0%,
+        transparent 70%),
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--color-nude) 16%, transparent) 0%,
+        transparent 340px);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23r)' opacity='.045'/%3E%3C/svg%3E");
+  }
+  body > * { position: relative; z-index: 1; }
+
+  /* Foco visible: el sitio se navega con teclado. */
+  a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--color-cobre-luz);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Títulos: la misma geométrica de la marca, apretada y sin gritar. */
+  .titulo { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.012em; }
+
+  /* El tratamiento del sello: versalitas anchas. */
+  .etiqueta {
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--color-cobre); font-weight: 600;
+  }
+  .marca { letter-spacing: .22em; text-transform: uppercase; font-weight: 500; }
+
+  .tarjeta {
+    background: var(--color-tarjeta);
+    color: var(--color-tinta);
+    border: 1px solid var(--color-linea);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(6, 23, 32, .035), 0 8px 24px -18px rgba(6, 23, 32, .18);
+  }
+
+  .campo {
+    width: 100%;
+    background: var(--color-tarjeta);
+    border: 1px solid var(--color-linea);
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--color-tinta);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .campo:focus {
+    border-color: var(--color-acento);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-acento) 14%, transparent);
+  }
+  .campo:disabled { background: var(--color-papel-2); color: var(--color-tinta-3); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    border-radius: 8px; padding: 9px 15px; font-size: 14px; font-weight: 600;
+    font-family: inherit; border: 1px solid transparent; cursor: pointer;
+    transition: background-color .15s, border-color .15s, opacity .15s;
+  }
+  .btn:disabled { cursor: not-allowed; }
+  .btn-principal { background: var(--color-acento); color: #fff; }
+  .btn-principal:hover:not(:disabled) { background: var(--color-tinta); }
+  .btn-principal:disabled {
+    background: var(--color-papel-2); color: var(--color-tinta-3); border-color: var(--color-linea);
+  }
+  .btn-borde { background: var(--color-tarjeta); border-color: var(--color-linea); color: var(--color-tinta); }
+  .btn-borde:hover:not(:disabled) { border-color: var(--color-tinta-3); }
+  .btn-peligro {
+    background: var(--color-tarjeta);
+    border-color: color-mix(in srgb, var(--color-alerta) 35%, #fff);
+    color: var(--color-alerta);
+  }
+  .btn-peligro:hover:not(:disabled) { background: var(--color-alerta-luz); }
+  .btn-borde:disabled, .btn-peligro:disabled { opacity: .45; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid transparent;
+  }
+
+  table.tabla { width: 100%; border-collapse: collapse; }
+  table.tabla th {
+    text-align: left; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--color-cobre); font-weight: 600; padding: 9px 10px;
+    background: var(--color-nude-luz);
+    border-bottom: 1px solid var(--color-linea);
+  }
+  table.tabla th:first-child { border-top-left-radius: 6px; }
+  table.tabla th:last-child  { border-top-right-radius: 6px; }
+  table.tabla td { padding: 10px; border-bottom: 1px solid var(--color-papel-2); vertical-align: top; }
+  table.tabla tr:last-child td { border-bottom: none; }
+
+  .scroll-x { overflow-x: auto; }
+
+  /* Ancho de trabajo del panel (preferencia por usuario, en cookie). */
+  .ancho-compacto { max-width: 72rem; }
+  .ancho-ancho    { max-width: 100rem; }
+  .ancho-completo { max-width: none; }
+
+  /* ── Movimiento ────────────────────────────────────────────────────────────
+     Un solo gesto en todo el sitio público: aparecer con opacidad y 18px de
+     subida al entrar en pantalla. El estado oculto SOLO se aplica si el
+     JavaScript corrió (.js lo pone un script en línea antes de pintar): sin JS
+     el contenido se ve igual. */
+  .js .aparece {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity .55s var(--salida-quint), transform .55s var(--salida-quint);
+    transition-delay: var(--retraso, 0ms);
+    will-change: opacity, transform;
+  }
+  .js .aparece.visible { opacity: 1; transform: none; }
+
+  @keyframes acercar { from { transform: scale(1.06); } to { transform: scale(1); } }
+  .acercar { animation: acercar 1.4s var(--salida-quint) both; }
+
+  /* Crossfade del hero de la landing. */
+  .hero-foto { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s var(--entrada-salida); }
+  .hero-foto.activa { opacity: 1; }
+
+  /* Acercamiento suave al pasar el cursor o al enfocar con teclado. */
+  .zoom-suave { overflow: hidden; }
+  .zoom-suave img { transition: transform .7s var(--salida-quint); }
+  .zoom-suave:hover img, .zoom-suave:focus-visible img { transform: scale(1.045); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .aparece { opacity: 1; transform: none; transition: none; }
+    .acercar { animation: none; }
+    .hero-foto { transition: none; }
+    .zoom-suave img { transition: none; }
+    .zoom-suave:hover img, .zoom-suave:focus-visible img { transform: none; }
+  }
+
+  /* ── Módulos de la parte pública ───────────────────────────────────────── */
+  .modulo { padding: 4.5rem 0; }
+  .modulo-oscuro { background: var(--color-tinta); color: var(--color-nude); }
+  .modulo-oscuro .titulo { color: #fff; }
+
+  /* Dos anchos distintos, y esa es la clave: la PÁGINA se estira con el monitor,
+     el TEXTO no. Una línea de 2000px no se lee.
+     Solo los costados: el atajo `padding` aquí le ganaría a las utilidades py-*. */
+  .contenedor {
+    width: 100%;
+    max-width: none;              /* se ajusta a la pantalla del cliente */
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4.5vw, 5rem);
+  }
+  /* Solo para lo que de verdad debe ir angosto (una ficha suelta). */
+  .contenedor-estrecho {
+    width: 100%;
+    max-width: 70rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2rem);
+  }
+  /* Medida de lectura para párrafos largos dentro de un contenedor ancho. */
+  .medida { max-width: 44rem; }
+
+  .divisor { height: 1px; background: var(--color-linea); }
+  .modulo-oscuro + .divisor { background: rgba(255, 255, 255, .12); }
+
+  .display { font-weight: 300; letter-spacing: .06em; text-transform: uppercase; line-height: 1.12; }
+
+  @media (max-width: 640px) { .modulo { padding: 3rem 0; } }
+
+  /* ── Landing: escala tipográfica ───────────────────────────────────────── */
+  .titular {
+    font-weight: 300; text-transform: uppercase; letter-spacing: .055em;
+    line-height: 1.1; font-size: clamp(1.75rem, 6.2vw, 3.4rem);
+  }
+  .titular-menor {
+    font-weight: 300; text-transform: uppercase; letter-spacing: .06em;
+    line-height: 1.15; font-size: clamp(1.35rem, 4.4vw, 2.1rem);
+  }
+  .entradilla { font-size: clamp(1rem, 2.4vw, 1.15rem); line-height: 1.7; }
+
+  .seccion { padding: 4.5rem 0; }
+  @media (min-width: 768px) { .seccion { padding: 7rem 0; } }
+
+  .regla-cobre { display: block; height: 1px; width: 4rem; background: var(--color-cobre-luz); }
+}
