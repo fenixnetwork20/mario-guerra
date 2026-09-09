@@ -281,8 +281,61 @@ pm2 logs marioguerra
 El cron corre cada 15 minutos: `*/15 * * * * /home/fenix/marioguerra/scripts/cron-tick.sh`
 (registro en `data/cron.log`).
 
-**Respaldo**: todo vive en `data/` (base SQLite + archivos subidos). Copiar esa carpeta
-con el servicio detenido, o `sqlite3 data/marioguerra.db ".backup respaldo.db"` en caliente.
+## Respaldos
+
+**Automático, todas las noches a las 3:20 de Maracaibo** (`scripts/respaldar.sh`, en el cron).
+
+Guarda tres cosas en un solo archivo cifrado con AES-256, y las tres hacen falta:
+
+| | Por qué |
+|---|---|
+| La base SQLite | pacientes, citas, dinero, historial |
+| `data/uploads/` | los exámenes y documentos médicos — restaurar la base sin ellos deja fichas que apuntan a la nada |
+| `.env.local` | los secretos. Sin el `CRON_TOKEN` los recordatorios dejan de dispararse, y ahí irán las credenciales de WhatsApp |
+
+Va cifrado porque adentro hay cédulas, teléfonos y datos médicos. La passphrase es la
+compartida del VPS: `/home/fenix/backups/.backup-passphrase` — **guárdala aparte, sin ella no
+hay restauración posible.**
+
+Rotación: 14 diarios, 8 semanales, 12 mensuales, en `/home/fenix/respaldos/marioguerra/`.
+
+**El respaldo se verifica solo.** Después de crearlo lo descifra, lo desempaqueta y comprueba
+que tenga las 22 tablas, al menos un usuario y el `SESSION_SECRET` adentro. Si algo falta,
+borra el archivo y anota el fallo en vez de dejar un respaldo vacío que da falsa tranquilidad.
+
+```bash
+./scripts/respaldar.sh            # respalda, verifica y rota
+./scripts/respaldar.sh --listar   # ver lo guardado
+```
+
+### Restaurar
+
+```bash
+ULTIMO=$(ls -1t /home/fenix/respaldos/marioguerra/diario/*.gpg | head -1)
+mkdir -p /tmp/restaurar && cd /tmp/restaurar
+gpg -d --batch --passphrase-file /home/fenix/backups/.backup-passphrase "$ULTIMO" | tar -xzf -
+
+# Comprobar ANTES de pisar nada
+sqlite3 marioguerra.db "PRAGMA integrity_check; SELECT COUNT(*) FROM pacientes;"
+
+pm2 stop marioguerra
+cp marioguerra.db  /home/fenix/marioguerra/data/marioguerra.db
+cp -a uploads/.    /home/fenix/marioguerra/data/uploads/
+cp env.local.txt   /home/fenix/marioguerra/.env.local   # solo si se perdieron los secretos
+pm2 start marioguerra
+```
+
+*(Este procedimiento se probó de verdad el 2026-09-09: la base restauró íntegra, con la ficha
+del paciente legible y las dos cuentas de acceso intactas.)*
+
+### Código
+
+Repositorio git en el proyecto, con espejo en `/home/fenix/backups-git/marioguerra.git`.
+La base, los documentos y `.env.local` **no** van en git a propósito: su copia es el respaldo
+cifrado de arriba.
+
+> ⚠️ **Todo esto sigue viviendo en el mismo VPS.** Protege contra un borrado accidental, un
+> despliegue malo o una tabla corrupta — no contra perder el servidor. Falta una copia fuera.
 
 ## Fuera de alcance (por spec)
 
