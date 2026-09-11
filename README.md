@@ -530,6 +530,69 @@ las 7:40.
 
 ### Respaldos fuera del servidor
 
+Los `.gpg` que genera `respaldar.sh` se espejan en `respaldos/` **dentro de este mismo
+repositorio** y suben a GitHub con el resto del código. La copia viva sigue en
+`/home/fenix/respaldos/marioguerra`; `respaldos/` es su espejo, sincronizado al final de cada
+corrida con `rsync --delete`, así que refleja la rotación.
+
+- Ahí **solo entran archivos cifrados**. El `.gitignore` bloquea todo lo demás dentro de
+  `respaldos/`: se probó metiendo un `.txt` y un `.db` a mano y git los ignora. La passphrase
+  vive en `/home/fenix/backups/.backup-passphrase` y **no está ni puede estar** en el
+  repositorio — es lo que hace que estos archivos se puedan guardar en GitHub sin riesgo.
+- **Nunca hace fallar el respaldo.** Si GitHub no responde, queda anotado en `respaldos.log`
+  y el script termina bien: el respaldo local ya está hecho y verificado, que es lo que de
+  verdad importa.
+- Los exportes con credenciales en texto plano (respaldos del workflow, copias del entorno)
+  viven en `/home/fenix/respaldos/exportes-marioguerra`, fuera de todo repositorio.
+
+> Código y datos comparten repositorio a decisión del dueño, que es quien lo controla y no lo
+> comparte. Si algún día hay que darle el código a alguien más, lo que toca es sacar
+> `respaldos/` a un repositorio aparte: lo que subió al historial de git sigue ahí aunque se
+> borre el archivo.
+
+> Con los respaldos de hoy —12 KB— el historial no pesa nada. Cuando el consultorio acumule
+> documentos médicos cada `.gpg` crecerá; si pasa de unos 20 MB, conviene espejar solo los
+> semanales y mensuales.
+
+### Restaurar
+
+```bash
+ULTIMO=$(ls -1t /home/fenix/respaldos/marioguerra/diario/*.gpg | head -1)
+mkdir -p /tmp/restaurar && cd /tmp/restaurar
+gpg -d --batch --passphrase-file /home/fenix/backups/.backup-passphrase "$ULTIMO" | tar -xzf -
+
+# Comprobar ANTES de pisar nada
+sqlite3 marioguerra.db "PRAGMA integrity_check; SELECT COUNT(*) FROM pacientes;"
+
+pm2 stop marioguerra
+cp marioguerra.db  /home/fenix/marioguerra/data/marioguerra.db
+cp -a uploads/.    /home/fenix/marioguerra/data/uploads/
+cp env.local.txt   /home/fenix/marioguerra/.env.local   # solo si se perdieron los secretos
+pm2 start marioguerra
+```
+
+*(Este procedimiento se probó de verdad el 2026-09-09: la base restauró íntegra, con la ficha
+del paciente legible y las dos cuentas de acceso intactas.)*
+
+### Código
+
+El repositorio vive en `/home/fenix/marioguerra`. Tiene un **espejo local** en
+`/home/fenix/backups-git/marioguerra.git` (remoto `espejo`), que se actualiza solo con el cron
+de las 7:40 vía `scripts/espejo-git.sh`. **Eso protege de un borrado o de un mal cambio, no de
+que se muera el servidor**: sigue estando todo en la misma máquina.
+
+**El remoto de verdad ya está** (2026-09-11): `origin` →
+`github-marioguerra:fenixnetwork20/mario-guerra.git`, repositorio privado, con la llave de
+despliegue `~/.ssh/marioguerra` y permiso de escritura. La rama es `master`.
+`scripts/espejo-git.sh` empuja al espejo y a GitHub en la misma corrida, todos los días a
+las 7:40.
+
+> El repositorio se llama **`mario-guerra`**, con guion, y la carpeta del VPS `marioguerra`
+> sin él. No es un descuido: el nombre en GitHub lo puso el cliente. Si algún día el push
+> falla con *"Repository not found"* teniendo la llave buena, es este guion.
+
+### Respaldos fuera del servidor
+
 `/home/fenix/respaldos/marioguerra` es **también un repositorio**. Al final de cada corrida,
 `respaldar.sh` commitea los `.gpg` y los empuja a
 `github-marioguerra-respaldos:fenixnetwork20/mario-guerra-respaldos.git`.

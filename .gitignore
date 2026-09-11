@@ -17,3 +17,13 @@ data/
 # /root/mario guerra/. Al repositorio solo van las versiones optimizadas de
 # public/marca/, que son las que usa el sitio.
 branding/fotos-20260910/
+
+# En respaldos/ solo entran los cifrados. Todo lo demás queda fuera para que un
+# descuido no publique una base o un .env en claro.
+respaldos/*
+!respaldos/LEEME.md
+!respaldos/diario/
+!respaldos/semanal/
+!respaldos/mensual/
+respaldos/*/*
+!respaldos/*/*.tar.gz.gpg

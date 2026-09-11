@@ -99,22 +99,28 @@ podar "$DESTINO/semanal" "$SEMANALES"
 podar "$DESTINO/mensual" "$MENSUALES"
 
 # ── Copia fuera del servidor ───────────────────────────────────────────────
-# Un respaldo que solo vive en la máquina que respalda no es un respaldo. Sube
-# los .gpg a GitHub; la passphrase se queda aquí, así que allá son ruido.
+# Un respaldo que solo vive en la máquina que respalda no es un respaldo. Los
+# .gpg se espejan dentro del repositorio del proyecto y se empujan a GitHub; la
+# passphrase se queda aquí, así que allá son ruido.
 # Va después de la rotación para que el repositorio refleje lo que quedó, y
 # nunca hace caer el script: si GitHub no responde, el respaldo local ya está
 # hecho y verificado, que es lo que de verdad importa.
 subir_afuera() {
-  local repo="$DESTINO"
-  git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || { anotar "sin repositorio de respaldos"; return 0; }
-  git -C "$repo" add -A >/dev/null 2>&1 || true
-  if git -C "$repo" diff --cached --quiet 2>/dev/null; then
+  local espejo="$RAIZ/respaldos"
+  mkdir -p "$espejo"
+  # rsync --delete deja el espejo igual que la carpeta real, rotación incluida.
+  rsync -a --delete --include='*/' --include='*.tar.gz.gpg' --exclude='*' \
+        "$DESTINO/diario" "$DESTINO/semanal" "$DESTINO/mensual" "$espejo/" 2>/dev/null || {
+    anotar "no se pudo espejar al repositorio"; return 0; }
+
+  git -C "$RAIZ" add respaldos >/dev/null 2>&1 || true
+  if git -C "$RAIZ" diff --cached --quiet -- respaldos 2>/dev/null; then
     anotar "sin cambios que subir"
     return 0
   fi
-  git -C "$repo" commit -q -m "Respaldo $SELLO" >/dev/null 2>&1 || true
-  if git -C "$repo" remote get-url origin >/dev/null 2>&1; then
-    if git -C "$repo" push -q origin HEAD 2>/dev/null; then
+  git -C "$RAIZ" commit -q -m "Respaldo $SELLO" -- respaldos >/dev/null 2>&1 || true
+  if git -C "$RAIZ" remote get-url origin >/dev/null 2>&1; then
+    if git -C "$RAIZ" push -q origin HEAD 2>/dev/null; then
       anotar "subido a GitHub"
     else
       anotar "NO se pudo subir a GitHub (el respaldo local sí quedó)"
