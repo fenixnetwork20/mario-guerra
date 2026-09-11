@@ -1,3 +1,4 @@
+import { ruta } from '@/lib/rutas';
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
@@ -12,6 +13,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  manifest: ruta('/manifest.json'),
+  appleWebApp: { capable: true, title: 'Dr. Guerra', statusBarStyle: 'black-translucent' },
   title: 'Dr. Mario Guerra — Cirujano Plástico',
   description: 'Consultas y gestión de citas del consultorio.',
   robots: { index: false, follow: false },

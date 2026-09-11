@@ -258,3 +258,17 @@ CREATE TABLE IF NOT EXISTS rate_limit (
   contador  INTEGER NOT NULL DEFAULT 0,
   ventana   INTEGER NOT NULL
 );
+
+-- Dispositivos que reciben los avisos del panel (web push). Uno por navegador:
+-- la misma persona en el teléfono y en la computadora son dos filas.
+CREATE TABLE IF NOT EXISTS push_suscripciones (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  endpoint    TEXT NOT NULL UNIQUE,
+  p256dh      TEXT NOT NULL,
+  auth        TEXT NOT NULL,
+  usuario_id  INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  dispositivo TEXT,
+  creada_at   TEXT NOT NULL DEFAULT (datetime('now')),
+  ultimo_uso  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_push_usuario ON push_suscripciones(usuario_id);

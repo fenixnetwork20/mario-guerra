@@ -1,0 +1,14 @@
+{
+  "name": "Consultorio Dr. Mario Guerra",
+  "short_name": "Dr. Guerra",
+  "description": "Panel del consultorio: agenda, pacientes y avisos.",
+  "start_url": "/panel",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061720",
+  "theme_color": "#061720",
+  "icons": [
+    { "src": "/marca/monograma.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/marca/monograma.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

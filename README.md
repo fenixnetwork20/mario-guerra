@@ -381,6 +381,36 @@ src/app/panel/*            panel interno
    así que el formulario tiene que aceptarlos — antes rechazaba un `+57` colombiano.
 8. **Rate limiting** en reserva (8/hora por IP), gestión de cita (30/10 min) y login (10/10 min).
 
+## Avisos al panel (web push)
+
+Cuando entra una reserva, cuando un paciente cancela, cuando vence una cuota y **cuando el bot
+pasa una conversación a una persona**, el aviso sale al teléfono o a la computadora aunque el
+panel esté cerrado.
+
+- Todo pasa por `notificar()` en `src/lib/notificaciones.ts`: escribe en la campanita **y**
+  dispara el push. Va sin esperarlo (`void ... .catch()`): si el push falla o tarda, la reserva
+  ya quedó guardada. Un aviso no puede tumbar una operación.
+- **Una suscripción es un navegador, no una persona.** La misma recepcionista en el teléfono y
+  en la computadora son dos filas de `push_suscripciones`. Se activa en
+  **Configuración → Avisos al teléfono**, en cada aparato.
+- Las suscripciones que el navegador dio de baja se borran solas: si el servicio de push
+  responde 404 o 410, `enviarPush()` elimina la fila.
+- Claves VAPID en `.env.local` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`).
+  **Si se regeneran, todas las suscripciones existentes dejan de servir** y hay que volver a
+  activarlas aparato por aparato.
+- En iPhone hay que **agregar la página a la pantalla de inicio** y abrirla desde ahí: Safari no
+  admite push en una pestaña normal. Por eso está el `manifest.json`.
+
+### Cómo avisa el bot
+
+El workflow de N8N, en la rama de `humano`, hace cuatro cosas en orden: asigna la conversación
+a un agente en odichat (**eso es lo que dispara el push de la app de Chatwoot**), deja una nota
+interna con el último mensaje del paciente y lo que respondió Mayelis, abre la conversación, y
+llama a `POST /api/publico/aviso?token=<CRON_TOKEN>`, que cae en la campanita del panel y sale
+como notificación.
+
+> Ese endpoint usa el token del cron, no una sesión: no hay nadie logueado detrás de N8N.
+
 ## Mensajería (WhatsApp)
 
 Único punto con dependencia externa. Hoy está en **modo simulado**: los envíos se registran

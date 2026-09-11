@@ -2,6 +2,7 @@ import { db, leerConfig } from '@/lib/db';
 import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { usd } from '@/lib/dinero';
+import { AvisosPush } from '@/componentes/AvisosPush';
 import { Seccion, Vacio } from '@/componentes/ui';
 import { BotonForm } from '@/componentes/FormulariosFicha';
 import { FormAjustes, FormHorario, FormProcedimiento, FormUsuario } from '@/componentes/FormsConfig';
@@ -33,6 +34,13 @@ export default async function Config() {
         <p className="etiqueta">Recepción</p>
         <h1 className="titulo text-[26px] mt-0.5">Configuración</h1>
       </div>
+
+      <Seccion
+        titulo="Avisos al teléfono"
+        descripcion="Para enterarte sin tener el panel abierto."
+      >
+        <AvisosPush />
+      </Seccion>
 
       <Seccion titulo="Ajustes generales">
         <FormAjustes accion={guardarAjustes} cfg={cfg} />
