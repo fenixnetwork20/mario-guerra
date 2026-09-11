@@ -528,9 +528,27 @@ las 7:40.
 > sin él. No es un descuido: el nombre en GitHub lo puso el cliente. Si algún día el push
 > falla con *"Repository not found"* teniendo la llave buena, es este guion.
 
-Queda pendiente el segundo repo, el de los respaldos cifrados de la base
-(`~/.ssh/marioguerra-respaldos`, alias `github-marioguerra-respaldos`). Hoy los respaldos
-viven solo en el VPS.
+### Respaldos fuera del servidor
+
+`/home/fenix/respaldos/marioguerra` es **también un repositorio**. Al final de cada corrida,
+`respaldar.sh` commitea los `.gpg` y los empuja a
+`github-marioguerra-respaldos:fenixnetwork20/mario-guerra-respaldos.git`.
+
+- Sube **solo archivos cifrados**. El `.gitignore` bloquea `*.tar.gz`, `*.db`, `*.txt` y
+  `*.json` justamente para que un descuido no publique nada legible. La passphrase vive en
+  `/home/fenix/backups/.backup-passphrase` y **no está ni puede estar** en el repositorio:
+  es lo que hace que estos archivos se puedan guardar en GitHub sin riesgo.
+- **Nunca hace fallar el respaldo.** Si GitHub no responde, lo anota en
+  `respaldos.log` y termina bien: el respaldo local ya está hecho y verificado, que es lo
+  que de verdad importa.
+- La subida va **después** de la rotación, para que el repositorio refleje lo que quedó.
+  La rotación borra los viejos de la carpeta; el historial de git los conserva.
+- Los exportes con credenciales en texto plano (respaldos del workflow, copias del entorno)
+  se mudaron a `/home/fenix/respaldos/exportes-marioguerra`, **fuera** de este repositorio.
+
+> Con los respaldos de hoy —11 KB— el historial no pesa nada. Cuando el consultorio acumule
+> documentos médicos cada `.gpg` crecerá, y ahí conviene revisar: si pasa de unos 20 MB,
+> guardar en git solo los semanales y mensuales.
 
 **Nunca entran al repositorio**: `.env.local` y cualquier `.env.local.bak-*` (llevan el token
 de WhatsApp), `data/` (base con datos de pacientes), y `branding/fotos-20260910/` — los 147 MB
