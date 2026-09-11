@@ -107,8 +107,9 @@ export default function Landing() {
 
       <HeroLanding
         whatsapp={whatsapp}
+        encuadre="object-[45%_10%] lg:object-[50%_2%]"
         fotos={[
-          { src: ruta('/marca/foto-doctor.jpg'), alt: 'Dr. Mario Guerra, cirujano plástico en Maracaibo' },
+          { src: ruta('/marca/hero-modelo.jpg'), alt: 'Dr. Mario Guerra, cirujano plástico en Maracaibo' },
         ]}
       />
 
@@ -133,11 +134,11 @@ export default function Landing() {
           <Aparece retraso={110}>
             <div className="zoom-suave relative aspect-[4/5] rounded-lg">
               <Image
-                src={ruta('/marca/foto-doctor.jpg')}
-                alt="Dr. Mario Guerra en su consultorio"
+                src={ruta('/marca/doctor-retrato.jpg')}
+                alt="Retrato del Dr. Mario Guerra"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover object-[55%_15%]"
+                className="object-cover object-[50%_18%]"
               />
             </div>
           </Aparece>
@@ -158,32 +159,60 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Resultados ──────────────────────────────────────────────────── */}
-      <section id="resultados" className="seccion">
+      {/* ── Resultados y quirófano ──────────────────────────────────────
+          Era el hueco más blanco de la página: un titular y una tarjeta suelta
+          en medio de una pantalla vacía. Ahora es un módulo oscuro y las fotos
+          de quirófano hacen el trabajo que hacía el vacío. */}
+      <section id="resultados" className="seccion modulo-oscuro">
         <div className="contenedor">
-          <EncabezadoSeccion kicker="Resultados" titulo="Resultados reales de pacientes reales">
+          <EncabezadoSeccion
+            sobreOscuro
+            kicker="Resultados"
+            titulo="Resultados reales de pacientes reales"
+          >
             Los casos se publican en Instagram, siempre con la autorización de cada paciente.
           </EncabezadoSeccion>
 
-          <Aparece retraso={90} className="mt-10">
+          <Aparece retraso={90} className="mt-12 grid sm:grid-cols-3 gap-3 sm:gap-4">
+            {[
+              ['quirofano-a.jpg', 'El Dr. Guerra operando'],
+              ['quirofano-b.jpg', 'El Dr. Guerra durante una cirugía'],
+              ['quirofano-c.jpg', 'El Dr. Guerra en el quirófano'],
+            ].map(([archivo, alt], i) => (
+              <div
+                key={archivo}
+                className={`zoom-suave relative aspect-[3/4] rounded-lg ${i === 2 ? 'hidden sm:block' : ''}`}
+              >
+                <Image
+                  src={ruta(`/marca/${archivo}`)}
+                  alt={alt}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </Aparece>
+
+          <Aparece retraso={140} className="mt-4 grid lg:grid-cols-[minmax(0,1fr)_auto] gap-6 lg:gap-10 items-center rounded-lg border border-white/12 bg-white/[.05] p-6 sm:p-8">
+            <div>
+              <p className="marca text-[9.5px] text-[var(--color-cobre-luz)]">Instagram</p>
+              <p className="titular-menor text-white mt-3">{REDES[0].usuario}</p>
+              <p className="text-[14px] text-[var(--color-nude)]/70 mt-3 leading-relaxed">
+                Antes y después, videos y casos del día a día del consultorio.
+              </p>
+            </div>
             <a
               href={REDES[0].url}
               target="_blank"
               rel="noreferrer"
-              className="group block rounded-lg border border-[var(--color-linea)] bg-[var(--color-tarjeta)] p-7 sm:p-10 transition-colors hover:border-[var(--color-cobre-luz)]"
+              className="btn py-3 px-6 bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]"
             >
-              <p className="marca text-[9.5px] text-[var(--color-cobre)]">Instagram</p>
-              <p className="titular-menor mt-3">{REDES[0].usuario}</p>
-              <p className="text-[14px] text-[var(--color-tinta-2)] mt-4">
-                Antes y después, videos y casos del día a día del consultorio.
-              </p>
-              <span className="marca text-[9.5px] text-[var(--color-cobre)] mt-6 inline-block group-hover:underline">
-                Ver el perfil
-              </span>
+              Ver el perfil
             </a>
           </Aparece>
 
-          <p className="text-[12.5px] text-[var(--color-tinta-3)] mt-6 max-w-xl leading-relaxed">
+          <p className="text-[12.5px] text-[var(--color-nude)]/50 mt-6 max-w-xl leading-relaxed">
             Los resultados varían en cada paciente.
           </p>
         </div>
@@ -252,32 +281,27 @@ export default function Landing() {
                 </li>
               ))}
             </ol>
-            <Link href="/reservar" className="btn btn-principal py-3 px-6 mt-9">
+            <p className="text-[14px] text-[var(--color-tinta-2)] mt-8 leading-relaxed">
+              <span className="marca text-[9.5px] text-[var(--color-cobre)] block mb-2">Financiamiento</span>
+              El doctor ofrece planes que se adaptan a cada paciente. Los conversamos contigo en la
+              consulta para encontrar la mejor opción.
+            </p>
+            <Link href="/reservar" className="btn btn-principal py-3 px-6 mt-8">
               Agendar consulta
             </Link>
           </Aparece>
 
           <Aparece retraso={110} className="lg:order-1">
-            <div className="zoom-suave relative aspect-[4/3] rounded-lg">
+            <div className="zoom-suave relative aspect-[4/5] rounded-lg">
               <Image
-                src={ruta('/marca/foto-quirofano.jpg')}
-                alt="El Dr. Guerra y su equipo en quirófano"
+                src={ruta('/marca/consulta-implante.jpg')}
+                alt="El Dr. Guerra explicando un procedimiento en consulta"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
+                className="object-cover object-[50%_35%]"
               />
             </div>
           </Aparece>
-        </div>
-      </section>
-
-      {/* ── Financiamiento ──────────────────────────────────────────────── */}
-      <section className="seccion bg-[var(--color-papel-2)]">
-        <div className="contenedor">
-          <EncabezadoSeccion kicker="Financiamiento" titulo="Financiamiento a tu medida">
-            El doctor ofrece planes de financiamiento que se adaptan a cada paciente. Los
-            conversamos contigo en la consulta para encontrar la mejor opción.
-          </EncabezadoSeccion>
         </div>
       </section>
 

@@ -6,10 +6,13 @@ import Link from 'next/link';
 
 /** Crossfade lento entre fotos. Acepta las que haya: con una sola se queda fija. */
 export function HeroLanding({
-  fotos, whatsapp,
+  fotos, whatsapp, encuadre = 'object-[60%_18%] lg:object-[72%_20%]',
 }: {
   fotos: { src: string; alt: string }[];
   whatsapp: string;
+  /** El recorte depende de la foto: una vertical con dos personas no se encuadra
+   *  como un retrato suelto. Se pasa desde la página, no se adivina aquí. */
+  encuadre?: string;
 }) {
   const [actual, setActual] = useState(0);
 
@@ -31,7 +34,7 @@ export function HeroLanding({
             fill
             priority={i === 0}
             sizes="100vw"
-            className="object-cover object-[60%_18%] lg:object-[72%_20%]"
+            className={`object-cover ${encuadre}`}
           />
         </div>
       ))}

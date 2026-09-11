@@ -36,7 +36,7 @@ const CONFIG = {
   // Datos del consultorio
   nombre_consultorio: 'Dr. Mario Arturo Guerra Pineda',
   direccion: 'Av. 3H entre calle 70 y 71, sector Bella Vista, Maracaibo, Zulia',
-  whatsapp_consultorio: '04129086272',
+  whatsapp_consultorio: '+1 832 593 0835',
   whatsapp_emergencias: '04246502649',
   // Mensajería
   mensajeria_activa: '0',
@@ -67,15 +67,18 @@ CATALOGO.forEach(([n, p], i) => insProc.run(n, p, i));
 
 // Plantillas de WhatsApp (los nombres reales de Meta se cargan luego desde Configuración).
 const PLANTILLAS = [
+  ['reserva_recibida', 'Reserva recibida (al agendar)', ['nombre', 'fecha', 'hora', 'link'],
+   'Hola {{1}}, tu cita de valoración con el Dr. Mario Guerra quedó reservada para el {{2}} a las {{3}}.\n\nGuarda este enlace, es privado y es tuyo: {{4}}\n\nDesde ahí puedes confirmar, reprogramar o cancelar cuando quieras. Un día antes te escribimos para que confirmes tu asistencia.'],
   ['recordatorio_1', 'Recordatorio 1 (un día antes)', ['nombre', 'fecha', 'hora', 'link'],
-   'Hola {{nombre}}, te recordamos tu cita de valoración el {{fecha}} a las {{hora}}. Confirma o reprograma aquí: {{link}}'],
+   'Hola {{1}}, te recordamos tu cita de valoración con el Dr. Mario Guerra: {{2}} a las {{3}}.\n\nConfirma tu asistencia aquí: {{4}}\n\nSi necesitas otro día, desde ese mismo enlace puedes reprogramar.'],
   ['recordatorio_2', 'Recordatorio 2 (sin confirmar)', ['nombre', 'fecha', 'hora', 'link'],
-   'Hola {{nombre}}, aún no confirmas tu cita del {{fecha}} a las {{hora}}. Si no la confirmas se libera el cupo: {{link}}'],
-  ['cancelacion', 'Cancelación con link de reagendar', ['nombre', 'fecha', 'hora', 'link'],
-   'Hola {{nombre}}, tu cita del {{fecha}} a las {{hora}} fue cancelada. Puedes reagendar aquí: {{link}}'],
+   'Hola {{1}}, todavía no has confirmado tu cita del {{2}} a las {{3}}.\n\nConfírmala aquí: {{4}}\n\nSi no la confirmas, el cupo se libera para otro paciente.'],
+  ['cancelacion', 'Aviso de cancelación', ['nombre', 'fecha', 'hora', 'link'],
+   'Hola {{1}}, tu cita del {{2}} a las {{3}} quedó cancelada y tu cupo fue liberado.\n\nPuedes ver el estado de tu cita aquí: {{4}}\n\nSi no solicitaste esta cancelación, respóndenos por este mismo chat.'],
   ['bloqueo', 'Cancelación por emergencia del doctor', ['nombre', 'fecha', 'hora', 'link'],
-   'Hola {{nombre}}, por una emergencia debemos reprogramar tu cita del {{fecha}} a las {{hora}}. Elige otro horario aquí: {{link}}'],
-  ['libre', 'Mensaje manual', ['nombre', 'fecha', 'hora', 'link'], 'Hola {{nombre}}, {{link}}'],
+   'Hola {{1}}, por una emergencia del doctor tenemos que mover tu cita del {{2}} a las {{3}}. Lamentamos el cambio.\n\nEscoge el horario que prefieras aquí: {{4}}\n\nNo tienes que pagar nada adicional por reprogramar.'],
+  ['libre', 'Mensaje manual', ['nombre', 'fecha', 'hora', 'link'],
+   'Hola {{1}}, te escribimos del consultorio del Dr. Mario Guerra por tu cita del {{2}} a las {{3}}.\n\nPuedes ver los detalles aquí: {{4}}\n\nSi tienes cualquier duda, respóndenos por este chat.'],
 ];
 const insPl = db.prepare(
   'INSERT INTO plantillas_mensajes (clave, nombre, variables, cuerpo_ejemplo) VALUES (?,?,?,?) ON CONFLICT(clave) DO NOTHING'

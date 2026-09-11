@@ -57,9 +57,16 @@ function proveedor(): ProveedorWhatsApp {
   return cfg('mensajeria_activa', '0') === '1' ? meta : simulado;
 }
 
-/** 04129086272 → 584129086272 (formato que espera Meta). */
+/**
+ * Al formato que espera Meta: 04129086272 → 584129086272, +1 832 593 0835 → 18325930835.
+ * Ojo con el caso de diez dígitos sueltos: se asume Venezuela, que es de donde viene
+ * casi todo paciente. Un número extranjero hay que guardarlo con su código de país.
+ */
 export function normalizarTelefono(v: string): string {
-  const d = (v || '').replace(/\D/g, '');
+  const crudo = (v || '').trim();
+  const d = crudo.replace(/\D/g, '');
+  // Escrito con `+`, el código de país ya viene puesto: no se toca.
+  if (crudo.startsWith('+')) return d;
   if (d.startsWith('58')) return d;
   if (d.startsWith('0')) return `58${d.slice(1)}`;
   if (d.length === 10) return `58${d}`;

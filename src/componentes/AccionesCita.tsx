@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/rutas';
@@ -8,16 +9,26 @@ import { api } from '@/lib/rutas';
 type Estado = 'reservada' | 'confirmada' | 'cancelada' | 'reprogramada' | 'completada' | 'no_asistio';
 
 export function AccionesCita({
-  token, estadoInicial, cuando, whatsappConsultorio,
+  token, estadoInicial, cuando, whatsappConsultorio, puedeConfirmar, abrirConfirmar = false,
 }: {
   token: string; estadoInicial: Estado; cuando: string; whatsappConsultorio: string;
+  /** La confirmación se abre el día anterior, cuando sale el recordatorio. */
+  puedeConfirmar: boolean;
+  /** Viene del enlace del recordatorio (`?confirmar=1`): abre el diálogo de una vez. */
+  abrirConfirmar?: boolean;
 }) {
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>(estadoInicial);
-  const [modal, setModal] = useState<'confirmar' | 'cancelar' | null>(null);
+  const [modal, setModal] = useState<'confirmar' | 'cancelar' | null>(abrirConfirmar ? 'confirmar' : null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  // El diálogo se dibuja en el <body>, no aquí dentro: este bloque vive en un
+  // <Aparece>, y mientras no se ha revelado tiene opacity 0 y un transform —que
+  // además le roba el anclaje a `position: fixed`—. Metido dentro, el enlace del
+  // recordatorio abría un diálogo invisible.
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
 
   async function ejecutar(accion: 'confirmar' | 'cancelar') {
     setCargando(true);
@@ -69,14 +80,16 @@ export function AccionesCita({
           <div>
             <h3 className="titulo text-lg">Gestiona tu cita</h3>
             <p className="text-[14px] text-[var(--color-tinta-2)] mt-1">
-              {estado === 'reservada'
-                ? 'Confirma tu asistencia para que no se libere el cupo.'
-                : 'Tu asistencia ya está confirmada. Si algo cambia, puedes reprogramar o cancelar.'}
+              {estado !== 'reservada'
+                ? 'Tu asistencia ya está confirmada. Si algo cambia, puedes reprogramar o cancelar.'
+                : puedeConfirmar
+                  ? 'Confirma tu asistencia para que no se libere el cupo.'
+                  : 'Todavía no tienes que hacer nada. Un día antes te escribimos por WhatsApp y ahí confirmas con un toque. Mientras tanto, puedes reprogramar o cancelar cuando quieras.'}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {estado === 'reservada' && (
+            {estado === 'reservada' && puedeConfirmar && (
               <button className="btn btn-principal" onClick={() => setModal('confirmar')}>
                 Confirmar asistencia
               </button>
@@ -117,7 +130,7 @@ export function AccionesCita({
         </div>
       )}
 
-      {modal && (
+      {modal && montado && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/35 p-4"
           onClick={() => !cargando && setModal(null)}
@@ -146,7 +159,8 @@ export function AccionesCita({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -34,6 +34,17 @@ export function momentos(fechaHora: string) {
   };
 }
 
+/**
+ * ¿Ya se le puede pedir al paciente que confirme? Solo desde el momento en que
+ * pudo salir el primer recordatorio, el día anterior. Confirmar al reservar no
+ * prueba nada: apagaría el R2 y la auto-cancelación dos semanas antes, que es
+ * justo lo que sostiene la agenda. Una cita tomada para hoy o para mañana
+ * temprano ya nace dentro de la ventana, así que nunca queda sin poder confirmar.
+ */
+export function confirmacionAbierta(fechaHora: string, ahora = ahoraVET()): boolean {
+  return ahora >= momentos(fechaHora).r1Desde;
+}
+
 function vars(c: CitaConPaciente) {
   return {
     nombre: c.paciente_nombre,
@@ -41,6 +52,11 @@ function vars(c: CitaConPaciente) {
     hora: hora12(soloHora(c.fecha_hora)),
     link: linkGestion(c.token_gestion),
   };
+}
+
+/** El enlace de los recordatorios abre la confirmación de una vez: un toque y listo. */
+function varsRecordatorio(c: CitaConPaciente) {
+  return { ...vars(c), link: `${linkGestion(c.token_gestion)}?confirmar=1` };
 }
 
 /**
@@ -68,7 +84,7 @@ export async function correrTick() {
     if (!c.r1_enviado_at && ahora >= m.r1Desde && ahora <= m.r1Hasta) {
       await enviarPlantilla({
         clave: 'recordatorio_1', pacienteId: c.paciente_id, citaId: c.id,
-        destino: c.whatsapp, variables: vars(c),
+        destino: c.whatsapp, variables: varsRecordatorio(c),
       });
       db.prepare('UPDATE citas SET r1_enviado_at = ? WHERE id = ?').run(ahora, c.id);
       reporte.r1++;
@@ -92,7 +108,7 @@ export async function correrTick() {
     if (!c.r2_enviado_at && ahora >= m.r2) {
       await enviarPlantilla({
         clave: 'recordatorio_2', pacienteId: c.paciente_id, citaId: c.id,
-        destino: c.whatsapp, variables: vars(c),
+        destino: c.whatsapp, variables: varsRecordatorio(c),
       });
       db.prepare('UPDATE citas SET r2_enviado_at = ? WHERE id = ?').run(ahora, c.id);
       notificar(

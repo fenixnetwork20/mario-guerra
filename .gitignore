@@ -7,3 +7,13 @@ next-env.d.ts
 # Su copia es el respaldo cifrado (scripts/respaldar.sh).
 data/
 .env.local
+
+# Cualquier variante del entorno, no solo el archivo exacto: una copia .bak
+# lleva el token de WhatsApp igual que el original.
+.env.local*
+*.tsbuildinfo
+
+# Originales de la sesión de fotos del cliente (147 MB). Están en su Drive y en
+# /root/mario guerra/. Al repositorio solo van las versiones optimizadas de
+# public/marca/, que son las que usa el sitio.
+branding/fotos-20260910/

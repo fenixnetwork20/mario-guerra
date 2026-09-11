@@ -26,7 +26,7 @@ export function MarcoPublico({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 flex flex-col">{children}</main>
 
       <footer className="modulo-oscuro">
         <div className="contenedor py-10 grid gap-6 sm:grid-cols-2 text-[13.5px]">

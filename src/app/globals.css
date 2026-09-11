@@ -191,6 +191,90 @@
   }
   .js .aparece.visible { opacity: 1; transform: none; }
 
+  /* ── Vidrio sobre fotografía ────────────────────────────────────────────
+     La tarjeta de /reservar no es blanca: es petróleo translúcido sobre el
+     retrato desenfocado. El blanco puro contra la foto se veía barato y dejaba
+     los botones sin distinguirse unos de otros. */
+  .vidrio {
+    background: color-mix(in srgb, var(--color-tinta) 66%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(125%);
+    backdrop-filter: blur(16px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, .13);
+    border-radius: 14px;
+    box-shadow: 0 34px 70px -34px rgba(0, 0, 0, .8);
+    color: color-mix(in srgb, var(--color-nude) 88%, transparent);
+  }
+  /* Sin backdrop-filter (navegadores viejos) el texto tiene que seguir leyéndose. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .vidrio { background: color-mix(in srgb, var(--color-tinta) 93%, transparent); }
+  }
+  .vidrio .titulo, .vidrio .display, .vidrio h1, .vidrio h2, .vidrio h3 { color: #fff; }
+  .vidrio .etiqueta { color: var(--color-cobre-luz); }
+
+  /* Fila tocable sobre vidrio: el menú, los días, las horas, la modalidad. */
+  .opcion {
+    width: 100%;
+    background: rgba(255, 255, 255, .055);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 10px;
+    color: #fff;
+    text-align: left;
+    transition: background-color .18s, border-color .18s, transform .18s var(--salida-quint);
+  }
+  .opcion:hover, .opcion:focus-visible {
+    background: rgba(255, 255, 255, .1);
+    border-color: var(--color-cobre-luz);
+  }
+  .opcion:active { transform: scale(.985); }
+  .opcion-activa {
+    background: color-mix(in srgb, var(--color-cobre) 30%, transparent);
+    border-color: var(--color-cobre-luz);
+  }
+
+  /* Campos sobre vidrio. */
+  .campo-oscuro {
+    width: 100%;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 8px;
+    padding: 11px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #fff;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background-color .15s;
+  }
+  .campo-oscuro::placeholder { color: rgba(213, 200, 200, .45); }
+  .campo-oscuro:focus {
+    background: rgba(255, 255, 255, .1);
+    border-color: var(--color-cobre-luz);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cobre-luz) 22%, transparent);
+  }
+  /* El desplegable nativo abre en blanco: sus opciones necesitan color propio. */
+  .campo-oscuro option { background: var(--color-tinta); color: #fff; }
+
+  /* Los dos botones de acción sobre vidrio. El cobre manda: es el único
+     elemento lleno de color en toda la tarjeta, así no hay duda de dónde tocar. */
+  .btn-cobre { background: var(--color-cobre); color: #fff; }
+  .btn-cobre:hover:not(:disabled) { background: var(--color-cobre-luz); }
+  .btn-cobre:disabled { background: rgba(255, 255, 255, .1); color: rgba(213, 200, 200, .5); }
+  .btn-vidrio {
+    background: rgba(255, 255, 255, .08);
+    border-color: rgba(255, 255, 255, .18);
+    color: #fff;
+  }
+  .btn-vidrio:hover:not(:disabled) { background: rgba(255, 255, 255, .14); }
+  .btn-peligro-vidrio {
+    background: rgba(154, 61, 46, .18);
+    border-color: rgba(154, 61, 46, .55);
+    color: #f3c9c0;
+  }
+  .btn-peligro-vidrio:hover:not(:disabled) { background: rgba(154, 61, 46, .3); }
+
+  /* Cambio de paso del asistente de citas: entrada corta, nunca se interpone. */
+  @keyframes paso-entra { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+  .js .paso-entra { animation: paso-entra .28s var(--salida-quint) both; }
+
   @keyframes acercar { from { transform: scale(1.06); } to { transform: scale(1); } }
   .acercar { animation: acercar 1.4s var(--salida-quint) both; }
 
@@ -205,6 +289,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .js .aparece { opacity: 1; transform: none; transition: none; }
+    .js .paso-entra { animation: none; }
     .acercar { animation: none; }
     .hero-foto { transition: none; }
     .zoom-suave img { transition: none; }

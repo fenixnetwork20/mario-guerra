@@ -19,12 +19,25 @@ export function validarCedula(v: string): Resultado {
   return { ok: true };
 }
 
-/** WhatsApp venezolano: 04XXXXXXXXX, +584XXXXXXXXX o 584XXXXXXXXX. */
+/**
+ * WhatsApp del paciente. Venezolano tal como lo escribe todo el mundo aquí
+ * (04XXXXXXXXX, 584XXXXXXXXX, 4XXXXXXXXX) y también extranjero — la consulta
+ * online se ofrece justamente a quien está fuera del país, y antes el formulario
+ * rechazaba un +57 colombiano.
+ *
+ * Al extranjero se le exige el `+` con código de país: sin él, diez dígitos
+ * sueltos son indistinguibles de un móvil venezolano y terminarían normalizados
+ * como venezolanos, o sea en un número que no existe.
+ */
 export function validarWhatsapp(v: string): Resultado {
-  const d = (v || '').replace(/\D/g, '');
-  const ok = /^04\d{9}$/.test(d) || /^584\d{9}$/.test(d) || /^4\d{9}$/.test(d);
-  if (!ok) return { ok: false, error: 'Número inválido. Ejemplo: 04121234567' };
-  return { ok: true };
+  const crudo = (v || '').trim();
+  const d = crudo.replace(/\D/g, '');
+  if (/^04\d{9}$/.test(d) || /^584\d{9}$/.test(d) || /^4\d{9}$/.test(d)) return { ok: true };
+  if (crudo.startsWith('+') && /^\d{8,15}$/.test(d)) return { ok: true };
+  return {
+    ok: false,
+    error: 'Número inválido. Ejemplo: 04121234567. Si estás fuera de Venezuela, escríbelo con el código del país: +573001234567',
+  };
 }
 
 export function validarEdad(v: unknown): Resultado {

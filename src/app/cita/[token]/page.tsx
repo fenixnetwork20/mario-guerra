@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cfg } from '@/lib/db';
 import { citaPorToken } from '@/lib/citas';
+import { confirmacionAbierta } from '@/lib/recordatorios';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import { MarcoPublico, Portada, Divisor } from '@/componentes/MarcoPublico';
 import { Aparece } from '@/componentes/Aparece';
@@ -12,10 +13,10 @@ export default async function PaginaCita({
   params, searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ nueva?: string }>;
+  searchParams: Promise<{ nueva?: string; confirmar?: string }>;
 }) {
   const { token } = await params;
-  const { nueva } = await searchParams;
+  const { nueva, confirmar } = await searchParams;
   const cita = citaPorToken(token);
   if (!cita) notFound();
 
@@ -23,6 +24,8 @@ export default async function PaginaCita({
   const direccion = cfg('direccion', '');
   const wa = cfg('whatsapp_consultorio', '');
   const esNueva = nueva === '1';
+  // Confirmar solo se ofrece cuando toca: desde que pudo salir el recordatorio.
+  const puedeConfirmar = cita.estado === 'reservada' && confirmacionAbierta(cita.fecha_hora);
 
   return (
     <MarcoPublico>
@@ -33,7 +36,7 @@ export default async function PaginaCita({
         titulo={<>{fechaLarga(soloFecha(cita.fecha_hora))}<br />a las {hora12(soloHora(cita.fecha_hora))}</>}
         bajada={
           esNueva
-            ? 'Guarda este enlace. Desde aquí puedes confirmar, reprogramar o cancelar tu cita en cualquier momento, sin escribirle a nadie.'
+            ? 'Guarda este enlace: desde aquí puedes reprogramar o cancelar cuando quieras. Un día antes te escribimos por WhatsApp para que confirmes tu asistencia.'
             : undefined
         }
       />
@@ -64,6 +67,8 @@ export default async function PaginaCita({
               estadoInicial={cita.estado}
               cuando={cuando}
               whatsappConsultorio={wa}
+              puedeConfirmar={puedeConfirmar}
+              abrirConfirmar={confirmar === '1' && puedeConfirmar}
             />
           </Aparece>
         </div>
