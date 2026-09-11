@@ -518,18 +518,19 @@ El repositorio vive en `/home/fenix/marioguerra`. Tiene un **espejo local** en
 de las 7:40 vía `scripts/espejo-git.sh`. **Eso protege de un borrado o de un mal cambio, no de
 que se muera el servidor**: sigue estando todo en la misma máquina.
 
-Falta el remoto de verdad. Las llaves de despliegue ya están generadas en el VPS
-(`~/.ssh/marioguerra` para el código, `~/.ssh/marioguerra-respaldos` para los respaldos) y
-`~/.ssh/config` ya tiene los alias `github-marioguerra` y `github-marioguerra-respaldos`.
-GitHub todavía no las reconoce, así que faltan los dos repos privados y pegar cada llave
-pública en *Settings → Deploy keys* con permiso de escritura. Cuando estén:
+**El remoto de verdad ya está** (2026-09-11): `origin` →
+`github-marioguerra:fenixnetwork20/mario-guerra.git`, repositorio privado, con la llave de
+despliegue `~/.ssh/marioguerra` y permiso de escritura. La rama es `master`.
+`scripts/espejo-git.sh` empuja al espejo y a GitHub en la misma corrida, todos los días a
+las 7:40.
 
-```bash
-git remote add origin github-marioguerra:USUARIO/marioguerra.git
-git push -u origin master
-```
+> El repositorio se llama **`mario-guerra`**, con guion, y la carpeta del VPS `marioguerra`
+> sin él. No es un descuido: el nombre en GitHub lo puso el cliente. Si algún día el push
+> falla con *"Repository not found"* teniendo la llave buena, es este guion.
 
-Desde ahí, `scripts/espejo-git.sh` empuja a los dos solo.
+Queda pendiente el segundo repo, el de los respaldos cifrados de la base
+(`~/.ssh/marioguerra-respaldos`, alias `github-marioguerra-respaldos`). Hoy los respaldos
+viven solo en el VPS.
 
 **Nunca entran al repositorio**: `.env.local` y cualquier `.env.local.bak-*` (llevan el token
 de WhatsApp), `data/` (base con datos de pacientes), y `branding/fotos-20260910/` — los 147 MB
