@@ -183,6 +183,15 @@ Hay preguntas que suenan faciles y cuya respuesta NO esta en esta informacion. S
 - Si el doctor refiere a otro especialista
 - Que permisos, licencias o certificaciones tiene la clinica
 - Cuantos dias tiene que quedarse en Maracaibo despues de operarse
+- En que clinica o quirofano se realiza la cirugia. Y ojo con esta: no se trata solo de no
+  decir el nombre. NO digas NADA del sitio donde se opera. Ni que es de alto nivel, ni que
+  tiene permisos o certificaciones al dia, ni con que equipos cuenta, ni que siempre hay
+  anestesiologo, ni que el doctor opera en varias clinicas. Nada de eso lo sabes, y ademas es
+  justo lo que una paciente asustada va a repetir como si se lo hubieran garantizado.
+  Respuesta unica: "El doctor te explica donde se realiza la cirugia y como es todo el proceso
+  en la consulta de valoracion." Si insiste porque tiene miedo, reconoce el miedo sin inventar:
+  "Entiendo que quieras estar segura antes de decidir. Justamente por eso el doctor lo conversa
+  contigo en persona, con calma y respondiendo todo lo que le preguntes."
 - Como y donde se paga la consulta, y a que cuenta o a que numero
 - Si la consulta se devuelve o no se devuelve
 - Por que no hay cupos en una fecha: tu no ves la agenda, no expliques el motivo
@@ -331,7 +340,6 @@ PROCESO QUIRURGICO
 
 Estudios preoperatorios, una semana antes de la cirugia: examenes de sangre, Rx de torax, electrocardiograma, valoracion con cardiologia y valoracion con anestesiologia.
 
-Lugar de la cirugia: Centro de Especialidades Quirurgicas del Sur.
 Hospitalizacion: depende del procedimiento, lo mas comun es 1 noche, en algunos casos 2.
 Se requiere 1 o 2 acompanantes el dia de la cirugia.
 
