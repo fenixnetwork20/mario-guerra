@@ -172,3 +172,28 @@ export async function eliminarBloqueo(_prev: Respuesta | null, datos: FormData):
   refrescar(b ? soloFecha(b.inicio) : undefined);
   return { ok: true, aviso: 'Bloqueo eliminado. Las citas canceladas no se restauran solas.' };
 }
+
+/**
+ * Recepción confirma o rechaza el pago de una consulta. El cupo no depende de
+ * esto: la cita ya está apartada. Esto es el control de que el dinero entró.
+ */
+export async function verificarPago(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('pagos');
+  const id = Number(datos.get('cita_id'));
+  const estado = String(datos.get('estado') || '');
+  if (!['verificado', 'rechazado', 'pendiente'].includes(estado)) {
+    return { ok: false, error: 'Estado de pago no válido.' };
+  }
+  const c = citaPorId(id);
+  if (!c) return { ok: false, error: 'Cita no encontrada.' };
+
+  db.prepare("UPDATE citas SET pago_estado = ?, pago_verificado_at = datetime('now') WHERE id = ?")
+    .run(estado, id);
+  refrescar(soloFecha(c.fecha_hora));
+  return {
+    ok: true,
+    aviso: estado === 'verificado' ? 'Pago verificado.'
+      : estado === 'rechazado' ? 'Pago rechazado. Avísale al paciente por WhatsApp.'
+      : 'Pago marcado como pendiente.',
+  };
+}

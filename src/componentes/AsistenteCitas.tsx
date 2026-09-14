@@ -23,7 +23,17 @@ type CitaHallada = {
 };
 type Modo = 'menu' | 'agendar' | 'confirmar' | 'gestionar';
 
-const PASOS_AGENDAR = 5;
+type Cobro = {
+  usd: number; bs: string | null; tasa: number | null;
+  pagoMovil: { banco: string; telefono: string; cedula: string; titular: string; qr: string } | null;
+  binance: { usuario: string; qr: string } | null;
+  zelle: { correo: string; titular: string } | null;
+};
+
+const PASOS_AGENDAR = 6;
+
+/** ¿Hay con qué cobrar? Sin datos cargados, el paso de pago no aporta nada. */
+const hayComoPagar = (c: Cobro | null) => Boolean(c && (c.pagoMovil || c.binance || c.zelle));
 const DIAS_VISIBLES = 12;
 
 /**
@@ -197,11 +207,33 @@ function Agendar({
   const [whatsapp, setWhatsapp] = useState(reprogramando?.whatsapp ?? '');
   const [procedimiento, setProcedimiento] = useState(reprogramando?.procedimiento ?? '');
   const [verTodos, setVerTodos] = useState(false);
+  const [cobro, setCobro] = useState<Cobro | null>(null);
+  const [referencia, setReferencia] = useState('');
+  const [comprobante, setComprobante] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const horas = useMemo(() => dias.find((d) => d.fecha === fecha)?.cupos ?? [], [dias, fecha]);
-  const atras = () => (paso === 0 ? volver() : setPaso(paso - 1));
+
+  /** Los datos de cobro se piden al llegar al paso del pago, no antes: el monto
+   *  depende de la modalidad y la tasa cambia durante el día. */
+  useEffect(() => {
+    if (paso !== 4) return;
+    fetch(api(`/api/publico/cobro?modalidad=${modalidad}`))
+      .then((r) => r.json())
+      .then((c) => {
+        setCobro(c);
+        // Sin datos de cobro cargados no hay nada que enseñar: se salta al resumen.
+        if (!hayComoPagar(c)) setPaso(5);
+      })
+      .catch(() => { setCobro(null); setPaso(5); });
+  }, [paso, modalidad]);
+  const atras = () => {
+    if (paso === 0) return volver();
+    // El paso de pago se salta en los dos sentidos si no hay con qué cobrar.
+    if (paso === 5 && !hayComoPagar(cobro)) return setPaso(3);
+    setPaso(paso - 1);
+  };
 
   if (!dias.length) {
     return (
@@ -228,14 +260,11 @@ function Agendar({
     setError(null);
     setEnviando(true);
     try {
-      const r = await fetch(api('/api/publico/reservar'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre, cedula, whatsapp, procedimiento, modalidad, inicio,
-          desde: reprogramando?.token,
-        }),
-      });
+      const cuerpo = new FormData();
+      Object.entries({ nombre, cedula, whatsapp, procedimiento, modalidad, inicio, referencia,
+                       desde: reprogramando?.token ?? '' }).forEach(([k, v]) => cuerpo.append(k, v));
+      if (comprobante) cuerpo.append('comprobante', comprobante);
+      const r = await fetch(api('/api/publico/reservar'), { method: 'POST', body: cuerpo });
       const datos = await r.json();
       if (!r.ok) {
         setError(datos.error ?? 'No se pudo guardar la reserva.');
@@ -330,7 +359,7 @@ function Agendar({
 
         {paso === 3 && (
           <>
-            <Cabecera titulo="Tus datos" sub="Es lo último que te pedimos." volver={atras} paso={4} />
+            <Cabecera titulo="Tus datos" sub="Ya casi." volver={atras} paso={4} />
             <div className="space-y-4">
               <label className="block">
                 <span className="text-[13px] font-medium">Nombre y apellido</span>
@@ -368,12 +397,71 @@ function Agendar({
 
         {paso === 4 && (
           <>
-            <Cabecera titulo="¿Todo bien?" sub="Revisa y confirma tu reserva." volver={atras} paso={5} />
+            <Cabecera titulo="El pago de la consulta" sub="La consulta se paga al reservar." volver={atras} paso={5} />
+            {!cobro ? (
+              <p className="text-[14px] text-[var(--color-nude)]/70">Buscando los datos de pago…</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-[var(--color-cobre-luz)]/40 bg-[var(--color-cobre)]/15 p-4">
+                  <p className="etiqueta">Monto a pagar</p>
+                  <p className="text-[24px] font-semibold text-white mt-1 tabular-nums">{cobro.usd} $</p>
+                  {cobro.bs && (
+                    <p className="text-[14px] text-[var(--color-nude)]/75 mt-1 tabular-nums">
+                      {cobro.bs} Bs · a la tasa del día
+                    </p>
+                  )}
+                </div>
+
+                {cobro.pagoMovil && (
+                  <DatosPago titulo="Pago móvil" qr={cobro.pagoMovil.qr} filas={[
+                    ['Banco', cobro.pagoMovil.banco], ['Teléfono', cobro.pagoMovil.telefono],
+                    ['Cédula o RIF', cobro.pagoMovil.cedula], ['Titular', cobro.pagoMovil.titular],
+                  ]} />
+                )}
+                {cobro.binance && (
+                  <DatosPago titulo="Binance" qr={cobro.binance.qr} filas={[['Usuario', cobro.binance.usuario]]} />
+                )}
+                {cobro.zelle && (
+                  <DatosPago titulo="Zelle" filas={[['Correo', cobro.zelle.correo], ['Titular', cobro.zelle.titular]]} />
+                )}
+                <label className="block">
+                  <span className="text-[13px] font-medium">Referencia del pago (opcional)</span>
+                  <input className="campo-oscuro mt-1" value={referencia} inputMode="numeric"
+                    onChange={(e) => setReferencia(e.target.value)} placeholder="Últimos dígitos" />
+                </label>
+
+                <label className="block">
+                  <span className="text-[13px] font-medium">Sube tu comprobante</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,application/pdf"
+                    onChange={(e) => setComprobante(e.target.files?.[0] ?? null)}
+                    className="campo-oscuro mt-1 file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-cobre)] file:px-3 file:py-1.5 file:text-white file:text-[13px]"
+                  />
+                  <span className="block text-[12px] text-[var(--color-nude)]/55 mt-1.5">
+                    Una foto de la transferencia o el PDF. Sin el comprobante tu cupo queda apartado,
+                    pero el consultorio tiene que confirmarlo antes de la cita.
+                  </span>
+                </label>
+              </div>
+            )}
+            <button className="btn btn-cobre w-full py-3 text-[15px] mt-5" onClick={() => setPaso(5)}>
+              Continuar
+            </button>
+          </>
+        )}
+
+        {paso === 5 && (
+          <>
+            <Cabecera titulo="¿Todo bien?" sub="Revisa y confirma tu reserva." volver={atras} paso={6} />
             <dl className="rounded-lg border border-white/12 bg-white/[.05] p-4 space-y-3 text-[14px]">
               <Resumen titulo="Cuándo" valor={`${fechaLarga(inicio.slice(0, 10))} a las ${hora12(inicio.slice(11, 16))}`} />
               <Resumen titulo="Modalidad" valor={modalidad === 'presencial' ? 'En el consultorio' : 'Por videollamada'} />
               <Resumen titulo="Paciente" valor={nombre} />
               <Resumen titulo="Procedimiento de interés" valor={procedimiento} />
+              {cobro && (
+                <Resumen titulo="Pago" valor={comprobante ? `${cobro.usd} $ · comprobante adjunto` : `${cobro.usd} $ · sin comprobante`} />
+              )}
             </dl>
             {error && <div className="mt-4"><Aviso texto={error} /></div>}
             <button className="btn btn-cobre w-full py-3 text-[15px] mt-5"
@@ -392,6 +480,31 @@ function Agendar({
         )}
       </div>
     </Tarjeta>
+  );
+}
+
+/** Un bloque de datos de pago, con su QR si lo cargaron. */
+function DatosPago({ titulo, filas, qr }: { titulo: string; filas: [string, string][]; qr?: string }) {
+  const utiles = filas.filter(([, v]) => v);
+  if (!utiles.length && !qr) return null;
+  return (
+    <div className="rounded-lg border border-white/12 bg-white/[.05] p-4">
+      <p className="etiqueta">{titulo}</p>
+      <div className="mt-2 flex flex-wrap gap-4 items-start justify-between">
+        <dl className="space-y-1 text-[14px] min-w-0">
+          {utiles.map(([k, v]) => (
+            <div key={k} className="flex gap-2">
+              <dt className="text-[var(--color-nude)]/55">{k}:</dt>
+              <dd className="font-medium break-all">{v}</dd>
+            </div>
+          ))}
+        </dl>
+        {qr && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={qr} alt={`Código QR de ${titulo}`} className="h-28 w-28 rounded-md bg-white p-1 object-contain" />
+        )}
+      </div>
+    </div>
   );
 }
 

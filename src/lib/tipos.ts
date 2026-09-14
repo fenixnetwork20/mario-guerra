@@ -24,6 +24,15 @@ export type Cita = {
   revision_id: number | null;
   r1_enviado_at: string | null;
   r2_enviado_at: string | null;
+  /** El cobro de la consulta. El cupo no depende de esto: la cita ya está
+   *  apartada aunque el pago siga por verificar. */
+  pago_estado: 'pendiente' | 'verificado' | 'rechazado';
+  pago_monto_usd: number | null;
+  pago_monto_bs: number | null;
+  pago_tasa: number | null;
+  pago_referencia: string | null;
+  pago_archivo: string | null;
+  pago_verificado_at: string | null;
   created_at: string;
 };
 

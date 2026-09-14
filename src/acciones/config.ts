@@ -23,7 +23,7 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
 
   const numeros = [
     'duracion_cita', 'precio_consulta_presencial', 'precio_consulta_online',
-    'pm_banco', 'pm_telefono', 'pm_cedula', 'pm_titular',
+    'pm_banco', 'pm_telefono', 'pm_cedula', 'pm_titular', 'tasa_manual',
     'binance_usuario', 'zelle_correo', 'zelle_titular',
     'autocancel_offset_horas', 'dias_max_reserva', 'horas_min_anticipacion',
   ];
@@ -104,4 +104,46 @@ export async function guardarUsuario(_prev: Respuesta | null, datos: FormData): 
 
   revalidatePath('/panel/config');
   return { ok: true, aviso: clave ? 'Usuario y contraseña actualizados.' : 'Usuario actualizado.' };
+}
+
+/**
+ * Los dos códigos QR de cobro. Van a `data/uploads` como cualquier documento y
+ * NO a /public: se sirven por una ruta propia, sin sesión, porque el paciente
+ * tiene que verlos al reservar.
+ */
+export async function subirQR(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('configuracion');
+  const cual = String(datos.get('cual') || '');
+  if (cual !== 'pm_qr' && cual !== 'binance_qr') return { ok: false, error: 'Código no válido.' };
+
+  const archivo = datos.get('archivo');
+  if (!(archivo instanceof File) || !archivo.size) return { ok: false, error: 'Escoge una imagen.' };
+  if (!/^image\/(png|jpe?g|webp)$/.test(archivo.type)) {
+    return { ok: false, error: 'El QR tiene que ser una imagen PNG, JPG o WEBP.' };
+  }
+  if (archivo.size > 3 * 1024 * 1024) return { ok: false, error: 'La imagen no puede pasar de 3 MB.' };
+
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const carpeta = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
+  await fs.mkdir(carpeta, { recursive: true });
+  const ext = archivo.type.split('/')[1].replace('jpeg', 'jpg');
+  const nombre = `${cual}-${Date.now()}.${ext}`;
+  await fs.writeFile(path.join(carpeta, nombre), Buffer.from(await archivo.arrayBuffer()));
+
+  db.prepare('INSERT INTO config (clave,valor) VALUES (?,?) ON CONFLICT(clave) DO UPDATE SET valor=excluded.valor')
+    .run(cual, nombre);
+  revalidatePath('/panel/config');
+  revalidatePath('/reservar');
+  return { ok: true, aviso: 'Código guardado.' };
+}
+
+export async function quitarQR(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('configuracion');
+  const cual = String(datos.get('cual') || '');
+  if (cual !== 'pm_qr' && cual !== 'binance_qr') return { ok: false, error: 'Código no válido.' };
+  db.prepare("UPDATE config SET valor = '' WHERE clave = ?").run(cual);
+  revalidatePath('/panel/config');
+  revalidatePath('/reservar');
+  return { ok: true, aviso: 'Código quitado.' };
 }

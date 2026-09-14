@@ -1,5 +1,8 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, cfgNum } from '@/lib/db';
+import { tasaDelDia } from '@/lib/tasa';
 import { cupoDisponible } from '@/lib/agenda';
 import { buscarOCrearPaciente, crearCita, citaPorToken } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
@@ -21,8 +24,22 @@ export async function POST(req: Request) {
     );
   }
 
-  let b: Record<string, string>;
-  try { b = await req.json(); } catch { return NextResponse.json({ error: 'Petición inválida.' }, { status: 400 }); }
+  // El comprobante de pago viene como archivo, así que la reserva llega en
+  // multipart. Se acepta JSON también por si algo viejo todavía lo manda así.
+  let b: Record<string, string> = {};
+  let comprobante: File | null = null;
+  const tipo = req.headers.get('content-type') || '';
+  try {
+    if (tipo.includes('multipart/form-data')) {
+      const f = await req.formData();
+      for (const [k, v] of f.entries()) {
+        if (v instanceof File) { if (k === 'comprobante' && v.size) comprobante = v; }
+        else b[k] = String(v);
+      }
+    } else {
+      b = await req.json();
+    }
+  } catch { return NextResponse.json({ error: 'Petición inválida.' }, { status: 400 }); }
 
   const error = primerError(
     validarNombre(b.nombre), validarCedula(b.cedula), validarWhatsapp(b.whatsapp),
@@ -48,6 +65,15 @@ export async function POST(req: Request) {
     );
   }
 
+  if (comprobante) {
+    if (!/^(image\/(png|jpe?g|webp)|application\/pdf)$/.test(comprobante.type)) {
+      return NextResponse.json({ error: 'El comprobante tiene que ser una imagen o un PDF.' }, { status: 400 });
+    }
+    if (comprobante.size > 6 * 1024 * 1024) {
+      return NextResponse.json({ error: 'El comprobante no puede pasar de 6 MB.' }, { status: 400 });
+    }
+  }
+
   const paciente = buscarOCrearPaciente({
     nombre: b.nombre, cedula: b.cedula, whatsapp: b.whatsapp,
     edad: b.edad ? Number(b.edad) : null,
@@ -66,6 +92,29 @@ export async function POST(req: Request) {
       procedimientoInteres: b.procedimiento,
     });
   })();
+
+  // El pago: monto, tasa del día y comprobante. La cita queda 'pendiente' hasta
+  // que recepción lo verifique; el cupo ya está apartado igual.
+  try {
+    const usd = cfgNum(cita.modalidad === 'online' ? 'precio_consulta_online' : 'precio_consulta_presencial', 0);
+    const t = await tasaDelDia();
+    let archivo: string | null = null;
+    if (comprobante) {
+      const carpeta = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
+      await fs.mkdir(carpeta, { recursive: true });
+      const ext = comprobante.type === 'application/pdf' ? 'pdf' : comprobante.type.split('/')[1].replace('jpeg', 'jpg');
+      archivo = `comprobante-${cita.id}-${Date.now()}.${ext}`;
+      await fs.writeFile(path.join(carpeta, archivo), Buffer.from(await comprobante.arrayBuffer()));
+    }
+    db.prepare(
+      `UPDATE citas SET pago_estado = 'pendiente', pago_monto_usd = ?, pago_tasa = ?,
+         pago_monto_bs = ?, pago_referencia = ?, pago_archivo = ? WHERE id = ?`
+    ).run(usd, t.valor || null, t.valor ? Math.round(usd * t.valor * 100) / 100 : null,
+          (b.referencia || '').slice(0, 60) || null, archivo, cita.id);
+  } catch (e) {
+    // Que falle el comprobante no puede tumbar la reserva: el cupo ya es suyo.
+    console.error('pago de la cita', cita.id, e);
+  }
 
   const cuando = `${fechaLarga(soloFecha(cita.fecha_hora))} a las ${hora12(soloHora(cita.fecha_hora))}`;
 

@@ -9,8 +9,9 @@ import {
 import { Seccion, Estado, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
 import { PanelAgenda } from '@/componentes/PanelAgenda';
-import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo } from '@/acciones/agenda';
+import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo, verificarPago } from '@/acciones/agenda';
 import { FilaBloqueo } from '@/componentes/FilaBloqueo';
+import { CeldaPago } from '@/componentes/CeldaPago';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,9 +85,9 @@ async function VistaDia({ fecha }: { fecha: string }) {
         {citas.length === 0 && <Vacio>Sin citas este día.</Vacio>}
         {citas.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[760px]">
+            <table className="tabla min-w-[900px]">
               <thead>
-                <tr><th>Hora</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr>
+                <tr><th>Hora</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Pago</th><th>Acciones</th></tr>
               </thead>
               <tbody>
                 {citas.map((c) => (
@@ -103,6 +104,19 @@ async function VistaDia({ fecha }: { fecha: string }) {
                       <div className="text-[12px] text-[var(--color-tinta-3)]">{c.duracion} min · {c.origen}</div>
                     </td>
                     <td><Estado valor={c.estado} /></td>
+                    <td>
+                      <CeldaPago
+                        cita={{
+                          id: c.id,
+                          estado: c.pago_estado ?? 'pendiente',
+                          usd: c.pago_monto_usd ?? null,
+                          bs: c.pago_monto_bs ?? null,
+                          referencia: c.pago_referencia ?? null,
+                          tieneArchivo: Boolean(c.pago_archivo),
+                        }}
+                        verificar={verificarPago}
+                      />
+                    </td>
                     <td>
                       <AccionesRapidasCita
                         citaId={c.id} estado={c.estado}

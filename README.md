@@ -381,6 +381,30 @@ src/app/panel/*            panel interno
    así que el formulario tiene que aceptarlos — antes rechazaba un `+57` colombiano.
 8. **Rate limiting** en reserva (8/hora por IP), gestión de cita (30/10 min) y login (10/10 min).
 
+## El cobro de la consulta
+
+La consulta se paga **al reservar**. Es un paso más del asistente, entre los datos y el
+resumen, y el flujo no se rompe si algo falta.
+
+- **El monto sale de `config`** según la modalidad (50 $ presencial, 40 $ online) y se muestra
+  también en bolívares, con la tasa del día. Al paciente nunca se le dice de dónde sale esa
+  tasa: en pantalla es *"a la tasa del día"*.
+- **La tasa** la trae `src/lib/tasa.ts` del mismo sheet central que usan los otros clientes.
+  Se cachea hasta las `hh:05` siguientes —que es cuando N8N ya publicó la nueva, con margen— y
+  si el sheet no responde se usa el último valor bueno; si tampoco hay, `tasa_manual` de
+  Configuración. **El CSV trae comas dentro de las comillas** (`"lunes, 14 de septiembre…"`),
+  así que se parsea por campos entrecomillados, no partiendo por coma.
+- **Los datos de cobro y los dos QR** se cargan en Configuración. Los QR viven en
+  `data/uploads` y se sirven por `/api/publico/qr/[cual]` — es lo único de esa carpeta que sale
+  sin sesión, porque el paciente tiene que verlos, y en un QR de cobro no hay nada sensible.
+- **Si no hay ningún dato de cobro cargado, el paso no se muestra**: se salta al resumen, en
+  los dos sentidos. Enseñarle a un paciente una pantalla de pago vacía es peor que no tenerla.
+- **El comprobante** (imagen o PDF, hasta 6 MB) se guarda con la cita y se ve desde el panel en
+  `/api/comprobante/[id]`, solo con sesión: ahí sí hay datos bancarios.
+- **El pago nunca tumba la reserva.** Si falla el guardado del comprobante, el cupo ya es del
+  paciente y queda el registro del error. La cita nace `pago_estado = 'pendiente'` y recepción
+  la marca verificada o rechazada desde la columna **Pago** de la agenda.
+
 ## Avisos al panel (web push)
 
 Cuando entra una reserva, cuando un paciente cancela, cuando vence una cuota y **cuando el bot

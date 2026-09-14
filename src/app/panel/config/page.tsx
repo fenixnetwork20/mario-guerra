@@ -3,12 +3,12 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { usd } from '@/lib/dinero';
 import { AvisosPush } from '@/componentes/AvisosPush';
+import { SubirQR } from '@/componentes/SubirQR';
 import { Seccion, Vacio } from '@/componentes/ui';
 import { BotonForm } from '@/componentes/FormulariosFicha';
 import { FormAjustes, FormHorario, FormProcedimiento, FormUsuario } from '@/componentes/FormsConfig';
 import {
-  guardarAjustes, guardarHorario, eliminarHorario, guardarProcedimiento, guardarUsuario,
-} from '@/acciones/config';
+  guardarAjustes, guardarHorario, eliminarHorario, guardarProcedimiento, guardarUsuario, subirQR, quitarQR } from '@/acciones/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +40,16 @@ export default async function Config() {
         descripcion="Para enterarte sin tener el panel abierto."
       >
         <AvisosPush />
+      </Seccion>
+
+      <Seccion
+        titulo="Códigos QR de cobro"
+        descripcion="Los ve el paciente al pagar la consulta."
+      >
+        <div className="grid sm:grid-cols-2 gap-3">
+          <SubirQR cual="pm_qr" titulo="Pago móvil" cargado={Boolean(cfg.pm_qr)} subir={subirQR} quitar={quitarQR} />
+          <SubirQR cual="binance_qr" titulo="Binance" cargado={Boolean(cfg.binance_qr)} subir={subirQR} quitar={quitarQR} />
+        </div>
       </Seccion>
 
       <Seccion titulo="Ajustes generales">
