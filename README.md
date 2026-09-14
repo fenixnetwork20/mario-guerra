@@ -447,6 +447,20 @@ como notificación.
 
 > Ese endpoint usa el token del cron, no una sesión: no hay nadie logueado detrás de N8N.
 
+## El horario vive en dos sitios y hay que cambiarlo en los dos
+
+Los cupos de la web salen de `horarios_atencion` (Panel → Configuración). El bot, en cambio,
+lee su horario de Supabase: la columna `horario` de `config_clientes` —que N8N pega al final
+del prompt— y la línea de horarios del propio prompt.
+
+**No están conectados.** El 2026-09-14 se agregó el sábado en Configuración y el bot siguió
+diciendo durante horas que los sábados estaba cerrado, mientras la página ofrecía cupos
+sábado. Al cambiar un horario hay que tocar los tres sitios:
+
+1. Panel → Configuración → Horarios de atención (de ahí salen los cupos reales).
+2. `config_clientes.horario` en Supabase.
+3. La línea de horarios de `prompt-bot-mayelis-nuevo.txt`, y subirlo.
+
 ## Mensajería (WhatsApp)
 
 Único punto con dependencia externa. Hoy está en **modo simulado**: los envíos se registran
