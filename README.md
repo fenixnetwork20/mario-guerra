@@ -413,6 +413,13 @@ resumen, y el flujo no se rompe si algo falta.
   los dos sentidos. Enseñarle a un paciente una pantalla de pago vacía es peor que no tenerla.
 - **El comprobante** (imagen o PDF, hasta 6 MB) se guarda con la cita y se ve desde el panel en
   `/api/comprobante/[id]`, solo con sesión: ahí sí hay datos bancarios.
+- **El bot cuenta este mismo flujo.** Su guion dice que la consulta se paga al reservar, en la
+  página, igual para presencial y para videollamada, y que los datos de pago **no se dan por
+  chat**: están en la página. Si algún día se quita el paso de pago, hay que corregir el
+  prompt en Supabase o la asistente prometerá algo que la página no hace.
+- **Ojo con encender el bot sin datos de cobro cargados.** El paso se salta cuando no hay
+  datos, pero el bot sigue diciendo que ahí se paga. Antes de prender a Mayelis, cargar los
+  datos en Configuración.
 - **El pago nunca tumba la reserva.** Si falla el guardado del comprobante, el cupo ya es del
   paciente y queda el registro del error. La cita nace `pago_estado = 'pendiente'` y recepción
   la marca verificada o rechazada desde la columna **Pago** de la agenda.
