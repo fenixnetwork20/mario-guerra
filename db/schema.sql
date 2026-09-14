@@ -272,3 +272,18 @@ CREATE TABLE IF NOT EXISTS push_suscripciones (
   ultimo_uso  TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_push_usuario ON push_suscripciones(usuario_id);
+
+-- Lo que el doctor o la asistente ven mal y quieren que se corrija. Va con foto
+-- porque describir un problema de pantalla por escrito es más difícil que
+-- señalarlo.
+CREATE TABLE IF NOT EXISTS correcciones (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  texto       TEXT NOT NULL,
+  archivo     TEXT,
+  pantalla    TEXT,
+  autor_id    INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  estado      TEXT NOT NULL DEFAULT 'abierta' CHECK (estado IN ('abierta','resuelta')),
+  created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+  resuelta_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_correcciones_estado ON correcciones(estado, id DESC);

@@ -381,6 +381,18 @@ src/app/panel/*            panel interno
    así que el formulario tiene que aceptarlos — antes rechazaba un `+57` colombiano.
 8. **Rate limiting** en reserva (8/hora por IP), gestión de cita (30/10 min) y login (10/10 min).
 
+## Correcciones
+
+Un botón fijo en todo el panel —abajo a la derecha, *Reportar algo*— para que el doctor o la
+recepción anoten lo que ven mal, con captura opcional. Cae en `/panel/correcciones`, suena en
+la campanita y sale como aviso al teléfono de quien los tenga activados.
+
+- Guarda **en qué pantalla estaba** quien reporta. Casi siempre el problema es de esa página,
+  y preguntarlo después cuesta más que registrarlo en el momento.
+- La captura se sirve por `/api/correccion/[id]`, **solo con sesión**: una captura del panel
+  puede tener datos de pacientes a la vista.
+- Se marcan resueltas y se pueden reabrir. Las resueltas quedan abajo, atenuadas, no se borran.
+
 ## El cobro de la consulta
 
 La consulta se paga **al reservar**. Es un paso más del asistente, entre los datos y el

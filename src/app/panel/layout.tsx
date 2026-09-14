@@ -5,6 +5,8 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { noLeidas, ultimas } from '@/lib/notificaciones';
 import { Campanita } from '@/componentes/Campanita';
+import { BotonCorreccion } from '@/componentes/BotonCorreccion';
+import { enviarCorreccion } from '@/acciones/correcciones';
 import { SelectorAncho } from '@/componentes/SelectorAncho';
 import { NavPanel } from '@/componentes/NavPanel';
 import { salir } from '@/acciones/sesion';
@@ -26,6 +28,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: '/panel/seguimiento', texto: 'Seguimiento', ver: puede(usuario, 'seguimiento') },
     { href: '/panel/mensajeria', texto: 'Mensajería', ver: puede(usuario, 'mensajeria') },
     { href: '/panel/config', texto: 'Configuración', ver: puede(usuario, 'configuracion') },
+    { href: '/panel/correcciones', texto: 'Correcciones', ver: true },
   ].filter((e) => e.ver);
 
   return (
@@ -61,6 +64,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       </header>
 
       <main className={`${claseAncho} py-6`}>{children}</main>
+      <BotonCorreccion enviar={enviarCorreccion} />
     </div>
   );
 }

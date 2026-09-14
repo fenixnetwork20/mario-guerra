@@ -4,7 +4,8 @@ import { enviarPush } from './push';
 
 export type TipoNotif =
   | 'reserva_nueva' | 'sin_confirmar' | 'auto_cancelacion' | 'bloqueo'
-  | 'cancelo_paciente' | 'cuota_vencida' | 'reprogramacion' | 'atencion_humana';
+  | 'cancelo_paciente' | 'cuota_vencida' | 'reprogramacion' | 'atencion_humana'
+  | 'correccion';
 
 const TITULOS: Record<TipoNotif, string> = {
   reserva_nueva: 'Nueva reserva',
@@ -15,6 +16,7 @@ const TITULOS: Record<TipoNotif, string> = {
   cuota_vencida: 'Cuota vencida',
   reprogramacion: 'Cita reprogramada',
   atencion_humana: 'Un paciente necesita atención',
+  correccion: 'Piden una corrección',
 };
 
 export function notificar(tipo: TipoNotif, mensaje: string, enlace?: string) {
