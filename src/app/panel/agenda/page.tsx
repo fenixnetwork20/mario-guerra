@@ -9,7 +9,8 @@ import {
 import { Seccion, Estado, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
 import { PanelAgenda } from '@/componentes/PanelAgenda';
-import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel } from '@/acciones/agenda';
+import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo } from '@/acciones/agenda';
+import { FilaBloqueo } from '@/componentes/FilaBloqueo';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,9 +122,12 @@ async function VistaDia({ fecha }: { fecha: string }) {
           {bloqueos.length === 0 && <Vacio>Sin bloqueos.</Vacio>}
           <ul className="space-y-2 text-[14px]">
             {bloqueos.map((b) => (
-              <li key={b.id} className="flex items-center justify-between gap-3">
-                <span>{soloHora(b.inicio)} – {soloHora(b.fin)}{b.motivo ? ` · ${b.motivo}` : ''}</span>
-              </li>
+              <FilaBloqueo
+                key={b.id}
+                bloqueo={{ id: b.id, inicio: soloHora(b.inicio), fin: soloHora(b.fin), motivo: b.motivo ?? '' }}
+                editar={editarBloqueo}
+                eliminar={eliminarBloqueo}
+              />
             ))}
           </ul>
         </Seccion>

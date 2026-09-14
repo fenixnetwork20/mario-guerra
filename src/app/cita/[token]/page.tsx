@@ -57,6 +57,7 @@ export default async function PaginaCita({
               <Dato titulo="WhatsApp" valor={cita.whatsapp} />
               <Dato titulo="Modalidad" valor={cita.modalidad ?? '—'} />
               <Dato titulo="Procedimiento de interés" valor={cita.procedimiento_interes ?? '—'} />
+              <Dato titulo="Puntualidad" valor="Si pasan 5 minutos de la hora, la valoración se cancela." />
               {cita.modalidad === 'presencial' && direccion && <Dato titulo="Dirección" valor={direccion} />}
             </dl>
           </Aparece>

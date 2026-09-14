@@ -23,6 +23,8 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
 
   const numeros = [
     'duracion_cita', 'precio_consulta_presencial', 'precio_consulta_online',
+    'pm_banco', 'pm_telefono', 'pm_cedula', 'pm_titular',
+    'binance_usuario', 'zelle_correo', 'zelle_titular',
     'autocancel_offset_horas', 'dias_max_reserva', 'horas_min_anticipacion',
   ];
   for (const n of numeros) {

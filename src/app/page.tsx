@@ -52,6 +52,8 @@ const CATEGORIAS: Categoria[] = [
       { nombre: 'Minidermo', ...GENERAL },
       { nombre: 'Lipo de papada', ...GENERAL },
       { nombre: 'Corrección de cicatrices', ...GENERAL },
+      { nombre: 'Recambio de implantes', ...GENERAL },
+      { nombre: 'Reconstrucción genital', ...GENERAL },
     ],
   },
   {
@@ -59,10 +61,11 @@ const CATEGORIAS: Categoria[] = [
     nombre: 'Mamas',
     descripcion: 'Aumento, levantamiento y reducción.',
     procedimientos: [
-      { nombre: 'Aumento mamario', ...GENERAL },
+      { nombre: 'Aumento mamario simple', ...GENERAL },
       { nombre: 'Mastopexia con implantes', recuperacion: '4 semanas', anestesia: 'General' },
       { nombre: 'Mastopexia sin implantes', ...GENERAL },
       { nombre: 'Reducción mamaria', ...GENERAL },
+      { nombre: 'Reconstrucción de mamas', ...GENERAL },
     ],
   },
   {
@@ -72,7 +75,8 @@ const CATEGORIAS: Categoria[] = [
     procedimientos: [
       { nombre: 'Blefaroplastia superior', ...GENERAL },
       { nombre: 'Blefaroplastia inferior', ...GENERAL },
-      { nombre: 'Armonización facial', ...SIN_QUIROFANO },
+      { nombre: 'Otoplastia', ...GENERAL },
+      { nombre: 'Reconstrucción del pabellón auricular', ...GENERAL },
     ],
   },
   {
@@ -80,6 +84,7 @@ const CATEGORIAS: Categoria[] = [
     nombre: 'No quirúrgico',
     descripcion: 'Sin quirófano y sin reposo.',
     procedimientos: [
+      { nombre: 'Armonización facial', ...SIN_QUIROFANO },
       { nombre: 'Toxina botulínica (Botox)', ...SIN_QUIROFANO },
       { nombre: 'Ácido hialurónico', ...SIN_QUIROFANO },
       { nombre: 'Aumento de labios', ...SIN_QUIROFANO },
@@ -97,9 +102,6 @@ export default function Landing() {
   const whatsapp = `https://wa.me/${normalizarTelefono(telefono)}?text=${encodeURIComponent(
     'Hola, quisiera información sobre una consulta de valoración.'
   )}`;
-  const mapa = `https://www.google.com/maps?q=${encodeURIComponent(
-    direccion || 'Av. 3H entre calle 70 y 71, Bella Vista, Maracaibo, Zulia'
-  )}&output=embed`;
 
   return (
     <div className="bg-[var(--color-papel)] pb-16 lg:pb-0">
@@ -159,18 +161,14 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Resultados y quirófano ──────────────────────────────────────
-          Era el hueco más blanco de la página: un titular y una tarjeta suelta
-          en medio de una pantalla vacía. Ahora es un módulo oscuro y las fotos
-          de quirófano hacen el trabajo que hacía el vacío. */}
-      <section id="resultados" className="seccion modulo-oscuro">
+      {/* ── El doctor operando ──────────────────────────────────────────
+          Estas fotos son del doctor, no de resultados de pacientes. Estaban
+          debajo del titular de resultados y eso confundía las dos cosas. */}
+      <section className="seccion modulo-oscuro">
         <div className="contenedor">
-          <EncabezadoSeccion
-            sobreOscuro
-            kicker="Resultados"
-            titulo="Resultados reales de pacientes reales"
-          >
-            Los casos se publican en Instagram, siempre con la autorización de cada paciente.
+          <EncabezadoSeccion sobreOscuro kicker="En quirófano" titulo="Así trabaja el doctor">
+            Cada cirugía con su equipo completo y el mismo criterio: técnica, seguridad y un
+            resultado que se vea natural.
           </EncabezadoSeccion>
 
           <Aparece retraso={90} className="mt-12 grid sm:grid-cols-3 gap-3 sm:gap-4">
@@ -193,26 +191,32 @@ export default function Landing() {
               </div>
             ))}
           </Aparece>
+        </div>
+      </section>
 
-          <Aparece retraso={140} className="mt-4 grid lg:grid-cols-[minmax(0,1fr)_auto] gap-6 lg:gap-10 items-center rounded-lg border border-white/12 bg-white/[.05] p-6 sm:p-8">
+      {/* ── Resultados ──────────────────────────────────────────────────
+          El titular es el que pidió el cliente. Las fotos de pacientes están
+          por llegar; mientras tanto la sección remite a Instagram. */}
+      <section id="resultados" className="seccion">
+        <div className="contenedor">
+          <EncabezadoSeccion kicker="Resultados" titulo="Resultados reales de pacientes reales">
+            Los casos se publican en Instagram, siempre con la autorización de cada paciente.
+          </EncabezadoSeccion>
+
+          <Aparece retraso={140} className="mt-10 grid lg:grid-cols-[minmax(0,1fr)_auto] gap-6 lg:gap-10 items-center tarjeta p-6 sm:p-8">
             <div>
-              <p className="marca text-[9.5px] text-[var(--color-cobre-luz)]">Instagram</p>
-              <p className="titular-menor text-white mt-3">{REDES[0].usuario}</p>
-              <p className="text-[14px] text-[var(--color-nude)]/70 mt-3 leading-relaxed">
+              <p className="marca text-[9.5px] text-[var(--color-cobre)]">Instagram</p>
+              <p className="titular-menor mt-3">{REDES[0].usuario}</p>
+              <p className="text-[14px] text-[var(--color-tinta-2)] mt-3 leading-relaxed">
                 Antes y después, videos y casos del día a día del consultorio.
               </p>
             </div>
-            <a
-              href={REDES[0].url}
-              target="_blank"
-              rel="noreferrer"
-              className="btn py-3 px-6 bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]"
-            >
+            <a href={REDES[0].url} target="_blank" rel="noreferrer" className="btn btn-principal py-3 px-6">
               Ver el perfil
             </a>
           </Aparece>
 
-          <p className="text-[12.5px] text-[var(--color-nude)]/50 mt-6 max-w-xl leading-relaxed">
+          <p className="text-[12.5px] text-[var(--color-tinta-3)] mt-6 max-w-xl leading-relaxed">
             Los resultados varían en cada paciente.
           </p>
         </div>
@@ -228,7 +232,7 @@ export default function Landing() {
             <p className="marca text-[9.5px] text-[var(--color-cobre-luz)]">Respaldo</p>
             <div className="grid sm:grid-cols-3 gap-8 mt-8">
               {[
-                ['+10 años', 'de experiencia en cirugía plástica y reconstructiva'],
+                ['+8 años', 'de experiencia en cirugía plástica y reconstructiva'],
                 ['+500', 'procedimientos realizados con éxito'],
                 ['Certificado', 'con certificaciones profesionales vigentes'],
               ].map(([cifra, texto]) => (
@@ -238,9 +242,6 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-            <p className="text-[13.5px] text-[var(--color-nude)]/70 mt-10 max-w-xl leading-relaxed">
-              Las cirugías se realizan en el Centro de Especialidades Quirúrgicas del Sur.
-            </p>
           </Aparece>
         </div>
       </section>
@@ -260,8 +261,7 @@ export default function Landing() {
       <section className="seccion">
         <div className="contenedor grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <Aparece className="lg:order-2">
-            <p className="marca text-[9.5px] text-[var(--color-cobre)]">La consulta</p>
-            <h2 className="titular-menor mt-4">Tu consulta de valoración</h2>
+            <h2 className="titular-menor">Tu consulta de valoración</h2>
             <span className="regla-cobre mt-6" />
             <p className="entradilla text-[var(--color-tinta-2)] mt-6">
               Disponible presencial u online. Esto es lo que pasa, en orden:
@@ -294,8 +294,8 @@ export default function Landing() {
           <Aparece retraso={110} className="lg:order-1">
             <div className="zoom-suave relative aspect-[4/5] rounded-lg">
               <Image
-                src={ruta('/marca/consulta-implante.jpg')}
-                alt="El Dr. Guerra explicando un procedimiento en consulta"
+                src={ruta('/marca/consulta-escritorio.jpg')}
+                alt="El Dr. Guerra en su consultorio"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-[50%_35%]"
@@ -356,17 +356,7 @@ export default function Landing() {
               </ul>
             </Aparece>
 
-            <Aparece retraso={110}>
-              <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-[380px]">
-                <iframe
-                  src={mapa}
-                  title="Ubicación del consultorio"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="w-full h-full border-0"
-                />
-              </div>
-            </Aparece>
+            
           </div>
         </div>
       </section>

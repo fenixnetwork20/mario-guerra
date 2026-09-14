@@ -140,6 +140,30 @@ export async function crearBloqueo(_prev: Respuesta | null, datos: FormData): Pr
   };
 }
 
+/**
+ * Cambia la hora o el motivo de un bloqueo que ya existe. No reabre citas: si
+ * al crearlo se cancelaron citas, esas ya se avisaron y no vuelven solas —
+ * acortar el bloqueo libera el cupo, no restaura a quien estaba dentro.
+ */
+export async function editarBloqueo(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('agenda');
+  const id = Number(datos.get('bloqueo_id'));
+  const b = db.prepare('SELECT inicio FROM bloqueos WHERE id = ?').get(id) as { inicio: string } | undefined;
+  if (!b) return { ok: false, error: 'Ese bloqueo ya no existe.' };
+
+  const fecha = soloFecha(b.inicio);
+  const inicio = `${fecha} ${datos.get('hora_inicio')}`;
+  const fin = `${fecha} ${datos.get('hora_fin')}`;
+  const e = primerError(validarMomento(inicio), validarMomento(fin));
+  if (e) return { ok: false, error: e };
+  if (fin <= inicio) return { ok: false, error: 'La hora final debe ser posterior a la inicial.' };
+
+  db.prepare('UPDATE bloqueos SET inicio = ?, fin = ?, motivo = ? WHERE id = ?')
+    .run(inicio, fin, String(datos.get('motivo') || ''), id);
+  refrescar(fecha);
+  return { ok: true, aviso: 'Bloqueo actualizado.' };
+}
+
 export async function eliminarBloqueo(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
   await exigirPermiso('agenda');
   const id = Number(datos.get('bloqueo_id'));

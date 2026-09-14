@@ -16,6 +16,17 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
   const [abierta, setAbierta] = useState<string | null>(categorias[0]?.clave ?? null);
   const activa = categorias.find((c) => c.clave === abierta);
 
+  /** En el teléfono el detalle se abre debajo del pliegue: si no se lleva la
+   *  vista hasta ahí, parece que tocar la tarjeta no hizo nada. */
+  function abrir(clave: string, cerrando: boolean) {
+    setAbierta(cerrando ? null : clave);
+    if (cerrando) return;
+    requestAnimationFrame(() => {
+      const d = document.getElementById('detalle-procedimientos');
+      if (d && window.innerWidth < 640) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
   return (
     <div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -24,7 +35,7 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
           return (
             <Aparece key={c.clave} retraso={i * 70}>
               <button
-                onClick={() => setAbierta(seleccionada ? null : c.clave)}
+                onClick={() => abrir(c.clave, seleccionada)}
                 aria-expanded={seleccionada}
                 aria-controls="detalle-procedimientos"
                 className={`w-full text-left h-full rounded-lg border p-5 transition-colors ${
@@ -38,12 +49,26 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
                     seleccionada ? 'bg-[var(--color-cobre-luz)] w-14' : 'bg-[var(--color-linea)]'
                   }`}
                 />
-                <span className="titulo text-[17px] block">{c.nombre}</span>
+                <span className="flex items-center justify-between gap-3">
+                  <span className="titulo text-[17px] block">{c.nombre}</span>
+                  {/* La flecha gira al abrir: en el teléfono es lo único que
+                      deja claro que la tarjeta se despliega y no navega. */}
+                  <span
+                    aria-hidden
+                    className={`shrink-0 grid place-items-center h-7 w-7 rounded-full border text-[11px] transition-transform duration-200 ${
+                      seleccionada
+                        ? 'rotate-180 border-[var(--color-cobre-luz)] bg-[var(--color-cobre-fondo)] text-[var(--color-cobre)]'
+                        : 'border-[var(--color-linea)] text-[var(--color-tinta-3)]'
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </span>
                 <span className="text-[13px] text-[var(--color-tinta-3)] block mt-1.5 leading-relaxed">
                   {c.descripcion}
                 </span>
                 <span className="marca text-[9.5px] text-[var(--color-cobre)] block mt-4">
-                  {seleccionada ? 'Cerrar' : `Ver ${c.procedimientos.length}`}
+                  {seleccionada ? 'Cerrar' : `Toca para ver los ${c.procedimientos.length}`}
                 </span>
               </button>
             </Aparece>

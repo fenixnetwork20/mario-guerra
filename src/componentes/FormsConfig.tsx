@@ -104,6 +104,24 @@ export function FormAjustes({ accion, cfg }: { accion: Accion; cfg: Record<strin
       </div>
 
       <div>
+        <p className="etiqueta">Datos para cobrar la consulta</p>
+        <p className="text-[12.5px] text-[var(--color-tinta-3)] mt-1.5 leading-relaxed">
+          Es lo que verá el paciente al reservar, para pagar y subir su comprobante.
+          Los códigos QR se suben más abajo.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3 mt-3">
+          {campo('pm_banco', 'Pago móvil · banco')}
+          {campo('pm_telefono', 'Pago móvil · teléfono')}
+          {campo('pm_cedula', 'Pago móvil · cédula o RIF')}
+          {campo('pm_titular', 'Pago móvil · titular')}
+          {campo('binance_usuario', 'Binance · usuario o correo')}
+          <div />
+          {campo('zelle_correo', 'Zelle · correo')}
+          {campo('zelle_titular', 'Zelle · titular')}
+        </div>
+      </div>
+
+      <div>
         <p className="etiqueta">Recordatorios y auto-cancelación (hora de Venezuela)</p>
         <div className="grid sm:grid-cols-3 gap-3 mt-2">
           {campo('r1_hora_inicio', 'R1 · desde (día antes)', 'time')}

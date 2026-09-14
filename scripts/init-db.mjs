@@ -18,7 +18,7 @@ const ponerConfig = db.prepare('INSERT INTO config (clave, valor) VALUES (?, ?) 
 const CONFIG = {
   duracion_cita: '60',
   precio_consulta_presencial: '50',
-  precio_consulta_online: '30',
+  precio_consulta_online: '40',
   // Ventana del recordatorio 1 (un día antes)
   r1_hora_inicio: '08:00',
   r1_hora_fin: '17:00',
@@ -40,6 +40,11 @@ const CONFIG = {
   whatsapp_emergencias: '04246502649',
   // Mensajería
   mensajeria_activa: '0',
+  // Datos de cobro de la consulta. Se cargan desde Configuración; el QR se sube
+  // aparte y aquí queda el nombre del archivo.
+  pm_banco: '', pm_telefono: '', pm_cedula: '', pm_titular: '', pm_qr: '',
+  binance_usuario: '', binance_qr: '',
+  zelle_correo: '', zelle_titular: '',
 };
 for (const [k, v] of Object.entries(CONFIG)) ponerConfig.run(k, v);
 

@@ -380,7 +380,11 @@ function Agendar({
               disabled={enviando} onClick={reservar}>
               {enviando ? 'Guardando…' : reprogramando ? 'Confirmar nueva fecha' : 'Reservar mi cita'}
             </button>
-            <p className="text-[12.5px] text-[var(--color-nude)]/55 mt-4 leading-relaxed">
+            <p className="text-[12.5px] text-[var(--color-nude)]/70 mt-4 leading-relaxed">
+              <strong className="text-[var(--color-cobre-luz)]">Llega puntual.</strong> Si pasan 5 minutos
+              de la hora, la valoración se cancela.
+            </p>
+            <p className="text-[12.5px] text-[var(--color-nude)]/55 mt-2 leading-relaxed">
               Al reservar aceptas que el consultorio use tus datos para gestionar tu cita.
               Un día antes te llega un recordatorio por WhatsApp: confírmalo para que no se libere tu cupo.
             </p>
