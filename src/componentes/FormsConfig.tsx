@@ -116,7 +116,7 @@ export function FormAjustes({ accion, cfg }: { accion: Accion; cfg: Record<strin
           {campo('pm_titular', 'Pago móvil · titular')}
           {campo('binance_usuario', 'Binance · usuario o correo')}
           <div />
-          {campo('zelle_correo', 'Zelle · correo')}
+          {campo('zelle_correo', 'Zelle · correo o teléfono')}
           {campo('zelle_titular', 'Zelle · titular')}
         </div>
       </div>

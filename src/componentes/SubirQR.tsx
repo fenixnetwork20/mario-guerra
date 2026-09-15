@@ -37,8 +37,12 @@ export function SubirQR({
 
       <FormAccion accion={subir}>
         <input type="hidden" name="cual" value={cual} />
-        <input type="file" name="archivo" accept="image/png,image/jpeg,image/webp"
-          className="campo text-[13px] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-acento)] file:px-3 file:py-1.5 file:text-white file:text-[12.5px]" />
+        {/* Igual que en la reserva: el input nativo habla inglés y no se traduce. */}
+        <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-[var(--color-linea)] bg-[var(--color-tarjeta)] px-3 py-2">
+          <span className="btn btn-borde py-1 px-3 text-[12.5px] shrink-0">Escoger imagen</span>
+          <span className="text-[12.5px] text-[var(--color-tinta-3)]">PNG, JPG o WEBP</span>
+          <input type="file" name="archivo" accept="image/png,image/jpeg,image/webp" className="sr-only" />
+        </label>
         <Boton className="mt-2 py-1.5 px-4 text-[13px]">{cargado ? 'Reemplazar' : 'Subir'}</Boton>
       </FormAccion>
     </div>

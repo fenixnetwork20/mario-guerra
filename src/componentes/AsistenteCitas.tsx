@@ -415,14 +415,14 @@ function Agendar({
                 {cobro.pagoMovil && (
                   <DatosPago titulo="Pago móvil" qr={cobro.pagoMovil.qr} filas={[
                     ['Banco', cobro.pagoMovil.banco], ['Teléfono', cobro.pagoMovil.telefono],
-                    ['Cédula o RIF', cobro.pagoMovil.cedula], ['Titular', cobro.pagoMovil.titular],
+                    ['Cédula o RIF', cobro.pagoMovil.cedula], ['A nombre de', cobro.pagoMovil.titular],
                   ]} />
                 )}
                 {cobro.binance && (
                   <DatosPago titulo="Binance" qr={cobro.binance.qr} filas={[['Usuario', cobro.binance.usuario]]} />
                 )}
                 {cobro.zelle && (
-                  <DatosPago titulo="Zelle" filas={[['Correo', cobro.zelle.correo], ['Titular', cobro.zelle.titular]]} />
+                  <DatosPago titulo="Zelle" filas={[['Correo o teléfono', cobro.zelle.correo], ['A nombre de', cobro.zelle.titular]]} />
                 )}
                 <label className="block">
                   <span className="text-[13px] font-medium">Referencia del pago (opcional)</span>
@@ -430,19 +430,30 @@ function Agendar({
                     onChange={(e) => setReferencia(e.target.value)} placeholder="Últimos dígitos" />
                 </label>
 
-                <label className="block">
+                <div className="block">
                   <span className="text-[13px] font-medium">Sube tu comprobante</span>
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,application/pdf"
-                    onChange={(e) => setComprobante(e.target.files?.[0] ?? null)}
-                    className="campo-oscuro mt-1 file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-cobre)] file:px-3 file:py-1.5 file:text-white file:text-[13px]"
-                  />
+                  {/* El input de archivo nativo se ve en inglés ("Choose File",
+                      "No file chosen") y no hay forma de traducirlo: se esconde
+                      y se maneja con una etiqueta propia. */}
+                  <label className="mt-1 flex items-center gap-3 cursor-pointer rounded-lg border border-white/16 bg-white/[.07] px-3 py-2.5">
+                    <span className="btn btn-cobre py-1.5 px-3 text-[13px] shrink-0">
+                      {comprobante ? 'Cambiar' : 'Escoger archivo'}
+                    </span>
+                    <span className="text-[13px] text-[var(--color-nude)]/70 truncate">
+                      {comprobante ? comprobante.name : 'Ningún archivo escogido'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,application/pdf"
+                      onChange={(e) => setComprobante(e.target.files?.[0] ?? null)}
+                      className="sr-only"
+                    />
+                  </label>
                   <span className="block text-[12px] text-[var(--color-nude)]/55 mt-1.5">
                     Una foto de la transferencia o el PDF. Sin el comprobante tu cupo queda apartado,
                     pero el consultorio tiene que confirmarlo antes de la cita.
                   </span>
-                </label>
+                </div>
               </div>
             )}
             <button className="btn btn-cobre w-full py-3 text-[15px] mt-5" onClick={() => setPaso(5)}>
