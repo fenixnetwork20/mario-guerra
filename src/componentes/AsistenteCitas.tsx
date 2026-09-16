@@ -28,12 +28,13 @@ type Cobro = {
   pagoMovil: { banco: string; telefono: string; cedula: string; titular: string; qr: string } | null;
   binance: { usuario: string; qr: string } | null;
   zelle: { correo: string; titular: string } | null;
+  efectivo: boolean;
 };
 
 const PASOS_AGENDAR = 6;
 
 /** ¿Hay con qué cobrar? Sin datos cargados, el paso de pago no aporta nada. */
-const hayComoPagar = (c: Cobro | null) => Boolean(c && (c.pagoMovil || c.binance || c.zelle));
+const hayComoPagar = (c: Cobro | null) => Boolean(c && (c.pagoMovil || c.binance || c.zelle || c.efectivo));
 const DIAS_VISIBLES = 12;
 
 /**
@@ -424,6 +425,15 @@ function Agendar({
                 {cobro.zelle && (
                   <DatosPago titulo="Zelle" filas={[['Correo o teléfono', cobro.zelle.correo], ['A nombre de', cobro.zelle.titular]]} />
                 )}
+                {cobro.efectivo && (
+                  <div className="rounded-lg border border-white/12 bg-white/[.05] p-4">
+                    <p className="etiqueta">Efectivo</p>
+                    <p className="text-[14px] text-[var(--color-nude)]/75 mt-2 leading-relaxed">
+                      Si prefieres pagar en efectivo, lo haces en el consultorio el día de tu cita.
+                      Reserva igual y deja el comprobante en blanco.
+                    </p>
+                  </div>
+                )}
                 <label className="block">
                   <span className="text-[13px] font-medium">Referencia del pago (opcional)</span>
                   <input className="campo-oscuro mt-1" value={referencia} inputMode="numeric"
@@ -450,8 +460,9 @@ function Agendar({
                     />
                   </label>
                   <span className="block text-[12px] text-[var(--color-nude)]/55 mt-1.5">
-                    Una foto de la transferencia o el PDF. Sin el comprobante tu cupo queda apartado,
-                    pero el consultorio tiene que confirmarlo antes de la cita.
+                    Una foto de la transferencia o el PDF. Si vas a pagar en efectivo, salta este paso.
+                    Sin comprobante tu cupo queda apartado igual, pero el consultorio tiene que
+                    confirmar el pago antes de la cita.
                   </span>
                 </div>
               </div>

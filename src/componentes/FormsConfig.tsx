@@ -119,6 +119,10 @@ export function FormAjustes({ accion, cfg }: { accion: Accion; cfg: Record<strin
           {campo('zelle_correo', 'Zelle · correo o teléfono')}
           {campo('zelle_titular', 'Zelle · titular')}
         </div>
+        <label className="flex items-center gap-2 text-[13.5px] mt-3">
+          <input type="checkbox" name="efectivo_activo" value="1" defaultChecked={cfg.efectivo_activo === '1'} />
+          Aceptar efectivo: el paciente paga en el consultorio el día de su cita
+        </label>
       </div>
 
       <div>

@@ -48,7 +48,7 @@ export async function tasaDelDia(): Promise<Tasa> {
     // rompe la línea. Se sacan los campos entrecomillados y se toma el último.
     const fila = csv.split('\n')[1] || '';
     const campos = [...fila.matchAll(/"([^"]*)"/g)].map((m) => m[1].trim());
-    const valor = Number(campos[campos.length - 1]?.replace(/\./g, '').replace(',', '.'));
+    const valor = aNumero(campos[campos.length - 1] ?? '');
     if (valor > 0) {
       guardar(valor);
       return { valor, fuente: 'en linea', fecha: new Date().toISOString() };
@@ -59,6 +59,27 @@ export async function tasaDelDia(): Promise<Tasa> {
   if (viejo > 0) return { valor: viejo, fuente: 'guardada', fecha: cfg('tasa_cache_at', '') };
   if (manual > 0) return { valor: manual, fuente: 'manual', fecha: '' };
   return { valor: 0, fuente: 'manual', fecha: '' };
+}
+
+/**
+ * El sheet publica la tasa a veces como "955", a veces como "958.68" y a veces
+ * como "1.234,56". Borrar los puntos a ciegas convirtió 958.68 en 95868 y el
+ * paciente vio un monto cien veces mayor. La regla: manda el ÚLTIMO separador,
+ * que es siempre el decimal; lo que quede antes son miles.
+ */
+export function aNumero(crudo: string): number {
+  const t = crudo.trim().replace(/[^\d.,]/g, '');
+  if (!t) return 0;
+  const coma = t.lastIndexOf(',');
+  const punto = t.lastIndexOf('.');
+  const corte = Math.max(coma, punto);
+  if (corte === -1) return Number(t);
+  const entero = t.slice(0, corte).replace(/[.,]/g, '');
+  const decimal = t.slice(corte + 1);
+  // Tres dígitos después del separador y sin otro separador antes: son miles
+  // ("1.500" son mil quinientos, no uno coma cinco).
+  if (decimal.length === 3 && !/[.,]/.test(t.slice(0, corte))) return Number(entero + decimal);
+  return Number(`${entero}.${decimal}`);
 }
 
 /** 50 USD a 963,9 → "48.195,00 Bs". Sin decimales de más: son bolívares. */

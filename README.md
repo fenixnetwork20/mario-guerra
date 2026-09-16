@@ -401,6 +401,11 @@ resumen, y el flujo no se rompe si algo falta.
 - **El monto sale de `config`** según la modalidad (50 $ presencial, 40 $ online) y se muestra
   también en bolívares, con la tasa del día. Al paciente nunca se le dice de dónde sale esa
   tasa: en pantalla es *"a la tasa del día"*.
+- **La tasa se parsea mirando el ÚLTIMO separador.** El sheet publica a veces `955`, a veces
+  `958.68` y a veces `1.234,56`. Borrar los puntos a ciegas convirtió `958.68` en `95868` y la
+  página llegó a mostrar 4.793.400 Bs por una consulta de 50 $. `aNumero()` en `tasa.ts` trata
+  el último `.` o `,` como decimal, salvo cuando le siguen tres dígitos y no hay otro separador
+  antes (`1.500` son mil quinientos). Cubierto con siete casos.
 - **La tasa** la trae `src/lib/tasa.ts` del mismo sheet central que usan los otros clientes.
   Se cachea hasta las `hh:05` siguientes —que es cuando N8N ya publicó la nueva, con margen— y
   si el sheet no responde se usa el último valor bueno; si tampoco hay, `tasa_manual` de

@@ -38,6 +38,7 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
     if (v !== null) guardarConfig(clave, String(v));
   }
   guardarConfig('mensajeria_activa', datos.get('mensajeria_activa') === '1' ? '1' : '0');
+  guardarConfig('efectivo_activo', datos.get('efectivo_activo') === '1' ? '1' : '0');
 
   revalidatePath('/panel/config');
   revalidatePath('/panel');

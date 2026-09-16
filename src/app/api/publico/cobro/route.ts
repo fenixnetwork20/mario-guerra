@@ -30,5 +30,6 @@ export async function GET(req: Request) {
     pagoMovil: pagoMovil.telefono || pagoMovil.qr ? pagoMovil : null,
     binance: binance.usuario || binance.qr ? binance : null,
     zelle: zelle.correo ? zelle : null,
+    efectivo: cfg('efectivo_activo', '0') === '1',
   });
 }
