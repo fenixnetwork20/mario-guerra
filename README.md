@@ -449,6 +449,22 @@ panel esté cerrado.
 - En iPhone hay que **agregar la página a la pantalla de inicio** y abrirla desde ahí: Safari no
   admite push en una pestaña normal. Por eso está el `manifest.json`.
 
+### Encender o apagar el bot
+
+Son **dos cosas distintas** y hacen falta las dos:
+
+1. El workflow `wEFvtdL687EqKQZi` activo en N8N.
+2. El **agent bot** asignado al inbox en odichat: `POST /api/v1/accounts/11/inboxes/85/set_agent_bot`
+   con `{"agent_bot": 11}`. Sin esto, Chatwoot no llama al webhook y el workflow activo no
+   hace absolutamente nada. Para apagar el bot en un inbox se manda `{"agent_bot": null}`.
+
+El bot atiende **solo el inbox 85 (WhatsApp)**. El 64 (Instagram) quedó sin bot desde que las
+campañas apuntan al WhatsApp.
+
+> Los recordatorios automáticos son un interruptor aparte (`mensajeria_activa`, en
+> Configuración). Se puede tener el bot conversando y los recordatorios apagados, que es como
+> está hoy.
+
 ### Cómo avisa el bot
 
 El workflow de N8N, en la rama de `humano`, hace cuatro cosas en orden: asigna la conversación
