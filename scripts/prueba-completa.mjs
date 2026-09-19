@@ -162,8 +162,13 @@ const accion = (tk, acc) => pedir(`${BASE}/api/publico/cita/${tk}`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: acc }),
 });
 {
+  // Confirmar solo se abre desde que pudo salir el primer recordatorio, o sea
+  // el día antes. Una cita lejana TIENE que rechazar la confirmación: si un día
+  // esto devuelve 200, es que se rompió esa regla y el R2 y la auto-cancelación
+  // dejaron de servir.
   const { codigo, texto } = await accion(token, 'confirmar');
-  check('confirmar funciona', codigo === 200 && json(texto).estado === 'confirmada', texto.slice(0, 80));
+  check('una cita lejana todavía no se puede confirmar',
+    codigo === 409 && /Todav[íi]a no hace falta confirmar/.test(texto), `código ${codigo}`);
 }
 {
   const { codigo } = await accion(token, 'accion_inventada');
