@@ -7,7 +7,7 @@ import { cuotasVencidas, resumenMensual, mesActual, usd } from '@/lib/dinero';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
 import { Seccion, Estado, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
-import { cambiarEstadoCita, cancelarDesdePanel } from '@/acciones/agenda';
+import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel } from '@/acciones/agenda';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,8 +74,10 @@ export default async function Hoy() {
                       <AccionesRapidasCita
                         citaId={c.id}
                         estado={c.estado}
+                        fechaActual={c.fecha_hora}
                         cambiarEstado={cambiarEstadoCita}
                         cancelar={cancelarDesdePanel}
+                        reprogramar={reprogramarDesdePanel}
                       />
                     </td>
                   </tr>

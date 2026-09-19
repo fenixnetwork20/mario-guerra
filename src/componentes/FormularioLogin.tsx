@@ -16,6 +16,12 @@ export function FormularioLogin() {
         <span className="text-[13px] font-medium">Contraseña</span>
         <input name="clave" type="password" className="campo mt-1" autoComplete="current-password" required />
       </label>
+      {/* Marcada, la sesión dura dos meses en este aparato. Por defecto viene
+          marcada: es el consultorio entrando desde su propia computadora. */}
+      <label className="flex items-center gap-2 text-[13px] text-[var(--color-tinta-2)]">
+        <input type="checkbox" name="recordar" value="1" defaultChecked />
+        Mantener la sesión abierta en este equipo
+      </label>
       {error && (
         <p className="text-[13px] text-[var(--color-alerta)]">{error}</p>
       )}

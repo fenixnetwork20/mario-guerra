@@ -7,7 +7,12 @@ import { db } from './db';
 import type { Rol, Usuario } from './tipos';
 
 const COOKIE = 'mg_sesion';
+// Sin marcar "mantener la sesión abierta", la sesión dura una semana. Marcada,
+// dos meses: el consultorio entra desde los mismos dos aparatos todos los días
+// y volver a escribir la clave cada semana termina en una clave fácil pegada
+// en un papel al lado de la computadora.
 const DIAS_SESION = 7;
+const DIAS_SESION_LARGA = 60;
 
 function secreto(): string {
   const s = process.env.SESSION_SECRET;
@@ -21,8 +26,8 @@ function firmar(payload: string): string {
   return crypto.createHmac('sha256', secreto()).update(payload).digest('base64url');
 }
 
-function crearToken(uid: number): string {
-  const exp = Date.now() + DIAS_SESION * 86_400_000;
+function crearToken(uid: number, dias: number): string {
+  const exp = Date.now() + dias * 86_400_000;
   const payload = Buffer.from(JSON.stringify({ uid, exp })).toString('base64url');
   return `${payload}.${firmar(payload)}`;
 }
@@ -43,19 +48,20 @@ function leerToken(token: string): { uid: number } | null {
   }
 }
 
-export async function iniciarSesion(email: string, clave: string): Promise<Usuario | null> {
+export async function iniciarSesion(email: string, clave: string, recordar = false): Promise<Usuario | null> {
   const fila = db
     .prepare('SELECT * FROM usuarios WHERE email = ? AND activo = 1')
     .get(email.trim().toLowerCase()) as (Usuario & { password_hash: string }) | undefined;
   if (!fila || !bcrypt.compareSync(clave, fila.password_hash)) return null;
 
+  const dias = recordar ? DIAS_SESION_LARGA : DIAS_SESION;
   const jar = await cookies();
-  jar.set(COOKIE, crearToken(fila.id), {
+  jar.set(COOKIE, crearToken(fila.id, dias), {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: DIAS_SESION * 86_400,
+    maxAge: dias * 86_400,
   });
   const { password_hash: _, ...usuario } = fila;
   return usuario;

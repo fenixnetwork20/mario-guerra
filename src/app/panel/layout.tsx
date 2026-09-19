@@ -6,6 +6,7 @@ import { puede } from '@/lib/permisos';
 import { noLeidas, ultimas } from '@/lib/notificaciones';
 import { Campanita } from '@/componentes/Campanita';
 import { BotonCorreccion } from '@/componentes/BotonCorreccion';
+import { AyudaPanel } from '@/componentes/AyudaPanel';
 import { enviarCorreccion } from '@/acciones/correcciones';
 import { SelectorAncho } from '@/componentes/SelectorAncho';
 import { NavPanel } from '@/componentes/NavPanel';
@@ -64,6 +65,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       </header>
 
       <main className={`${claseAncho} py-6`}>{children}</main>
+      <AyudaPanel />
       <BotonCorreccion enviar={enviarCorreccion} />
     </div>
   );

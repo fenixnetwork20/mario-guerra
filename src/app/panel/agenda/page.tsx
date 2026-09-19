@@ -9,7 +9,7 @@ import {
 import { Seccion, Estado, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
 import { PanelAgenda } from '@/componentes/PanelAgenda';
-import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo, verificarPago } from '@/acciones/agenda';
+import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo, verificarPago, reprogramarDesdePanel } from '@/acciones/agenda';
 import { FilaBloqueo } from '@/componentes/FilaBloqueo';
 import { CeldaPago } from '@/componentes/CeldaPago';
 
@@ -119,8 +119,9 @@ async function VistaDia({ fecha }: { fecha: string }) {
                     </td>
                     <td>
                       <AccionesRapidasCita
-                        citaId={c.id} estado={c.estado}
+                        citaId={c.id} estado={c.estado} fechaActual={c.fecha_hora}
                         cambiarEstado={cambiarEstadoCita} cancelar={cancelarDesdePanel}
+                        reprogramar={reprogramarDesdePanel}
                       />
                     </td>
                   </tr>

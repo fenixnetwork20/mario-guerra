@@ -14,7 +14,7 @@ export async function entrar(_prev: string | null, datos: FormData): Promise<str
     return 'Demasiados intentos. Espera unos minutos.';
   }
 
-  const u = await iniciarSesion(email, clave);
+  const u = await iniciarSesion(email, clave, datos.get('recordar') === '1');
   if (!u) return 'Correo o contraseña incorrectos.';
   redirect('/panel');
 }

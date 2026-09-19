@@ -7,16 +7,44 @@ import type { Respuesta } from '@/componentes/FormAccion';
 type Accion = (prev: Respuesta | null, datos: FormData) => Promise<Respuesta>;
 
 export function AccionesRapidasCita({
-  citaId, estado, cambiarEstado, cancelar,
+  citaId, estado, fechaActual, cambiarEstado, cancelar, reprogramar,
 }: {
   citaId: number;
   estado: string;
+  /** 'YYYY-MM-DD HH:MM' — para abrir el formulario en su fecha y hora. */
+  fechaActual: string;
   cambiarEstado: Accion;
   cancelar: Accion;
+  reprogramar: Accion;
 }) {
   const [modal, setModal] = useState(false);
+  const [moviendo, setMoviendo] = useState(false);
   const activa = estado === 'reservada' || estado === 'confirmada';
   if (!activa) return null;
+
+  if (moviendo) {
+    return (
+      <FormAccion accion={reprogramar} onOk={() => setMoviendo(false)} className="min-w-[15rem]">
+        <input type="hidden" name="cita_id" value={citaId} />
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="block">
+            <span className="text-[11.5px] text-[var(--color-tinta-3)]">Nueva fecha</span>
+            <input name="fecha" type="date" defaultValue={fechaActual.slice(0, 10)} className="campo mt-1 w-[9.5rem]" />
+          </label>
+          <label className="block">
+            <span className="text-[11.5px] text-[var(--color-tinta-3)]">Hora</span>
+            <input name="hora" type="time" defaultValue={fechaActual.slice(11, 16)} className="campo mt-1 w-[7rem]" />
+          </label>
+        </div>
+        <div className="flex gap-2 mt-2">
+          <Boton className="h-8 px-3 text-[12.5px]">Mover la cita</Boton>
+          <button type="button" className="btn btn-borde h-8 px-3 text-[12.5px]" onClick={() => setMoviendo(false)}>
+            Cancelar
+          </button>
+        </div>
+      </FormAccion>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -37,6 +65,9 @@ export function AccionesRapidasCita({
         <input type="hidden" name="estado" value="no_asistio" />
         <Boton variante="borde" className="h-8 px-2.5 text-[12.5px]">No asistió</Boton>
       </FormAccion>
+      <button type="button" className="btn btn-borde h-8 px-2.5 text-[12.5px]" onClick={() => setMoviendo(true)}>
+        Reprogramar
+      </button>
       <button className="btn btn-peligro h-8 px-2.5 text-[12.5px]" onClick={() => setModal(true)}>
         Cancelar
       </button>
