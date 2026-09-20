@@ -45,6 +45,28 @@ export function confirmacionAbierta(fechaHora: string, ahora = ahoraVET()): bool
   return ahora >= momentos(fechaHora).r1Desde;
 }
 
+/**
+ * Si ya le pedimos que confirme —el recordatorio automático o uno que la
+ * asistente mandó a mano antes de tiempo—, puede confirmar aunque la ventana
+ * por fecha no haya abierto. Pedirle algo y después no dejárselo hacer deja al
+ * paciente sin salida y con la impresión de que el sistema está roto.
+ */
+export function confirmacionPedida(citaId: number): boolean {
+  const fila = db.prepare(
+    `SELECT 1 FROM mensajes_enviados
+      WHERE cita_id = ? AND estado = 'enviado'
+        AND plantilla IN ('recordatorio_1', 'recordatorio_2')
+      LIMIT 1`
+  ).get(citaId);
+  return Boolean(fila);
+}
+
+/** La respuesta única a "¿este paciente puede confirmar ahora?". */
+export function puedeConfirmarse(cita: { id: number; fecha_hora: string; estado: string }): boolean {
+  return cita.estado === 'reservada'
+    && (confirmacionAbierta(cita.fecha_hora) || confirmacionPedida(cita.id));
+}
+
 function vars(c: CitaConPaciente) {
   return {
     nombre: c.paciente_nombre,

@@ -7,8 +7,8 @@ self.addEventListener('push', (evento) => {
   evento.waitUntil(
     self.registration.showNotification(d.titulo, {
       body: d.cuerpo,
-      icon: '/marca/monograma.png',
-      badge: '/marca/monograma.png',
+      icon: '/marca/icono-192.png',
+      badge: '/marca/icono-192.png',
       tag: d.enlace,                 // un aviso por pantalla: no se apilan diez iguales
       renotify: true,
       data: { enlace: d.enlace },

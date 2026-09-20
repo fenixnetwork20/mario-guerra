@@ -66,7 +66,7 @@ export function HeroLanding({
           </div>
 
           <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3">
-            {['+10 años de experiencia', '+500 procedimientos', 'Certificado'].map((s) => (
+            {['+8 años de experiencia', '+500 procedimientos', 'Certificado'].map((s) => (
               <li key={s} className="marca text-[9.5px] text-[var(--color-nude)]/65 flex items-center gap-2.5">
                 <span className="h-1 w-1 rounded-full bg-[var(--color-cobre-luz)]" />
                 {s}

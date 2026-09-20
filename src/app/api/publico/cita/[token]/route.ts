@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cancelarCita, citaPorToken, confirmarCita } from '@/lib/citas';
-import { confirmacionAbierta } from '@/lib/recordatorios';
+import { puedeConfirmarse } from '@/lib/recordatorios';
 import { permitido, ipDe } from '@/lib/ratelimit';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 
@@ -25,7 +25,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
       return NextResponse.json({ error: 'Esta cita ya no se puede confirmar.' }, { status: 409 });
     }
     // La confirmación se hace cuando se le recuerda la cita, no al reservarla.
-    if (!confirmacionAbierta(cita.fecha_hora)) {
+    if (!puedeConfirmarse(cita)) {
       return NextResponse.json(
         { error: 'Todavía no hace falta confirmar. Un día antes te escribimos por WhatsApp y ahí confirmas con un toque.' },
         { status: 409 }

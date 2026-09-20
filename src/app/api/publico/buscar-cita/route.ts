@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { permitido, ipDe } from '@/lib/ratelimit';
 import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import { normalizarCedula, validarCedula } from '@/lib/validar';
-import { confirmacionAbierta } from '@/lib/recordatorios';
+import { puedeConfirmarse } from '@/lib/recordatorios';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic';
  */
 const GENERICO = 'No encontramos una cita activa con esa cédula. Revisa el número o escríbenos por WhatsApp.';
 
-type Fila = { token_gestion: string; fecha_hora: string; modalidad: string | null; estado: string };
+type Fila = { id: number; token_gestion: string; fecha_hora: string; modalidad: string | null; estado: string };
 
 export async function POST(req: Request) {
   const ip = ipDe(new Headers(req.headers));
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   }
 
   const filas = db.prepare(
-    `SELECT c.token_gestion, c.fecha_hora, c.modalidad, c.estado
+    `SELECT c.id, c.token_gestion, c.fecha_hora, c.modalidad, c.estado
        FROM citas c JOIN pacientes p ON p.id = c.paciente_id
       WHERE p.cedula = ?
         AND c.tipo = 'valoracion'
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       token: f.token_gestion,
       estado: f.estado,
       modalidad: f.modalidad ?? 'presencial',
-      puedeConfirmar: f.estado === 'reservada' && confirmacionAbierta(f.fecha_hora),
+      puedeConfirmar: puedeConfirmarse(f),
       cuando: `${fechaLarga(soloFecha(f.fecha_hora))} a las ${hora12(soloHora(f.fecha_hora))}`,
     })),
   });

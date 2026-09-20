@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cfg } from '@/lib/db';
 import { citaPorToken } from '@/lib/citas';
-import { confirmacionAbierta } from '@/lib/recordatorios';
+import { puedeConfirmarse } from '@/lib/recordatorios';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import { MarcoPublico, Portada, Divisor } from '@/componentes/MarcoPublico';
 import { Aparece } from '@/componentes/Aparece';
@@ -25,7 +25,7 @@ export default async function PaginaCita({
   const wa = cfg('whatsapp_consultorio', '');
   const esNueva = nueva === '1';
   // Confirmar solo se ofrece cuando toca: desde que pudo salir el recordatorio.
-  const puedeConfirmar = cita.estado === 'reservada' && confirmacionAbierta(cita.fecha_hora);
+  const puedeConfirmar = puedeConfirmarse(cita);
 
   return (
     <MarcoPublico>
