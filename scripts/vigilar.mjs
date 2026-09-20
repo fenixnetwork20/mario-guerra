@@ -214,6 +214,12 @@ const sinPlantilla = db.prepare(
 ).get().c;
 if (sinPlantilla) mal(`${sinPlantilla} plantilla(s) activas sin nombre aprobado de Meta`);
 
+// Plata del paciente que el consultorio todavia tiene en la mano.
+const devoluciones = db.prepare(
+  "SELECT COUNT(*) c, COALESCE(SUM(pago_monto_usd),0) s FROM citas WHERE pago_estado = 'por_devolver'"
+).get();
+if (devoluciones.c) notas.push(`${devoluciones.c} devolución(es) pendientes por ${devoluciones.s} $`);
+
 const porVerificar = db.prepare(
   "SELECT COUNT(*) c FROM citas WHERE pago_estado = 'pendiente' AND fecha_hora >= datetime('now') AND pago_archivo IS NOT NULL"
 ).get().c;

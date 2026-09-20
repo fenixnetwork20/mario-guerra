@@ -10,6 +10,8 @@ const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   pendiente: { texto: 'Por verificar', clase: 'bg-[var(--color-aviso-luz)] text-[var(--color-aviso)]' },
   verificado: { texto: 'Verificado', clase: 'bg-[var(--color-acento-luz)] text-[var(--color-acento)]' },
   rechazado: { texto: 'Rechazado', clase: 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]' },
+  por_devolver: { texto: 'Por devolver', clase: 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]' },
+  devuelto: { texto: 'Devuelto', clase: 'bg-[var(--color-tinta-3)]/15 text-[var(--color-tinta-2)]' },
 };
 
 /** El pago de una consulta: qué mandó el paciente y si recepción ya lo revisó. */
@@ -48,7 +50,7 @@ export function CeldaPago({
             <p className="text-[12.5px] text-[var(--color-alerta)]">Sin comprobante.</p>
           )}
           <div className="flex flex-wrap gap-1.5 pt-1">
-            {(['verificado', 'rechazado', 'pendiente'] as const)
+            {(['verificado', 'rechazado', 'pendiente', 'por_devolver', 'devuelto'] as const)
               .filter((x) => x !== cita.estado)
               .map((x) => (
                 <FormAccion key={x} accion={verificar} onOk={() => setAbierto(false)}>
@@ -56,7 +58,9 @@ export function CeldaPago({
                   <input type="hidden" name="estado" value={x} />
                   <Boton variante={x === 'rechazado' ? 'peligro' : x === 'verificado' ? 'principal' : 'borde'}
                     className="py-1 px-3 text-[12.5px] capitalize">
-                    {x === 'pendiente' ? 'Volver a pendiente' : x}
+                    {x === 'pendiente' ? 'Volver a pendiente'
+                      : x === 'por_devolver' ? 'Por devolver'
+                      : x === 'devuelto' ? 'Marcar devuelto' : x}
                   </Boton>
                 </FormAccion>
               ))}

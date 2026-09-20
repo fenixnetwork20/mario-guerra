@@ -112,5 +112,25 @@ export function cuotasVencidas(hasta = hoyVET()) {
   }>;
 }
 
+/**
+ * Consultas canceladas cuya plata hay que devolver. Se quedan aquí hasta que
+ * alguien registre la devolución: una cita cancelada desaparece de la agenda,
+ * pero el dinero del paciente no puede desaparecer con ella.
+ */
+export function devolucionesPendientes() {
+  return db.prepare(
+    `SELECT c.id, c.fecha_hora, c.pago_monto_usd, c.pago_monto_bs, c.pago_referencia,
+            c.pago_verificado_at, c.motivo_cancelacion,
+            p.id AS paciente_id, p.nombre AS paciente, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE c.pago_estado = 'por_devolver'
+      ORDER BY c.fecha_hora`
+  ).all() as Array<{
+    id: number; fecha_hora: string; pago_monto_usd: number | null; pago_monto_bs: number | null;
+    pago_referencia: string | null; pago_verificado_at: string | null; motivo_cancelacion: string | null;
+    paciente_id: number; paciente: string; whatsapp: string;
+  }>;
+}
+
 export const usd = (n: number) =>
   `$${(Math.round((n + Number.EPSILON) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

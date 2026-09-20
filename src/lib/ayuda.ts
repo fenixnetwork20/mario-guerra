@@ -38,6 +38,12 @@ PACIENTES — La ficha de cada uno.
 - Buscador arriba. Al entrar a un paciente: sus datos, notas y condiciones medicas, historial de citas, cirugias, documentos (examenes) y su cuenta.
 - Cuenta: Cargos (lo que se le cobro), Pagado y Pendiente. La deuda se calcula sola, nunca se escribe a mano.
 - Para registrar un pago: en la ficha del paciente, "Registrar pago".
+- Si se cancela una cita que ya estaba pagada, el sistema la marca "Por devolver" sola y
+  aparece en Hoy, en "Devoluciones pendientes", con el monto y el WhatsApp del paciente.
+  Le devuelves la plata por donde la pago y le das a "Ya se devolvio". Ahi desaparece.
+  Si el pago nunca se habia verificado, la pantalla avisa: confirma que el dinero entro
+  antes de devolverlo.
+- Si el paciente reprograma, el pago se mueve solo a la cita nueva. No se le cobra otra vez.
 - Para subir un examen: "Documentos" dentro de la ficha.
 - Para un plan de cuotas: "Financiamiento" dentro de la ficha del paciente.
 
@@ -93,11 +99,15 @@ function contextoDelDia(): string {
   const pagosPorVerificar = db.prepare(
     `SELECT COUNT(*) c FROM citas WHERE pago_estado = 'pendiente' AND fecha_hora >= ?`
   ).get(`${hoy} 00:00`) as { c: number };
+  const porDevolver = db.prepare(
+    `SELECT COUNT(*) c, COALESCE(SUM(pago_monto_usd), 0) s FROM citas WHERE pago_estado = 'por_devolver'`
+  ).get() as { c: number; s: number };
 
   return [
     `Hoy es ${fechaLarga(hoy)} y son las ${ahoraVET().slice(11)} en Venezuela.`,
     `Citas activas hoy: ${citas.c}. Sin confirmar todavia: ${sinConfirmar.c}.`,
     `Pagos por verificar de citas de hoy en adelante: ${pagosPorVerificar.c}.`,
+    `Devoluciones pendientes: ${porDevolver.c}${porDevolver.c ? ` por ${porDevolver.s}$ en total` : ''}.`,
     `La consulta presencial cuesta ${cfgNum('precio_consulta_presencial', 0)}$ y la online ${cfgNum('precio_consulta_online', 0)}$.`,
     cfg('mensajeria_activa', '0') === '1'
       ? 'Los mensajes automaticos de WhatsApp ESTAN encendidos.'

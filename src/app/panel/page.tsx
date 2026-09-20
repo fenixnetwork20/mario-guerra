@@ -3,11 +3,12 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { citasDelDia, bloqueosEntre } from '@/lib/citas';
 import { revisionesEnFecha, ETIQUETAS } from '@/lib/cirugias';
-import { cuotasVencidas, resumenMensual, mesActual, usd } from '@/lib/dinero';
+import { cuotasVencidas, devolucionesPendientes, resumenMensual, mesActual, usd } from '@/lib/dinero';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
 import { Seccion, Estado, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
-import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel } from '@/acciones/agenda';
+import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel, verificarPago } from '@/acciones/agenda';
+import { FormAccion, Boton } from '@/componentes/FormAccion';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ export default async function Hoy() {
   const bloqueos = bloqueosEntre(hoy, hoy);
   const verCuentas = puede(usuario, 'cuenta_paciente');
   const vencidas = verCuentas ? cuotasVencidas() : [];
+  const devoluciones = puede(usuario, 'pagos') ? devolucionesPendientes() : [];
   const resumen = resumenMensual(mesActual());
 
   return (
@@ -125,6 +127,42 @@ export default async function Hoy() {
         </Seccion>
         )}
       </div>
+
+      {devoluciones.length > 0 && (
+        <Seccion
+          titulo="Devoluciones pendientes"
+          descripcion="Citas canceladas que ya estaban pagadas. Devuélvele la plata al paciente y márcalo aquí."
+        >
+          <ul className="space-y-3">
+            {devoluciones.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
+                <div className="min-w-0">
+                  <EnlacePaciente id={d.paciente_id} nombre={d.paciente} />
+                  <div className="text-[12.5px] text-[var(--color-tinta-3)]">
+                    Cita del {fechaLarga(d.fecha_hora.slice(0, 10))} · {d.whatsapp}
+                    {d.pago_referencia ? ` · ref. ${d.pago_referencia}` : ''}
+                  </div>
+                  {!d.pago_verificado_at && (
+                    <div className="text-[12.5px] text-[var(--color-aviso)]">
+                      Este pago nunca se verificó: confirma que el dinero entró antes de devolverlo.
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-[var(--color-alerta)] tabular-nums">
+                    {d.pago_monto_usd != null ? usd(d.pago_monto_usd) : '—'}
+                  </span>
+                  <FormAccion accion={verificarPago}>
+                    <input type="hidden" name="cita_id" value={d.id} />
+                    <input type="hidden" name="estado" value="devuelto" />
+                    <Boton variante="borde" className="py-1 px-3 text-[12.5px]">Ya se devolvió</Boton>
+                  </FormAccion>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      )}
 
       {bloqueos.length > 0 && (
         <Seccion titulo="Bloqueos de hoy">

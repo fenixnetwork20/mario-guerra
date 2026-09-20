@@ -181,7 +181,7 @@ export async function verificarPago(_prev: Respuesta | null, datos: FormData): P
   await exigirPermiso('pagos');
   const id = Number(datos.get('cita_id'));
   const estado = String(datos.get('estado') || '');
-  if (!['verificado', 'rechazado', 'pendiente'].includes(estado)) {
+  if (!['verificado', 'rechazado', 'pendiente', 'por_devolver', 'devuelto'].includes(estado)) {
     return { ok: false, error: 'Estado de pago no válido.' };
   }
   const c = citaPorId(id);
@@ -194,6 +194,8 @@ export async function verificarPago(_prev: Respuesta | null, datos: FormData): P
     ok: true,
     aviso: estado === 'verificado' ? 'Pago verificado.'
       : estado === 'rechazado' ? 'Pago rechazado. Avísale al paciente por WhatsApp.'
+      : estado === 'por_devolver' ? 'Marcado para devolver.'
+      : estado === 'devuelto' ? 'Devolución registrada.'
       : 'Pago marcado como pendiente.',
   };
 }

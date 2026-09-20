@@ -111,8 +111,14 @@ export async function cancelarCita(id: number, op: OpcionesCancelar): Promise<bo
     });
   }
   if (op.notificarInterno !== false) {
+    // La plata no se queda en el limbo: la cita cancelada queda marcada por
+    // devolver y no se pierde de vista hasta que alguien la devuelva de verdad.
+    if (cita.pago_monto_usd != null && !['devuelto', 'por_devolver'].includes(cita.pago_estado)) {
+      db.prepare("UPDATE citas SET pago_estado = 'por_devolver' WHERE id = ?").run(id);
+    }
+
     const traiaPago = cita.pago_monto_usd != null
-      ? ` — OJO: tenía ${cita.pago_monto_usd} $ ${cita.pago_estado === 'verificado' ? 'ya verificados' : 'por verificar'}, hay que decidir qué se hace con ese pago`
+      ? ` — hay que devolverle ${cita.pago_monto_usd} $${cita.pago_estado === 'verificado' ? '' : ' (el pago no estaba verificado: confirma que entró antes de devolver)'}`
       : '';
     notificar(
       op.tipoNotif ?? 'auto_cancelacion',
