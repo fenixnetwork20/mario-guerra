@@ -222,8 +222,10 @@ if (porVerificar) notas.push(`${porVerificar} pago(s) con comprobante esperando 
 // El tick de los recordatorios tiene que estar corriendo cada 15 minutos.
 try {
   const log = fs.readFileSync('/home/fenix/respaldos/marioguerra/cron.log', 'utf8').trim().split('\n');
-  const ultima = log.filter((l) => /\d{4}-\d{2}-\d{2}/.test(l)).pop() || '';
-  notas.push(`última línea del cron: ${ultima.slice(0, 80)}`);
+  // Solo las líneas del respaldo: este mismo informe también cae en cron.log y
+  // si no se filtra, el vigilante termina leyéndose a sí mismo.
+  const ultima = log.filter((l) => /^\d{4}-\d{2}-\d{2}T[\d:+-]+ respaldo/.test(l)).pop() || '';
+  notas.push(`último respaldo: ${ultima.slice(0, 80) || 'sin registro'}`);
 } catch { /* el log puede no existir todavía */ }
 
 // ── 8. Disco ───────────────────────────────────────────────────────────────
