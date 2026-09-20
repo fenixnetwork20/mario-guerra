@@ -14,6 +14,8 @@ export type DiaCupos = { fecha: string; cupos: Cupo[] };
 export type Reprogramando = {
   token: string; nombre: string; cedula: string; whatsapp: string;
   procedimiento: string; modalidad: 'presencial' | 'online'; fechaActual: string;
+  /** Lo que ya pagó por esta consulta: mover la fecha no se cobra otra vez. */
+  yaPagoUsd: number | null;
 };
 
 type CitaHallada = {
@@ -207,6 +209,8 @@ function Agendar({
   const [cedula, setCedula] = useState(reprogramando?.cedula ?? '');
   const [whatsapp, setWhatsapp] = useState(reprogramando?.whatsapp ?? '');
   const [procedimiento, setProcedimiento] = useState(reprogramando?.procedimiento ?? '');
+  // Ya pagó su consulta: el paso del pago se salta y se le dice que su pago sigue en pie.
+  const yaPago = reprogramando?.yaPagoUsd != null;
   const [verTodos, setVerTodos] = useState(false);
   const [cobro, setCobro] = useState<Cobro | null>(null);
   const [referencia, setReferencia] = useState('');
@@ -225,14 +229,14 @@ function Agendar({
       .then((c) => {
         setCobro(c);
         // Sin datos de cobro cargados no hay nada que enseñar: se salta al resumen.
-        if (!hayComoPagar(c)) setPaso(5);
+        if (!hayComoPagar(c) || yaPago) setPaso(5);
       })
       .catch(() => { setCobro(null); setPaso(5); });
   }, [paso, modalidad]);
   const atras = () => {
     if (paso === 0) return volver();
     // El paso de pago se salta en los dos sentidos si no hay con qué cobrar.
-    if (paso === 5 && !hayComoPagar(cobro)) return setPaso(3);
+    if (paso === 5 && (!hayComoPagar(cobro) || yaPago)) return setPaso(3);
     setPaso(paso - 1);
   };
 
@@ -292,6 +296,7 @@ function Agendar({
               <p className="rounded-lg border border-[var(--color-cobre-luz)]/40 bg-[var(--color-cobre)]/20 px-4 py-3 text-[13.5px] mb-4">
                 Estás cambiando tu cita del {fechaLarga(reprogramando.fechaActual.slice(0, 10))} a las{' '}
                 {hora12(reprogramando.fechaActual.slice(11, 16))}. Al terminar, esa se libera.
+                {yaPago && ` Tu pago de ${reprogramando.yaPagoUsd} $ sigue en pie: cambiar la fecha no se cobra otra vez.`}
               </p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -481,7 +486,9 @@ function Agendar({
               <Resumen titulo="Modalidad" valor={modalidad === 'presencial' ? 'En el consultorio' : 'Por videollamada'} />
               <Resumen titulo="Paciente" valor={nombre} />
               <Resumen titulo="Procedimiento de interés" valor={procedimiento} />
-              {cobro && (
+              {yaPago ? (
+                <Resumen titulo="Pago" valor={`${reprogramando!.yaPagoUsd} $ ya pagados · no se cobra de nuevo`} />
+              ) : cobro && (
                 <Resumen titulo="Pago" valor={comprobante ? `${cobro.usd} $ · comprobante adjunto` : `${cobro.usd} $ · sin comprobante`} />
               )}
             </dl>

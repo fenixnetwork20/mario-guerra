@@ -79,6 +79,23 @@ export async function POST(req: Request) {
     edad: b.edad ? Number(b.edad) : null,
   });
 
+  // Si viene de reprogramar y esa cita ya estaba pagada, el pago se muda con
+  // ella. Sin esto, al paciente que ya pagó su consulta se le pedía pagarla de
+  // nuevo solo por mover la fecha.
+  type PagoPrevio = {
+    pago_estado: string; pago_monto_usd: number | null; pago_monto_bs: number | null;
+    pago_tasa: number | null; pago_referencia: string | null; pago_archivo: string | null;
+    pago_verificado_at: string | null;
+  };
+  const pagoPrevio = excluir
+    ? (db.prepare(
+        `SELECT pago_estado, pago_monto_usd, pago_monto_bs, pago_tasa,
+                pago_referencia, pago_archivo, pago_verificado_at
+           FROM citas WHERE id = ?`
+      ).get(excluir) as PagoPrevio | undefined)
+    : undefined;
+  const traePago = Boolean(pagoPrevio && pagoPrevio.pago_monto_usd != null);
+
   const cita = db.transaction(() => {
     if (excluir) {
       db.prepare("UPDATE citas SET estado = 'reprogramada' WHERE id = ?").run(excluir);
@@ -93,6 +110,27 @@ export async function POST(req: Request) {
     });
   })();
 
+  if (traePago && pagoPrevio) {
+    // El pago viaja tal cual: si estaba verificado sigue verificado, con su
+    // referencia y su comprobante. Y se suelta de la cita vieja para que el
+    // mismo dinero no aparezca dos veces en la agenda.
+    db.prepare(
+      `UPDATE citas SET pago_estado = ?, pago_monto_usd = ?, pago_monto_bs = ?, pago_tasa = ?,
+                        pago_referencia = ?, pago_archivo = ?, pago_verificado_at = ?
+        WHERE id = ?`
+    ).run(
+      pagoPrevio.pago_estado, pagoPrevio.pago_monto_usd, pagoPrevio.pago_monto_bs,
+      pagoPrevio.pago_tasa, pagoPrevio.pago_referencia, pagoPrevio.pago_archivo,
+      pagoPrevio.pago_verificado_at, cita.id
+    );
+    db.prepare(
+      `UPDATE citas SET pago_estado = 'pendiente', pago_monto_usd = NULL, pago_monto_bs = NULL,
+                        pago_tasa = NULL, pago_referencia = NULL, pago_archivo = NULL,
+                        pago_verificado_at = NULL,
+                        notas = TRIM(COALESCE(notas, '') || ?)
+        WHERE id = ?`
+    ).run(`\nPago trasladado a la cita del ${b.inicio}.`, excluir);
+  } else {
   // El pago: monto, tasa del día y comprobante. La cita queda 'pendiente' hasta
   // que recepción lo verifique; el cupo ya está apartado igual.
   try {
@@ -114,6 +152,7 @@ export async function POST(req: Request) {
   } catch (e) {
     // Que falle el comprobante no puede tumbar la reserva: el cupo ya es suyo.
     console.error('pago de la cita', cita.id, e);
+  }
   }
 
   const cuando = `${fechaLarga(soloFecha(cita.fecha_hora))} a las ${hora12(soloHora(cita.fecha_hora))}`;

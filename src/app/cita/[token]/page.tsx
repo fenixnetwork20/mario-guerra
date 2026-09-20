@@ -32,7 +32,17 @@ export default async function PaginaCita({
       <Portada
         compacta
         foto={null}
-        kicker={esNueva ? 'Reserva recibida' : 'Tu cita'}
+        kicker={
+          // El encabezado también dice en qué quedó la cita: es lo primero que
+          // se ve al volver al enlace, y evita tener que bajar para saberlo.
+          cita.estado === 'cancelada'
+            ? 'Cita cancelada'
+            : cita.estado === 'confirmada'
+              ? 'Asistencia confirmada'
+              : esNueva
+                ? 'Reserva recibida'
+                : 'Tu cita'
+        }
         titulo={<>{fechaLarga(soloFecha(cita.fecha_hora))}<br />a las {hora12(soloHora(cita.fecha_hora))}</>}
         bajada={
           esNueva

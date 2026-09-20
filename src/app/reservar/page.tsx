@@ -104,6 +104,7 @@ export default async function Reservar({
                     procedimiento: anterior.procedimiento_interes ?? '',
                     modalidad: (anterior.modalidad ?? 'presencial') as 'presencial' | 'online',
                     fechaActual: anterior.fecha_hora,
+                    yaPagoUsd: anterior.pago_monto_usd ?? null,
                   }
                 : null
             }

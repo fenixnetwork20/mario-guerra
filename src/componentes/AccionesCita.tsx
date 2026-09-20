@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,6 +29,9 @@ export function AccionesCita({
   // recordatorio abría un diálogo invisible.
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
+  // En teléfono el resultado cae a ~900px del tope, debajo de los datos de la
+  // cita: el paciente cancelaba y la pantalla se veía igual. Hay que llevarlo.
+  const resultado = useRef<HTMLDivElement>(null);
 
   async function ejecutar(accion: 'confirmar' | 'cancelar') {
     setCargando(true);
@@ -44,6 +47,9 @@ export function AccionesCita({
       setEstado(datos.estado);
       setModal(null);
       router.refresh();
+      requestAnimationFrame(() =>
+        resultado.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      );
     } catch {
       setError('Falló la conexión. Intenta de nuevo.');
     } finally {
@@ -54,7 +60,7 @@ export function AccionesCita({
   const activa = estado === 'reservada' || estado === 'confirmada';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={resultado}>
       {estado === 'cancelada' && (
         <section className="tarjeta p-5">
           <h3 className="titulo text-lg">Tu cita fue cancelada</h3>

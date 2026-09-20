@@ -111,9 +111,12 @@ export async function cancelarCita(id: number, op: OpcionesCancelar): Promise<bo
     });
   }
   if (op.notificarInterno !== false) {
+    const traiaPago = cita.pago_monto_usd != null
+      ? ` — OJO: tenía ${cita.pago_monto_usd} $ ${cita.pago_estado === 'verificado' ? 'ya verificados' : 'por verificar'}, hay que decidir qué se hace con ese pago`
+      : '';
     notificar(
       op.tipoNotif ?? 'auto_cancelacion',
-      `Cita cancelada — ${cita.paciente_nombre}, ${fechaLarga(soloFecha(cita.fecha_hora))} ${hora12(soloHora(cita.fecha_hora))} (${op.motivo})`,
+      `Cita cancelada — ${cita.paciente_nombre}, ${fechaLarga(soloFecha(cita.fecha_hora))} ${hora12(soloHora(cita.fecha_hora))} (${op.motivo})${traiaPago}`,
       `/panel/pacientes/${cita.paciente_id}`
     );
   }
@@ -140,9 +143,32 @@ export function reprogramarCita(citaId: number, nuevaFechaHora: string): Cita | 
       cirugiaId: vieja.cirugia_id,
       revisionId: vieja.revision_id,
     });
+    // El pago viaja con el paciente. Sin esto la cita nueva nacía en cero y al
+    // que ya había pagado su consulta se le cobraba otra vez por mover la fecha.
+    if (nueva && vieja.pago_monto_usd != null) {
+      db.prepare(
+        `UPDATE citas SET pago_estado = ?, pago_monto_usd = ?, pago_monto_bs = ?, pago_tasa = ?,
+                          pago_referencia = ?, pago_archivo = ?, pago_verificado_at = ?
+          WHERE id = ?`
+      ).run(
+        vieja.pago_estado, vieja.pago_monto_usd, vieja.pago_monto_bs, vieja.pago_tasa,
+        vieja.pago_referencia, vieja.pago_archivo, vieja.pago_verificado_at, nueva.id
+      );
+      // Y se suelta de la vieja, que ya no lo sostiene: si no, el mismo dinero
+      // aparecía dos veces en la agenda.
+      db.prepare(
+        `UPDATE citas SET pago_estado = 'pendiente', pago_monto_usd = NULL, pago_monto_bs = NULL,
+                          pago_tasa = NULL, pago_referencia = NULL, pago_archivo = NULL,
+                          pago_verificado_at = NULL,
+                          notas = TRIM(COALESCE(notas, '') || ?)
+          WHERE id = ?`
+      ).run(`\nPago trasladado a la cita del ${nuevaFechaHora}.`, citaId);
+    }
+
     notificar(
       'reprogramacion',
-      `Cita reprogramada — ${vieja.paciente_nombre}: ${vieja.fecha_hora} → ${nuevaFechaHora}`,
+      `Cita reprogramada — ${vieja.paciente_nombre}: ${vieja.fecha_hora} → ${nuevaFechaHora}`
+        + (vieja.pago_monto_usd != null ? ` (el pago de ${vieja.pago_monto_usd} $ se movió con ella)` : ''),
       `/panel/agenda?fecha=${soloFecha(nuevaFechaHora)}`
     );
     return nueva;
