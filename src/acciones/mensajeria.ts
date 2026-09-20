@@ -34,6 +34,12 @@ export async function enviarManual(_prev: Respuesta | null, datos: FormData): Pr
   if (!cita) return { ok: false, error: 'Cita no encontrada.' };
   if (!clave) return { ok: false, error: 'Elige la plantilla.' };
 
+  // Los recordatorios llevan ?confirmar=1: el texto dice "confirma tu asistencia
+  // aquí", así que el enlace tiene que abrir la confirmación de una vez. El
+  // envío a mano tiene que hacer lo mismo que el automático, no menos.
+  const esRecordatorio = clave === 'recordatorio_1' || clave === 'recordatorio_2';
+  const enlace = linkGestion(cita.token_gestion) + (esRecordatorio ? '?confirmar=1' : '');
+
   const ok = await enviarPlantilla({
     clave,
     pacienteId: cita.paciente_id,
@@ -43,7 +49,7 @@ export async function enviarManual(_prev: Respuesta | null, datos: FormData): Pr
       nombre: cita.paciente_nombre,
       fecha: fechaLarga(soloFecha(cita.fecha_hora)),
       hora: hora12(soloHora(cita.fecha_hora)),
-      link: linkGestion(cita.token_gestion),
+      link: enlace,
     },
   });
   revalidatePath('/panel/mensajeria');
