@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
-import { citasDelDia, bloqueosEntre } from '@/lib/citas';
+import { citasDelDia, bloqueosEntre, citasPorCerrar } from '@/lib/citas';
 import { revisionesEnFecha, ETIQUETAS } from '@/lib/cirugias';
 import { cuotasVencidas, devolucionesPendientes, resumenMensual, mesActual, usd } from '@/lib/dinero';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
@@ -22,6 +22,7 @@ export default async function Hoy() {
   const verCuentas = puede(usuario, 'cuenta_paciente');
   const vencidas = verCuentas ? cuotasVencidas() : [];
   const devoluciones = puede(usuario, 'pagos') ? devolucionesPendientes() : [];
+  const porCerrar = puede(usuario, 'agenda') ? citasPorCerrar() : [];
   const resumen = resumenMensual(mesActual());
 
   return (
@@ -127,6 +128,34 @@ export default async function Hoy() {
         </Seccion>
         )}
       </div>
+
+      {porCerrar.length > 0 && (
+        <Seccion
+          titulo="Citas por cerrar"
+          descripcion="Ya pasó su hora y nadie dijo qué ocurrió. Hasta que no se marquen, el cobro de la consulta no entra en Dinero."
+        >
+          <ul className="space-y-3">
+            {porCerrar.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
+                <div className="min-w-0">
+                  <EnlacePaciente id={c.paciente_id} nombre={c.paciente_nombre} />
+                  <div className="text-[12.5px] text-[var(--color-tinta-3)]">
+                    {fechaLarga(c.fecha_hora.slice(0, 10))} a las {hora12(soloHora(c.fecha_hora))} · {c.whatsapp}
+                  </div>
+                </div>
+                <AccionesRapidasCita
+                  citaId={c.id}
+                  estado={c.estado}
+                  fechaActual={c.fecha_hora}
+                  cambiarEstado={cambiarEstadoCita}
+                  cancelar={cancelarDesdePanel}
+                  reprogramar={reprogramarDesdePanel}
+                />
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      )}
 
       {devoluciones.length > 0 && (
         <Seccion

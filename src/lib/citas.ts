@@ -3,7 +3,7 @@ import { db, cfgNum } from './db';
 import { tokenNuevo, cupoDisponible } from './agenda';
 import { enviarPlantilla, linkGestion } from './mensajeria';
 import { notificar } from './notificaciones';
-import { fechaLarga, hora12, soloFecha, soloHora, sumarMinutos } from './fechas';
+import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora, sumarMinutos } from './fechas';
 import type { Cita, Paciente } from './tipos';
 
 export type DatosPaciente = {
@@ -127,6 +127,21 @@ export async function cancelarCita(id: number, op: OpcionesCancelar): Promise<bo
     );
   }
   return true;
+}
+
+/**
+ * Citas cuya hora ya pasó y que nadie cerró. Importan por plata: el cargo de la
+ * consulta solo nace al marcarla completada, así que una cita que se queda
+ * abierta es un ingreso que nunca entra en la contabilidad.
+ */
+export function citasPorCerrar(limite = 30) {
+  return db.prepare(
+    `SELECT c.*, p.nombre AS paciente_nombre, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE c.estado IN ('reservada', 'confirmada') AND c.fecha_hora < ?
+      ORDER BY c.fecha_hora DESC
+      LIMIT ?`
+  ).all(ahoraVET(), limite) as Array<Cita & { paciente_nombre: string; whatsapp: string }>;
 }
 
 /** Marca la vieja como reprogramada y crea la nueva conservando los datos. */

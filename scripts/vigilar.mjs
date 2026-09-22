@@ -214,6 +214,16 @@ const sinPlantilla = db.prepare(
 ).get().c;
 if (sinPlantilla) mal(`${sinPlantilla} plantilla(s) activas sin nombre aprobado de Meta`);
 
+// Citas que ya pasaron y nadie cerró. Se avisa a partir del día siguiente: en
+// el mismo día es normal que todavía no las hayan marcado.
+const sinCerrar = db.prepare(
+  `SELECT COUNT(*) c FROM citas
+    WHERE estado IN ('reservada','confirmada') AND fecha_hora < datetime('now','-1 day')`
+).get();
+if (sinCerrar.c) {
+  mal(`${sinCerrar.c} cita(s) pasadas sin cerrar: hasta que no se marquen, ese cobro no entra en Dinero`);
+}
+
 // Plata del paciente que el consultorio todavia tiene en la mano.
 const devoluciones = db.prepare(
   "SELECT COUNT(*) c, COALESCE(SUM(pago_monto_usd),0) s FROM citas WHERE pago_estado = 'por_devolver'"
