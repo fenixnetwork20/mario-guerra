@@ -1,8 +1,8 @@
 import 'server-only';
 import { db } from './db';
-import { normalizarTelefono, baseUrl } from './mensajeria';
+import { normalizarTelefono, baseUrl, enviarPlantilla } from './mensajeria';
 import { notificar } from './notificaciones';
-import { ahoraVET, desdeEpochVET, sumarDias, sumarMinutos, soloFecha } from './fechas';
+import { ahoraVET, horaVET, desdeEpochVET, sumarDias, sumarMinutos, soloFecha } from './fechas';
 
 /**
  * Seguimiento de la gente que preguntó por WhatsApp y no agendó.
@@ -20,8 +20,15 @@ const ODI = 'https://portal.odichat.app/api/v1/accounts/11';
 const TOKEN = process.env.ODICHAT_TOKEN || '';
 const INBOX = Number(process.env.ODICHAT_INBOX || 85);
 
-/** Franjas fijas del día, en hora de Venezuela, como las pidió el consultorio. */
-const FRANJAS = ['18:00', '08:00'];
+/**
+ * Franjas en que se permite escribir, hora de Venezuela: el consultorio pidió
+ * el primer toque entre 6 y 8 de la noche y el segundo a las 8 de la mañana.
+ * Se dan dos horas de margen porque el tick corre cada quince minutos y un
+ * envío que se perdió su franja debe esperar la siguiente, no salir a deshora.
+ */
+const FRANJAS: Array<[string, string]> = [['18:00', '20:00'], ['08:00', '10:00']];
+/** Entre un toque y el siguiente: garantiza que caigan en franjas distintas. */
+const HORAS_ENTRE_TOQUES = 8;
 /** Nunca se intenta texto libre pegado al límite: un retraso y Meta lo rechaza. */
 const MARGEN_HORAS = 22;
 /** No se le escribe encima a alguien que acaba de escribir. */
@@ -129,10 +136,16 @@ export async function sincronizarLeads() {
       .filter(Boolean);
     const tema = detectarTema(textos);
 
+    // Al número le caen códigos de verificación de Instagram y Meta. No son
+    // pacientes: escribirles gasta plata y le baja la calidad al número.
+    const soloCodigos = textos.length > 0 && textos.every((t: string) =>
+      /c[oó]digo de (instagram|facebook|whatsapp)|no lo compartas|verification code/i.test(t));
+
     const previo = db.prepare('SELECT * FROM leads_wa WHERE telefono = ?').get(tel) as Lead | undefined;
 
     let estado = 'abierto';
-    if (humano) estado = 'humano';
+    if (soloCodigos) estado = 'agotado';
+    else if (humano) estado = 'humano';
     else if (yaAgendo(tel)) estado = 'agendo';
     // Si volvió a escribir después de que le mandamos el primer toque, contestó.
     else if (previo?.seg1_at && ultimo > previo.seg1_at) estado = 'respondio';
@@ -192,6 +205,11 @@ export async function correrSeguimientos() {
   const reporte = { seg1: 0, seg2: 0, esperanPlantilla: 0 };
   if (!TOKEN) return reporte;
 
+  // Fuera de las franjas no se escribe. Así un mensaje que se perdió su hora
+  // espera a la siguiente en vez de salir a las tres de la tarde.
+  const hora = horaVET();
+  if (!FRANJAS.some(([a, b]) => hora >= a && hora < b)) return reporte;
+
   const leads = db.prepare(`SELECT * FROM leads_wa WHERE estado = 'abierto'`).all() as Lead[];
 
   for (const l of leads) {
@@ -201,38 +219,29 @@ export async function correrSeguimientos() {
       db.prepare("UPDATE leads_wa SET estado = 'agendo' WHERE id = ?").run(l.id);
       continue;
     }
-
-    // Demasiado viejo: se cierra y no se le escribe. Vale para el atraso que
-    // había antes de que esto existiera.
+    // Retomar a alguien de hace cinco días no es seguimiento, es spam.
     if (l.ultimo_mensaje_at < sumarDias(soloFecha(ahora), -ANTIGUEDAD_MAX_DIAS)) {
       db.prepare("UPDATE leads_wa SET estado = 'agotado' WHERE id = ?").run(l.id);
       continue;
     }
+    // Nada de escribirle encima a quien acaba de hablar.
+    if (ahora < sumarMinutos(l.ultimo_mensaje_at, ESPERA_MINIMA_MIN)) continue;
 
-    const m = momentosSeguimiento(l.ultimo_mensaje_at);
+    const toque = !l.seg1_at ? 1
+      : (!l.seg2_at && ahora >= sumarMinutos(l.seg1_at, HORAS_ENTRE_TOQUES * 60)) ? 2
+      : 0;
+    if (!toque) continue;
 
-    if (!l.seg1_at && m.seg1 && ahora >= m.seg1) {
-      // Fuera de las 24 horas ya no se puede escribir texto libre: queda
-      // esperando la plantilla de la fase 2, contado para que se vea.
-      if (!dentroDeVentana(l.ultimo_mensaje_at, ahora)) { reporte.esperanPlantilla++; continue; }
-      if (await escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l))) {
-        db.prepare('UPDATE leads_wa SET seg1_at = ? WHERE id = ?').run(ahora, l.id);
-        reporte.seg1++;
-      }
-      continue; // nunca dos toques en el mismo tick
-    }
+    const enviado = await mandarToque(l, ahora);
+    if (enviado === 'sin_via') { reporte.esperanPlantilla++; continue; }
+    if (!enviado) continue;
 
-    if (l.seg1_at && !l.seg2_at && m.seg2 && ahora >= m.seg2) {
-      // El segundo casi siempre cae fuera de las 24 horas: ahí hace falta
-      // plantilla aprobada y eso es la fase 2. Mientras tanto se deja anotado.
-      if (!dentroDeVentana(l.ultimo_mensaje_at, ahora)) {
-        reporte.esperanPlantilla++;
-        continue;
-      }
-      if (await escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l))) {
-        db.prepare("UPDATE leads_wa SET seg2_at = ?, estado = 'agotado' WHERE id = ?").run(ahora, l.id);
-        reporte.seg2++;
-      }
+    if (toque === 1) {
+      db.prepare('UPDATE leads_wa SET seg1_at = ? WHERE id = ?').run(ahora, l.id);
+      reporte.seg1++;
+    } else {
+      db.prepare("UPDATE leads_wa SET seg2_at = ?, estado = 'agotado' WHERE id = ?").run(ahora, l.id);
+      reporte.seg2++;
     }
   }
 
@@ -240,6 +249,32 @@ export async function correrSeguimientos() {
     notificar('seguimiento', `Seguimiento enviado a ${reporte.seg1 + reporte.seg2} persona(s) que no agendaron.`, '/panel');
   }
   return reporte;
+}
+
+/**
+ * Dentro de las 24 horas se escribe texto libre, que es gratis y suena a
+ * persona. Fuera, WhatsApp solo admite plantilla aprobada.
+ */
+async function mandarToque(l: Lead, ahora: string): Promise<boolean | 'sin_via'> {
+  if (dentroDeVentana(l.ultimo_mensaje_at, ahora)) {
+    return escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l));
+  }
+  const plantilla = db.prepare(
+    `SELECT activa, meta_template_name FROM plantillas_mensajes WHERE clave = 'seguimiento'`
+  ).get() as { activa: number; meta_template_name: string | null } | undefined;
+  if (!plantilla?.activa || !plantilla.meta_template_name) return 'sin_via';
+
+  return enviarPlantilla({
+    clave: 'seguimiento',
+    destino: l.telefono,
+    variables: {
+      nombre: (l.nombre || '').split(' ')[0] || 'hola',
+      // La plantilla lleva el tema en el medio de la frase: si no lo detectamos,
+      // se pone algo que encaje en la oración y no quede un hueco.
+      tema: l.tema || 'lo que nos consultaste',
+      link: `${baseUrl()}/reservar`,
+    },
+  });
 }
 
 /** Para saber si esto sirve, en vez de opinar dentro de una semana. */
