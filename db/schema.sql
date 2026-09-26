@@ -287,3 +287,24 @@ CREATE TABLE IF NOT EXISTS correcciones (
   resuelta_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_correcciones_estado ON correcciones(estado, id DESC);
+
+-- Gente que escribió por WhatsApp preguntando y no llegó a agendar. El bot
+-- manda el enlace y ahí se acababa todo: con pauta corriendo eso es plata
+-- tirada. Aquí quedan anotados para retomarlos dos veces y no más.
+--
+-- `ultimo_mensaje_at` se pisa cada vez que la persona escribe: la ventana de
+-- 24 horas de WhatsApp se cuenta desde su ÚLTIMO mensaje, no desde el primero.
+CREATE TABLE IF NOT EXISTS leads_wa (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  telefono          TEXT NOT NULL UNIQUE,   -- normalizado, sin + ni espacios
+  nombre            TEXT,
+  conversacion_id   INTEGER NOT NULL,
+  tema              TEXT,                   -- lo que preguntó, para no saludar en seco
+  ultimo_mensaje_at TEXT NOT NULL,          -- 'YYYY-MM-DD HH:MM' en hora de Venezuela
+  seg1_at           TEXT,                   -- cuándo se le mandó el primero
+  seg2_at           TEXT,
+  estado            TEXT NOT NULL DEFAULT 'abierto'
+                    CHECK (estado IN ('abierto','respondio','agendo','agotado','humano')),
+  created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_at);

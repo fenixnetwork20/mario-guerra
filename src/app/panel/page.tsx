@@ -4,6 +4,7 @@ import { puede } from '@/lib/permisos';
 import { citasDelDia, bloqueosEntre, citasPorCerrar } from '@/lib/citas';
 import { revisionesEnFecha, ETIQUETAS } from '@/lib/cirugias';
 import { cuotasVencidas, devolucionesPendientes, resumenMensual, mesActual, usd } from '@/lib/dinero';
+import { metricasLeads } from '@/lib/leads';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
 import { Seccion, Estado, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
@@ -23,6 +24,7 @@ export default async function Hoy() {
   const vencidas = verCuentas ? cuotasVencidas() : [];
   const devoluciones = puede(usuario, 'pagos') ? devolucionesPendientes() : [];
   const porCerrar = puede(usuario, 'agenda') ? citasPorCerrar() : [];
+  const leads = metricasLeads();
   const resumen = resumenMensual(mesActual());
 
   return (
@@ -128,6 +130,25 @@ export default async function Hoy() {
         </Seccion>
         )}
       </div>
+
+      {leads.total > 0 && (
+        <Seccion
+          titulo="Gente que preguntó por WhatsApp"
+          descripcion="Los que escribieron y no agendaron. El sistema los retoma dos veces y no insiste más."
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Cifra titulo="Preguntaron" valor={String(leads.total)} />
+            <Cifra titulo="Agendaron" valor={String(leads.agendaron ?? 0)} tono="bueno" />
+            <Cifra titulo="Contestaron" valor={String(leads.respondieron ?? 0)} />
+            <Cifra titulo="Sin respuesta" valor={String(leads.agotados ?? 0)} />
+          </div>
+          <p className="text-[12.5px] text-[var(--color-tinta-3)] mt-3">
+            {leads.abiertos ?? 0} en seguimiento · {leads.con_seg1 ?? 0} recibieron el primer
+            mensaje · {leads.con_seg2 ?? 0} el segundo
+            {(leads.humano ?? 0) > 0 && ` · ${leads.humano} los atendió una persona`}
+          </p>
+        </Seccion>
+      )}
 
       {porCerrar.length > 0 && (
         <Seccion

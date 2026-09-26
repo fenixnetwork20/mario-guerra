@@ -23,6 +23,16 @@ export function ahoraVET(): string {
   return `${fmtFecha.format(d)} ${fmtHora.format(d)}`;
 }
 
+/**
+ * Un instante UNIX (lo que devuelve Chatwoot) a 'YYYY-MM-DD HH:MM' de Venezuela.
+ * El servidor corre en UTC, así que convertir a mano resta cuatro horas mal
+ * puestas: esto usa la zona de verdad.
+ */
+export function desdeEpochVET(segundos: number): string {
+  const d = new Date(segundos * 1000);
+  return `${fmtFecha.format(d)} ${fmtHora.format(d)}`;
+}
+
 /** 'HH:MM' de ahora mismo en Venezuela. */
 export function horaVET(): string {
   return fmtHora.format(new Date());

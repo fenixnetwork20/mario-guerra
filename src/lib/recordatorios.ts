@@ -5,6 +5,7 @@ import { enviarPlantilla, linkGestion } from './mensajeria';
 import { notificar } from './notificaciones';
 import { cancelarCita } from './citas';
 import { cuotasVencidas } from './dinero';
+import { sincronizarLeads, correrSeguimientos } from './leads';
 import type { Cita } from './tipos';
 
 type CitaConPaciente = Cita & { paciente_nombre: string; whatsapp: string };
@@ -140,6 +141,17 @@ export async function correrTick() {
       );
       reporte.r2++;
     }
+  }
+
+  // Leads de WhatsApp: primero se relee el buzón (quién escribió, quién ya
+  // agendó, dónde entró una persona) y después se manda lo que toque.
+  try {
+    await sincronizarLeads();
+    const seg = await correrSeguimientos();
+    Object.assign(reporte, { seg1: seg.seg1, seg2: seg.seg2, esperanPlantilla: seg.esperanPlantilla });
+  } catch (e) {
+    // Que falle odichat no puede tumbar los recordatorios de las citas.
+    console.error('seguimiento de leads', e);
   }
 
   // Cuotas vencidas: una sola notificación por cuota.

@@ -121,9 +121,34 @@ try {
     `https://graph.facebook.com/v21.0/1774692996896546/message_templates?fields=name,status,quality_score&limit=30&access_token=${tk}`
   )).texto);
   for (const t of pl?.data ?? []) {
+    if (t.status === 'PENDING') { notas.push(`la plantilla ${t.name} sigue en revisión de Meta`); continue; }
     if (t.status !== 'APPROVED') mal(`Meta puso la plantilla ${t.name} en ${t.status}`);
     if (t.quality_score?.score === 'RED') mal(`Meta le bajó la calidad a ${t.name} (roja)`);
   }
+  // Fénix pidió que se le avise cómo quedó la plantilla del seguimiento. Se
+  // mira en cada pasada y se le escribe UNA sola vez, cuando Meta resuelva.
+  const seg = (pl?.data ?? []).find((t) => t.name === 'mg_seguimiento');
+  if (seg) {
+    const memoria = '/home/fenix/respaldos/marioguerra/estado-mg_seguimiento.txt';
+    const antes = fs.existsSync(memoria) ? fs.readFileSync(memoria, 'utf8').trim() : '';
+    const ahoraEstado = `${seg.status}/${seg.category}`;
+    if (antes !== ahoraEstado) {
+      fs.writeFileSync(memoria, ahoraEstado);
+      if (seg.status !== 'PENDING') {
+        const aviso = seg.status === 'APPROVED'
+          ? (seg.category === 'UTILITY'
+              ? `✅ Meta aprobó la plantilla del seguimiento y la dejó como UTILITY, que era lo que queríamos. Ya puedo prender el segundo seguimiento.`
+              : `⚠️ Meta aprobó la plantilla del seguimiento pero la cambió a ${seg.category}, no UTILITY. Funciona igual, sale un poco más cara. Es lo que te advertí que podía pasar.`)
+          : `❌ Meta rechazó la plantilla del seguimiento (${seg.status}). Hay que rehacerla; te aviso con qué cambio.`;
+        await pedir('https://n8n.srv876463.hstgr.cloud/webhook/aviso-fenix', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: aviso }),
+        }).catch(() => {});
+      }
+    }
+    notas.push(`plantilla del seguimiento: ${ahoraEstado}`);
+  }
+
   if (!pl?.data?.length) mal('no se pudieron leer las plantillas en Meta');
   else notas.push(`${pl.data.length} plantillas revisadas en Meta, todas aprobadas`);
 
