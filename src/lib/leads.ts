@@ -264,17 +264,35 @@ async function mandarToque(l: Lead, ahora: string): Promise<boolean | 'sin_via'>
   ).get() as { activa: number; meta_template_name: string | null } | undefined;
   if (!plantilla?.activa || !plantilla.meta_template_name) return 'sin_via';
 
-  return enviarPlantilla({
+  const tema = l.tema || 'lo que nos consultaste';
+  const ok = await enviarPlantilla({
     clave: 'seguimiento',
     destino: l.telefono,
     variables: {
       nombre: (l.nombre || '').split(' ')[0] || 'hola',
       // La plantilla lleva el tema en el medio de la frase: si no lo detectamos,
       // se pone algo que encaje en la oración y no quede un hueco.
-      tema: l.tema || 'lo que nos consultaste',
+      tema,
       link: `${baseUrl()}/reservar`,
     },
   });
+
+  // La plantilla sale por la API de Meta y no pasa por el buzón, así que en el
+  // panel la conversación se ve muerta mientras al paciente ya le escribimos.
+  // Queda como nota interna: no se le reenvía nada, pero el consultorio lo ve.
+  if (ok) {
+    await fetch(`${ODI}/conversations/${l.conversacion_id}/messages`, {
+      method: 'POST',
+      headers: { api_access_token: TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: `Se le envió el seguimiento automático por plantilla (tema: ${tema}).`,
+        message_type: 'outgoing',
+        private: true,
+      }),
+      signal: AbortSignal.timeout(15000),
+    }).catch(() => { /* que falle la nota no invalida el envío */ });
+  }
+  return ok;
 }
 
 /** Para saber si esto sirve, en vez de opinar dentro de una semana. */
