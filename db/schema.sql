@@ -308,3 +308,8 @@ CREATE TABLE IF NOT EXISTS leads_wa (
   created_at        TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_at);
+
+-- Cómo dijo el paciente que iba a pagar. Sin esto, 'sin comprobante' significaba
+-- a la vez "voy a pagar en efectivo" y "me salté el paso", y en recepción no
+-- había manera de distinguirlos.
+-- ALTER TABLE citas ADD COLUMN pago_metodo TEXT;  -- 'transferencia' | 'efectivo'

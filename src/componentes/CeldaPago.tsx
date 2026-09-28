@@ -18,7 +18,7 @@ const ETIQUETA: Record<string, { texto: string; clase: string }> = {
 export function CeldaPago({
   cita, verificar,
 }: {
-  cita: { id: number; estado: string; usd: number | null; bs: number | null; referencia: string | null; tieneArchivo: boolean };
+  cita: { id: number; estado: string; usd: number | null; bs: number | null; referencia: string | null; tieneArchivo: boolean; metodo?: string | null };
   verificar: Accion;
 }) {
   const [abierto, setAbierto] = useState(false);
@@ -41,13 +41,20 @@ export function CeldaPago({
           {cita.referencia && (
             <p className="text-[12.5px]">Referencia: <span className="font-medium">{cita.referencia}</span></p>
           )}
+          {cita.metodo === 'efectivo' && (
+            <p className="text-[12.5px] text-[var(--color-aviso)]">
+              Dijo que paga en efectivo el día de la cita.
+            </p>
+          )}
           {cita.tieneArchivo ? (
             <a href={api(`/api/comprobante/${cita.id}`)} target="_blank" rel="noreferrer"
                className="btn btn-borde py-1 px-3 text-[12.5px]">
               Ver comprobante
             </a>
           ) : (
-            <p className="text-[12.5px] text-[var(--color-alerta)]">Sin comprobante.</p>
+            <p className="text-[12.5px] text-[var(--color-alerta)]">
+              {cita.metodo === 'efectivo' ? 'Sin comprobante, cobrar al llegar.' : 'Sin comprobante.'}
+            </p>
           )}
           <div className="flex flex-wrap gap-1.5 pt-1">
             {(['verificado', 'rechazado', 'pendiente', 'por_devolver', 'devuelto'] as const)

@@ -33,6 +33,8 @@ export type Cita = {
   pago_referencia: string | null;
   pago_archivo: string | null;
   pago_verificado_at: string | null;
+  /** Cómo dijo que iba a pagar: 'transferencia' o 'efectivo'. */
+  pago_metodo: string | null;
   created_at: string;
 };
 

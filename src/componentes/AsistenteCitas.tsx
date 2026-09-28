@@ -214,6 +214,9 @@ function Agendar({
   const [verTodos, setVerTodos] = useState(false);
   const [cobro, setCobro] = useState<Cobro | null>(null);
   const [referencia, setReferencia] = useState('');
+  // Antes se podía pasar de largo sin decir nada, y en recepción "sin
+  // comprobante" tanto era "pago en efectivo" como "me salté el paso".
+  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'efectivo' | ''>('');
   const [comprobante, setComprobante] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -266,7 +269,7 @@ function Agendar({
     setEnviando(true);
     try {
       const cuerpo = new FormData();
-      Object.entries({ nombre, cedula, whatsapp, procedimiento, modalidad, inicio, referencia,
+      Object.entries({ nombre, cedula, whatsapp, procedimiento, modalidad, inicio, referencia, metodo: metodoPago,
                        desde: reprogramando?.token ?? '' }).forEach(([k, v]) => cuerpo.append(k, v));
       if (comprobante) cuerpo.append('comprobante', comprobante);
       const r = await fetch(api('/api/publico/reservar'), { method: 'POST', body: cuerpo });
@@ -430,21 +433,41 @@ function Agendar({
                 {cobro.zelle && (
                   <DatosPago titulo="Zelle" filas={[['Correo o teléfono', cobro.zelle.correo], ['A nombre de', cobro.zelle.titular]]} />
                 )}
-                {cobro.efectivo && (
-                  <div className="rounded-lg border border-white/12 bg-white/[.05] p-4">
-                    <p className="etiqueta">Efectivo</p>
-                    <p className="text-[14px] text-[var(--color-nude)]/75 mt-2 leading-relaxed">
-                      Si prefieres pagar en efectivo, lo haces en el consultorio el día de tu cita.
-                      Reserva igual y deja el comprobante en blanco.
-                    </p>
-                  </div>
-                )}
+                <div className="space-y-2 pt-1">
+                  <p className="text-[13px] font-medium">¿Cómo vas a pagar?</p>
+                  <button type="button" onClick={() => setMetodoPago('transferencia')}
+                    className={`w-full text-left rounded-lg border px-4 py-3 ${
+                      metodoPago === 'transferencia'
+                        ? 'border-[var(--color-cobre)] bg-[var(--color-cobre)]/20'
+                        : 'border-white/16 bg-white/[.05]'}`}>
+                    <span className="text-[14px] font-medium">Ya pagué</span>
+                    <span className="block text-[12.5px] text-[var(--color-nude)]/65 mt-0.5">
+                      Pago móvil, Binance o Zelle. Sube el comprobante abajo.
+                    </span>
+                  </button>
+                  {cobro.efectivo && (
+                    <button type="button" onClick={() => setMetodoPago('efectivo')}
+                      className={`w-full text-left rounded-lg border px-4 py-3 ${
+                        metodoPago === 'efectivo'
+                          ? 'border-[var(--color-cobre)] bg-[var(--color-cobre)]/20'
+                          : 'border-white/16 bg-white/[.05]'}`}>
+                      <span className="text-[14px] font-medium">Pago en efectivo el día de la cita</span>
+                      <span className="block text-[12.5px] text-[var(--color-nude)]/65 mt-0.5">
+                        Reservas ahora y pagas en el consultorio al llegar.
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                {metodoPago === 'transferencia' && (
                 <label className="block">
                   <span className="text-[13px] font-medium">Referencia del pago (opcional)</span>
                   <input className="campo-oscuro mt-1" value={referencia} inputMode="numeric"
                     onChange={(e) => setReferencia(e.target.value)} placeholder="Últimos dígitos" />
                 </label>
+                )}
 
+                {metodoPago === 'transferencia' && (
                 <div className="block">
                   <span className="text-[13px] font-medium">Sube tu comprobante</span>
                   {/* El input de archivo nativo se ve en inglés ("Choose File",
@@ -465,14 +488,25 @@ function Agendar({
                     />
                   </label>
                   <span className="block text-[12px] text-[var(--color-nude)]/55 mt-1.5">
-                    Una foto de la transferencia o el PDF. Si vas a pagar en efectivo, salta este paso.
-                    Sin comprobante tu cupo queda apartado igual, pero el consultorio tiene que
-                    confirmar el pago antes de la cita.
+                    Una foto de la transferencia o el PDF. Es lo que confirma tu cupo.
                   </span>
                 </div>
+                )}
               </div>
             )}
-            <button className="btn btn-cobre w-full py-3 text-[15px] mt-5" onClick={() => setPaso(5)}>
+            {error && <div className="mt-4"><Aviso texto={error} /></div>}
+            <button className="btn btn-cobre w-full py-3 text-[15px] mt-5" onClick={() => {
+              if (hayComoPagar(cobro) && !metodoPago) {
+                setError('Dinos cómo vas a pagar para apartarte el cupo.');
+                return;
+              }
+              if (metodoPago === 'transferencia' && !comprobante) {
+                setError('Sube el comprobante del pago. Es lo que confirma tu cupo.');
+                return;
+              }
+              setError(null);
+              setPaso(5);
+            }}>
               Continuar
             </button>
           </>
@@ -489,7 +523,11 @@ function Agendar({
               {yaPago ? (
                 <Resumen titulo="Pago" valor={`${reprogramando!.yaPagoUsd} $ ya pagados · no se cobra de nuevo`} />
               ) : cobro && (
-                <Resumen titulo="Pago" valor={comprobante ? `${cobro.usd} $ · comprobante adjunto` : `${cobro.usd} $ · sin comprobante`} />
+                <Resumen titulo="Pago" valor={
+                  metodoPago === 'efectivo'
+                    ? `${cobro.usd} $ · en efectivo el día de la cita`
+                    : `${cobro.usd} $ · comprobante adjunto`
+                } />
               )}
             </dl>
             {error && <div className="mt-4"><Aviso texto={error} /></div>}

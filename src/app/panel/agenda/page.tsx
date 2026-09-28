@@ -110,6 +110,7 @@ async function VistaDia({ fecha }: { fecha: string }) {
                           id: c.id,
                           estado: c.pago_estado ?? 'pendiente',
                           usd: c.pago_monto_usd ?? null,
+                          metodo: c.pago_metodo ?? null,
                           bs: c.pago_monto_bs ?? null,
                           referencia: c.pago_referencia ?? null,
                           tieneArchivo: Boolean(c.pago_archivo),

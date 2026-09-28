@@ -65,6 +65,25 @@ export async function POST(req: Request) {
     );
   }
 
+  // La consulta se paga para reservar. La única excepción es el efectivo, que
+  // se paga en el consultorio. Se valida aquí y no solo en la pantalla: el
+  // navegador se puede saltar.
+  const metodo = String(b.metodo ?? '');
+  const hayQuePagar = cfgNum(
+    b.modalidad === 'online' ? 'precio_consulta_online' : 'precio_consulta_presencial', 0
+  ) > 0;
+  if (hayQuePagar && !excluir) {
+    if (!['transferencia', 'efectivo'].includes(metodo)) {
+      return NextResponse.json({ error: 'Falta decir cómo vas a pagar la consulta.' }, { status: 400 });
+    }
+    if (metodo === 'transferencia' && !comprobante) {
+      return NextResponse.json(
+        { error: 'Sube el comprobante del pago. Es lo que confirma tu cupo.' },
+        { status: 400 }
+      );
+    }
+  }
+
   if (comprobante) {
     if (!/^(image\/(png|jpe?g|webp)|application\/pdf)$/.test(comprobante.type)) {
       return NextResponse.json({ error: 'El comprobante tiene que ser una imagen o un PDF.' }, { status: 400 });
@@ -146,9 +165,9 @@ export async function POST(req: Request) {
     }
     db.prepare(
       `UPDATE citas SET pago_estado = 'pendiente', pago_monto_usd = ?, pago_tasa = ?,
-         pago_monto_bs = ?, pago_referencia = ?, pago_archivo = ? WHERE id = ?`
+         pago_monto_bs = ?, pago_referencia = ?, pago_archivo = ?, pago_metodo = ? WHERE id = ?`
     ).run(usd, t.valor || null, t.valor ? Math.round(usd * t.valor * 100) / 100 : null,
-          (b.referencia || '').slice(0, 60) || null, archivo, cita.id);
+          (b.referencia || '').slice(0, 60) || null, archivo, metodo || null, cita.id);
   } catch (e) {
     // Que falle el comprobante no puede tumbar la reserva: el cupo ya es suyo.
     console.error('pago de la cita', cita.id, e);
