@@ -3,12 +3,13 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { citasDelDia, bloqueosEntre, citasPorCerrar } from '@/lib/citas';
 import { revisionesEnFecha, ETIQUETAS } from '@/lib/cirugias';
-import { cuotasVencidas, devolucionesPendientes, resumenMensual, mesActual, usd } from '@/lib/dinero';
+import { cuotasVencidas, devolucionesPendientes, pagosPorRevisar, resumenMensual, mesActual, usd } from '@/lib/dinero';
 import { metricasLeads } from '@/lib/leads';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
 import { Seccion, Estado, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
 import { CitasEnTarjetas } from '@/componentes/CitasEnTarjetas';
+import { CeldaPago } from '@/componentes/CeldaPago';
 import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel, verificarPago } from '@/acciones/agenda';
 import { FormAccion, Boton } from '@/componentes/FormAccion';
 
@@ -26,6 +27,7 @@ export default async function Hoy() {
   const devoluciones = puede(usuario, 'pagos') ? devolucionesPendientes() : [];
   const porCerrar = puede(usuario, 'agenda') ? citasPorCerrar() : [];
   const leads = metricasLeads();
+  const cobros = puede(usuario, 'pagos') ? pagosPorRevisar() : [];
   const resumen = resumenMensual(mesActual());
 
   return (
@@ -140,6 +142,47 @@ export default async function Hoy() {
         </Seccion>
         )}
       </div>
+
+      {cobros.length > 0 && (
+        <Seccion
+          titulo="Pagos sin resolver"
+          descripcion="Citas que vienen y todavía no se sabe si el paciente pagó. Toca la etiqueta para ver el comprobante y marcarlo."
+        >
+          <ul className="space-y-3">
+            {cobros.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-start justify-between gap-3 text-[14px]">
+                <div className="min-w-0">
+                  <EnlacePaciente id={c.paciente_id} nombre={c.paciente} />
+                  <div className="text-[12.5px] text-[var(--color-tinta-3)]">
+                    {fechaLarga(c.fecha_hora.slice(0, 10))} a las {hora12(soloHora(c.fecha_hora))}
+                    {c.modalidad ? ` · ${c.modalidad}` : ''} · {c.whatsapp}
+                  </div>
+                  <div className={`text-[12.5px] mt-0.5 ${
+                    c.pago_metodo === 'efectivo' ? 'text-[var(--color-aviso)]' : 'text-[var(--color-alerta)]'}`}>
+                    {c.pago_metodo === 'efectivo'
+                      ? 'Paga en efectivo al llegar — hay que cobrarle'
+                      : c.pago_archivo
+                        ? 'Mandó comprobante — falta revisarlo'
+                        : 'Sin comprobante ni referencia'}
+                  </div>
+                </div>
+                <CeldaPago
+                  cita={{
+                    id: c.id,
+                    estado: c.pago_estado,
+                    usd: c.pago_monto_usd,
+                    bs: c.pago_monto_bs,
+                    referencia: c.pago_referencia,
+                    tieneArchivo: Boolean(c.pago_archivo),
+                    metodo: c.pago_metodo,
+                  }}
+                  verificar={verificarPago}
+                />
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      )}
 
       {leads.total > 0 && (
         <Seccion

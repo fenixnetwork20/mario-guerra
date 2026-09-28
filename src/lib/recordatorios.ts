@@ -88,7 +88,7 @@ function varsRecordatorio(c: CitaConPaciente) {
  */
 export async function correrTick() {
   const ahora = ahoraVET();
-  const reporte = { ahora, r1: 0, r2: 0, canceladas: 0, cuotas: 0 };
+  const reporte = { ahora, r1: 0, r2: 0, canceladas: 0, cuotas: 0, pagos: 0 };
 
   // Solo valoraciones vivas, desde hoy en adelante.
   const citas = db.prepare(
@@ -161,6 +161,35 @@ export async function correrTick() {
   } catch (e) {
     // Que falle odichat no puede tumbar los recordatorios de las citas.
     console.error('seguimiento de leads', e);
+  }
+
+  // Pagos sin verificar de citas que ya están encima. Se avisa una sola vez por
+  // cita: el consultorio tiene que llegar a la consulta sabiendo si esa persona
+  // pagó, si viene a pagar en efectivo, o si no dejó rastro de haber pagado.
+  const porCobrar = db.prepare(
+    `SELECT c.id, c.fecha_hora, c.pago_metodo, c.pago_archivo, c.paciente_id,
+            p.nombre AS paciente
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE c.estado IN ('reservada','confirmada')
+        AND c.pago_estado = 'pendiente'
+        AND c.pago_aviso_at IS NULL
+        AND c.fecha_hora >= ?
+        AND c.fecha_hora <= ?`
+  ).all(ahora, sumarDias(ahora, 1)) as Array<{
+    id: number; fecha_hora: string; pago_metodo: string | null; pago_archivo: string | null;
+    paciente_id: number; paciente: string;
+  }>;
+
+  for (const c of porCobrar) {
+    const cuando = `${fechaLarga(soloFecha(c.fecha_hora))} ${hora12(soloHora(c.fecha_hora))}`;
+    const que = c.pago_metodo === 'efectivo'
+      ? `paga en efectivo al llegar: hay que cobrarle`
+      : c.pago_archivo
+        ? `mandó comprobante y nadie lo ha revisado`
+        : `no dejó comprobante ni referencia`;
+    notificar('pago_sin_verificar', `${c.paciente} — ${cuando}: ${que}.`, '/panel');
+    db.prepare('UPDATE citas SET pago_aviso_at = ? WHERE id = ?').run(ahora, c.id);
+    reporte.pagos++;
   }
 
   // Cuotas vencidas: una sola notificación por cuota.

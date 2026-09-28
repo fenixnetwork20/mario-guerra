@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from './db';
-import { sumarMeses, hoyVET, mesDe } from './fechas';
+import { sumarMeses, sumarDias, hoyVET, mesDe } from './fechas';
 
 // Todo en USD. La deuda del paciente SIEMPRE se calcula (cargos − pagos),
 // nunca se escribe a mano.
@@ -128,6 +128,33 @@ export function devolucionesPendientes() {
   ).all() as Array<{
     id: number; fecha_hora: string; pago_monto_usd: number | null; pago_monto_bs: number | null;
     pago_referencia: string | null; pago_verificado_at: string | null; motivo_cancelacion: string | null;
+    paciente_id: number; paciente: string; whatsapp: string;
+  }>;
+}
+
+/**
+ * La situación de cobro de las próximas citas. Son tres casos distintos y el
+ * consultorio necesita distinguirlos de un vistazo: quien dice que pagó y falta
+ * revisarle el comprobante, quien viene a pagar en efectivo, y quien no dejó
+ * ninguna señal de haber pagado.
+ */
+export function pagosPorRevisar(dias = 7) {
+  return db.prepare(
+    `SELECT c.id, c.fecha_hora, c.modalidad, c.estado,
+            c.pago_estado, c.pago_metodo, c.pago_monto_usd, c.pago_monto_bs,
+            c.pago_referencia, c.pago_archivo,
+            p.id AS paciente_id, p.nombre AS paciente, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE c.estado IN ('reservada','confirmada')
+        AND c.fecha_hora >= ?
+        AND c.fecha_hora <= ?
+        AND c.pago_estado = 'pendiente'
+      ORDER BY c.fecha_hora`
+  ).all(`${hoyVET()} 00:00`, `${sumarDias(hoyVET(), dias)} 23:59`) as Array<{
+    id: number; fecha_hora: string; modalidad: string | null; estado: string;
+    pago_estado: string; pago_metodo: string | null;
+    pago_monto_usd: number | null; pago_monto_bs: number | null;
+    pago_referencia: string | null; pago_archivo: string | null;
     paciente_id: number; paciente: string; whatsapp: string;
   }>;
 }
