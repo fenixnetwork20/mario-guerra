@@ -33,6 +33,16 @@ export function desdeEpochVET(segundos: number): string {
   return `${fmtFecha.format(d)} ${fmtHora.format(d)}`;
 }
 
+/**
+ * Una marca de tiempo guardada en UTC por SQLite ('YYYY-MM-DD HH:MM:SS', que es
+ * lo que deja datetime('now')) a 'YYYY-MM-DD HH:MM' de Venezuela. Sin esto,
+ * comparar created_at contra horarios de la agenda corre cuatro horas.
+ */
+export function utcAVET(s: string): string {
+  const d = new Date(`${s.slice(0, 10)}T${s.slice(11, 19) || '00:00:00'}Z`);
+  return `${fmtFecha.format(d)} ${fmtHora.format(d)}`;
+}
+
 /** 'HH:MM' de ahora mismo en Venezuela. */
 export function horaVET(): string {
   return fmtHora.format(new Date());

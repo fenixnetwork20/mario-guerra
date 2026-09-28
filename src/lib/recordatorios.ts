@@ -1,6 +1,6 @@
 import 'server-only';
 import { db, cfg, cfgNum } from './db';
-import { ahoraVET, hoyVET, soloFecha, soloHora, sumarDias, sumarMinutos, fechaLarga, hora12 } from './fechas';
+import { ahoraVET, hoyVET, soloFecha, soloHora, sumarDias, sumarMinutos, fechaLarga, hora12, utcAVET } from './fechas';
 import { enviarPlantilla, linkGestion } from './mensajeria';
 import { notificar } from './notificaciones';
 import { cancelarCita } from './citas';
@@ -115,6 +115,15 @@ export async function correrTick() {
     }
 
     if (c.estado !== 'reservada') continue; // ya confirmó: no se le escribe más
+
+    // Quien reserva ya metido en la ventana de confirmación nunca tuvo ocasión
+    // de confirmar: su recordatorio y hasta el momento de cancelar ya habían
+    // pasado cuando reservó. Una paciente de Panamá pagó su consulta y el
+    // sistema se la canceló 42 segundos después. Reservar así ES confirmar.
+    if (utcAVET(c.created_at) >= m.r1Desde) {
+      db.prepare("UPDATE citas SET estado = 'confirmada' WHERE id = ?").run(c.id);
+      continue;
+    }
 
     // Auto-cancelación por no confirmar: libera el cupo y avisa con link de reagendar.
     if (ahora >= m.cancelar) {
