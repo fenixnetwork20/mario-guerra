@@ -434,15 +434,19 @@ function Agendar({
                   <DatosPago titulo="Zelle" filas={[['Correo o teléfono', cobro.zelle.correo], ['A nombre de', cobro.zelle.titular]]} />
                 )}
                 <div className="space-y-2 pt-1">
+                  {/* "Ya pagué" estaba en pasado y al llegar aquí todavía no han
+                      pagado: se lee como una pregunta sin sentido. Se nombra por
+                      el medio, que es lo que la persona reconoce. */}
                   <p className="text-[13px] font-medium">¿Cómo vas a pagar?</p>
                   <button type="button" onClick={() => setMetodoPago('transferencia')}
                     className={`w-full text-left rounded-lg border px-4 py-3 ${
                       metodoPago === 'transferencia'
                         ? 'border-[var(--color-cobre)] bg-[var(--color-cobre)]/20'
                         : 'border-white/16 bg-white/[.05]'}`}>
-                    <span className="text-[14px] font-medium">Ya pagué</span>
+                    <span className="text-[14px] font-medium">Pago móvil, Binance o Zelle</span>
                     <span className="block text-[12.5px] text-[var(--color-nude)]/65 mt-0.5">
-                      Pago móvil, Binance o Zelle. Sube el comprobante abajo.
+                      Haz el pago con los datos de arriba y sube la captura. Con eso queda
+                      apartado tu cupo.
                     </span>
                   </button>
                   {cobro.efectivo && (
@@ -461,15 +465,20 @@ function Agendar({
 
                 {metodoPago === 'transferencia' && (
                 <label className="block">
-                  <span className="text-[13px] font-medium">Referencia del pago (opcional)</span>
-                  <input className="campo-oscuro mt-1" value={referencia} inputMode="numeric"
-                    onChange={(e) => setReferencia(e.target.value)} placeholder="Últimos dígitos" />
+                  <span className="text-[13px] font-medium">Referencia del pago</span>
+                  <input className="campo-oscuro mt-1" value={referencia}
+                    onChange={(e) => setReferencia(e.target.value)}
+                    placeholder="Número de referencia o ID de la transacción" />
+                  <span className="block text-[12px] text-[var(--color-nude)]/55 mt-1.5">
+                    La referencia del pago móvil, o el ID / enlace de la transacción si pagaste
+                    por Binance o Zelle.
+                  </span>
                 </label>
                 )}
 
                 {metodoPago === 'transferencia' && (
                 <div className="block">
-                  <span className="text-[13px] font-medium">Sube tu comprobante</span>
+                  <span className="text-[13px] font-medium">Sube la captura del pago</span>
                   {/* El input de archivo nativo se ve en inglés ("Choose File",
                       "No file chosen") y no hay forma de traducirlo: se esconde
                       y se maneja con una etiqueta propia. */}
@@ -500,8 +509,8 @@ function Agendar({
                 setError('Dinos cómo vas a pagar para apartarte el cupo.');
                 return;
               }
-              if (metodoPago === 'transferencia' && !comprobante) {
-                setError('Sube el comprobante del pago. Es lo que confirma tu cupo.');
+              if (metodoPago === 'transferencia' && (!comprobante || !referencia.trim())) {
+                setError('Para apartar tu cupo hacen falta las dos cosas: la referencia del pago y la captura.');
                 return;
               }
               setError(null);
@@ -526,7 +535,7 @@ function Agendar({
                 <Resumen titulo="Pago" valor={
                   metodoPago === 'efectivo'
                     ? `${cobro.usd} $ · en efectivo el día de la cita`
-                    : `${cobro.usd} $ · comprobante adjunto`
+                    : `${cobro.usd} $ · ref. ${referencia.trim()} y captura adjunta`
                 } />
               )}
             </dl>

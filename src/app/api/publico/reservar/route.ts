@@ -76,9 +76,9 @@ export async function POST(req: Request) {
     if (!['transferencia', 'efectivo'].includes(metodo)) {
       return NextResponse.json({ error: 'Falta decir cómo vas a pagar la consulta.' }, { status: 400 });
     }
-    if (metodo === 'transferencia' && !comprobante) {
+    if (metodo === 'transferencia' && (!comprobante || !String(b.referencia ?? '').trim())) {
       return NextResponse.json(
-        { error: 'Sube el comprobante del pago. Es lo que confirma tu cupo.' },
+        { error: 'Para apartar tu cupo hacen falta las dos cosas: la referencia del pago y la captura.' },
         { status: 400 }
       );
     }
