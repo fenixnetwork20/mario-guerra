@@ -8,6 +8,7 @@ import { metricasLeads } from '@/lib/leads';
 import { hoyVET, fechaLarga, hora12, soloHora } from '@/lib/fechas';
 import { Seccion, Estado, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { AccionesRapidasCita } from '@/componentes/AccionesRapidasCita';
+import { CitasEnTarjetas } from '@/componentes/CitasEnTarjetas';
 import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel, verificarPago } from '@/acciones/agenda';
 import { FormAccion, Boton } from '@/componentes/FormAccion';
 
@@ -54,7 +55,15 @@ export default async function Hoy() {
       >
         {citas.length === 0 && <Vacio>No hay citas para hoy.</Vacio>}
         {citas.length > 0 && (
-          <div className="scroll-x">
+          <>
+          <CitasEnTarjetas
+            citas={citas}
+            cambiarEstado={cambiarEstadoCita}
+            cancelar={cancelarDesdePanel}
+            reprogramar={reprogramarDesdePanel}
+            verificar={puede(usuario, 'pagos') ? verificarPago : undefined}
+          />
+          <div className="scroll-x hidden sm:block">
             <table className="tabla min-w-[720px]">
               <thead>
                 <tr>
@@ -90,6 +99,7 @@ export default async function Hoy() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Seccion>
 

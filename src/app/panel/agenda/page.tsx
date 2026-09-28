@@ -12,6 +12,7 @@ import { PanelAgenda } from '@/componentes/PanelAgenda';
 import { agendarManual, crearBloqueo, cambiarEstadoCita, cancelarDesdePanel, editarBloqueo, eliminarBloqueo, verificarPago, reprogramarDesdePanel } from '@/acciones/agenda';
 import { FilaBloqueo } from '@/componentes/FilaBloqueo';
 import { CeldaPago } from '@/componentes/CeldaPago';
+import { CitasEnTarjetas } from '@/componentes/CitasEnTarjetas';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,7 +85,15 @@ async function VistaDia({ fecha }: { fecha: string }) {
       <Seccion titulo="Citas">
         {citas.length === 0 && <Vacio>Sin citas este día.</Vacio>}
         {citas.length > 0 && (
-          <div className="scroll-x">
+          <>
+          <CitasEnTarjetas
+            citas={citas}
+            cambiarEstado={cambiarEstadoCita}
+            cancelar={cancelarDesdePanel}
+            reprogramar={reprogramarDesdePanel}
+            verificar={verificarPago}
+          />
+          <div className="scroll-x hidden sm:block">
             <table className="tabla min-w-[900px]">
               <thead>
                 <tr><th>Hora</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Pago</th><th>Acciones</th></tr>
@@ -130,6 +139,7 @@ async function VistaDia({ fecha }: { fecha: string }) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Seccion>
 
