@@ -170,7 +170,8 @@ export async function sincronizarLeads() {
   return { leidas: convs.length, nuevos, cerrados };
 }
 
-function textoSeguimiento(l: Lead): string {
+function textoSeguimiento(l: Lead, toque: number): string {
+  if (toque === 2) return textoSegundoToque(l);
   const link = `${baseUrl()}/reservar`;
   const nombre = (l.nombre || '').split(' ')[0];
   const hola = nombre ? `Hola ${nombre}, ` : 'Hola, ';
@@ -187,6 +188,19 @@ function textoSeguimiento(l: Lead): string {
   return `${hola}soy Mayelis, la asistente del Dr. Mario Guerra. Me quede con la duda de si pude `
     + `ayudarte con lo que buscabas.${online} Si me dices que procedimiento te interesa, te explico `
     + `por aqui. Y si prefieres que el doctor te evalue, aqui escoges dia y hora: ${link}`;
+}
+
+/**
+ * El segundo y último. Recibir dos veces el mismo mensaje se lee como un bot
+ * roto, así que este cierra en vez de repetir, y dice que no se insiste más.
+ */
+function textoSegundoToque(l: Lead): string {
+  const link = `${baseUrl()}/reservar`;
+  const nombre = (l.nombre || '').split(' ')[0];
+  const hola = nombre ? `${nombre}, ` : '';
+  return `${hola}no te escribo mas para no molestarte. Te dejo el enlace por si en algun `
+    + `momento quieres que el doctor te evalue: ${link}\n\nY si prefieres preguntarme algo `
+    + `antes de decidir, escribeme cuando quieras y con gusto te ayudo.`;
 }
 
 async function escribirEnChatwoot(conversacionId: number, texto: string) {
@@ -227,12 +241,15 @@ export async function correrSeguimientos() {
     // Nada de escribirle encima a quien acaba de hablar.
     if (ahora < sumarMinutos(l.ultimo_mensaje_at, ESPERA_MINIMA_MIN)) continue;
 
-    const toque = !l.seg1_at ? 1
-      : (!l.seg2_at && ahora >= sumarMinutos(l.seg1_at, HORAS_ENTRE_TOQUES * 60)) ? 2
-      : 0;
+    // El segundo toque nunca el mismo día que el primero. A quien escribió de
+    // madrugada le caían los dos en diez horas, que se lee como acoso.
+    const segundoToca = !l.seg2_at
+      && ahora >= sumarMinutos(l.seg1_at ?? ahora, HORAS_ENTRE_TOQUES * 60)
+      && soloFecha(ahora) > soloFecha(l.seg1_at ?? ahora);
+    const toque = !l.seg1_at ? 1 : segundoToca ? 2 : 0;
     if (!toque) continue;
 
-    const enviado = await mandarToque(l, ahora);
+    const enviado = await mandarToque(l, ahora, toque);
     if (enviado === 'sin_via') { reporte.esperanPlantilla++; continue; }
     if (!enviado) continue;
 
@@ -255,9 +272,9 @@ export async function correrSeguimientos() {
  * Dentro de las 24 horas se escribe texto libre, que es gratis y suena a
  * persona. Fuera, WhatsApp solo admite plantilla aprobada.
  */
-async function mandarToque(l: Lead, ahora: string): Promise<boolean | 'sin_via'> {
+async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boolean | 'sin_via'> {
   if (dentroDeVentana(l.ultimo_mensaje_at, ahora)) {
-    return escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l));
+    return escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l, toque));
   }
   const plantilla = db.prepare(
     `SELECT activa, meta_template_name FROM plantillas_mensajes WHERE clave = 'seguimiento'`
