@@ -306,14 +306,20 @@ async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boole
   if (dentroDeVentana(l.ultimo_mensaje_at, ahora)) {
     return escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l, toque));
   }
-  const plantilla = db.prepare(
-    `SELECT activa, meta_template_name FROM plantillas_mensajes WHERE clave = 'seguimiento'`
-  ).get() as { activa: number; meta_template_name: string | null } | undefined;
+  // El segundo toque va con su propia plantilla —el recordatorio de por qué
+  // importa la valoración— para no mandarle dos veces el mismo texto. Si esa
+  // plantilla todavía no está aprobada, se usa la del primero.
+  const buscar = (clave: string) => db.prepare(
+    `SELECT activa, meta_template_name FROM plantillas_mensajes WHERE clave = ?`
+  ).get(clave) as { activa: number; meta_template_name: string | null } | undefined;
+  const segunda = toque === 2 ? buscar('seguimiento_2') : undefined;
+  const clave = segunda?.activa && segunda.meta_template_name ? 'seguimiento_2' : 'seguimiento';
+  const plantilla = buscar(clave);
   if (!plantilla?.activa || !plantilla.meta_template_name) return 'sin_via';
 
   const tema = l.tema || 'lo que nos consultaste';
   const ok = await enviarPlantilla({
-    clave: 'seguimiento',
+    clave,
     destino: l.telefono,
     variables: {
       nombre: primerNombre(l.nombre) || 'de nuevo',
