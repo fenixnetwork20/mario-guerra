@@ -118,35 +118,53 @@ if (!asignado?.agent_bot?.id) {
 try {
   const tk = env.WHATSAPP_TOKEN;
   const pl = json((await pedir(
-    `https://graph.facebook.com/v21.0/1774692996896546/message_templates?fields=name,status,quality_score&limit=30&access_token=${tk}`
+    `https://graph.facebook.com/v21.0/1774692996896546/message_templates?fields=name,status,category,quality_score&limit=30&access_token=${tk}`
   )).texto);
   for (const t of pl?.data ?? []) {
     if (t.status === 'PENDING') { notas.push(`la plantilla ${t.name} sigue en revisión de Meta`); continue; }
     if (t.status !== 'APPROVED') mal(`Meta puso la plantilla ${t.name} en ${t.status}`);
     if (t.quality_score?.score === 'RED') mal(`Meta le bajó la calidad a ${t.name} (roja)`);
   }
-  // Fénix pidió que se le avise cómo quedó la plantilla del seguimiento. Se
-  // mira en cada pasada y se le escribe UNA sola vez, cuando Meta resuelva.
-  const seg = (pl?.data ?? []).find((t) => t.name === 'mg_seguimiento');
-  if (seg) {
-    const memoria = '/home/fenix/respaldos/marioguerra/estado-mg_seguimiento.txt';
+  // Plantillas recién mandadas a Meta: se mira en cada pasada y se le escribe a
+  // Fénix UNA sola vez cuando Meta resuelva. Regla suya: marketing no se usa,
+  // así que solo se activa en el sistema si quedó UTILITY.
+  const VIGILADAS = [
+    { nombre: 'mg_seguimiento', clave: null, que: 'la plantilla del primer seguimiento' },
+    { nombre: 'mg_recordatorio_valoracion', clave: 'seguimiento_2',
+      que: 'la plantilla del recordatorio (segundo seguimiento)' },
+  ];
+  for (const v of VIGILADAS) {
+    const t = (pl?.data ?? []).find((x) => x.name === v.nombre);
+    if (!t) continue;
+    const memoria = `/home/fenix/respaldos/marioguerra/estado-${v.nombre}.txt`;
     const antes = fs.existsSync(memoria) ? fs.readFileSync(memoria, 'utf8').trim() : '';
-    const ahoraEstado = `${seg.status}/${seg.category}`;
+    const ahoraEstado = `${t.status}/${t.category}`;
     if (antes !== ahoraEstado) {
       fs.writeFileSync(memoria, ahoraEstado);
-      if (seg.status !== 'PENDING') {
-        const aviso = seg.status === 'APPROVED'
-          ? (seg.category === 'UTILITY'
-              ? `✅ Meta aprobó la plantilla del seguimiento y la dejó como UTILITY, que era lo que queríamos. Ya puedo prender el segundo seguimiento.`
-              : `⚠️ Meta aprobó la plantilla del seguimiento pero la cambió a ${seg.category}, no UTILITY. Funciona igual, sale un poco más cara. Es lo que te advertí que podía pasar.`)
-          : `❌ Meta rechazó la plantilla del seguimiento (${seg.status}). Hay que rehacerla; te aviso con qué cambio.`;
+      if (t.status !== 'PENDING') {
+        let aviso;
+        if (t.status === 'APPROVED' && t.category === 'UTILITY') {
+          if (v.clave) {
+            const rw = new Database(path.join(RAIZ, 'data', 'marioguerra.db'));
+            rw.prepare(`INSERT OR REPLACE INTO plantillas_mensajes
+              (clave, nombre, meta_template_name, idioma, variables, activa)
+              VALUES (?, ?, ?, 'es', '["nombre","tema","link"]', 1)`)
+              .run(v.clave, 'Recordatorio de la valoración', v.nombre);
+            rw.close();
+          }
+          aviso = `✅ Meta aprobó ${v.que} como UTILITY.${v.clave ? ' Ya quedó activa en el sistema.' : ''}`;
+        } else if (t.status === 'APPROVED') {
+          aviso = `⚠️ Meta aprobó ${v.que} pero la pasó a ${t.category}. Como no usas marketing, NO la activé. Sigue saliendo la anterior.`;
+        } else {
+          aviso = `❌ Meta rechazó ${v.que} (${t.status}). Sigue saliendo la anterior; te aviso con qué cambio.`;
+        }
         await pedir('https://n8n.srv876463.hstgr.cloud/webhook/aviso-fenix', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texto: aviso }),
         }).catch(() => {});
       }
     }
-    notas.push(`plantilla del seguimiento: ${ahoraEstado}`);
+    notas.push(`${v.nombre}: ${ahoraEstado}`);
   }
 
   if (!pl?.data?.length) mal('no se pudieron leer las plantillas en Meta');
