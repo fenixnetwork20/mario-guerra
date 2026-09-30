@@ -215,16 +215,22 @@ function textoSeguimiento(l: Lead, toque: number): string {
 }
 
 /**
- * El segundo y último. Recibir dos veces el mismo mensaje se lee como un bot
- * roto, así que este cierra en vez de repetir, y dice que no se insiste más.
+ * El segundo y último. No repite el primero ni se despide: le recuerda por qué
+ * vale la pena la valoración, en tono de consultorio, y le deja el enlace.
  */
 function textoSegundoToque(l: Lead): string {
   const link = `${baseUrl()}/reservar`;
   const nombre = primerNombre(l.nombre);
-  const inicio = nombre ? `${nombre}, no` : 'No';
-  return `${inicio} te escribo mas para no molestarte. Te dejo el enlace por si en algun `
-    + `momento quieres que el doctor te evalue: ${link}\n\nY si prefieres preguntarme algo `
-    + `antes de decidir, escribeme cuando quieras y con gusto te ayudo.`;
+  const hola = nombre ? `Hola ${nombre}, ` : 'Hola, ';
+  const que = l.tema
+    ? `para saber si ${l.tema.toLowerCase()} es lo indicado en tu caso`
+    : 'para saber qué procedimiento es el indicado en tu caso';
+  const fuera = !l.telefono.startsWith('58')
+    ? ' Si estás fuera de Venezuela, puedes hacerla por videollamada.'
+    : '';
+  return `${hola}te recuerdo que la valoración con el Dr. Mario Guerra es un paso muy importante `
+    + `${que}. En la consulta el doctor te evalúa personalmente, resuelve todas tus dudas y te da `
+    + `un presupuesto exacto.${fuera}\n\nPuedes escoger el día y la hora que te sirva aquí: ${link}`;
 }
 
 async function escribirEnChatwoot(conversacionId: number, texto: string) {
