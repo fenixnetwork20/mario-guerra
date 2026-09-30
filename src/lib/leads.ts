@@ -170,10 +170,34 @@ export async function sincronizarLeads() {
   return { leidas: convs.length, nuevos, cerrados };
 }
 
+/**
+ * El nombre de WhatsApp es lo que la persona escribió en su perfil, no su
+ * nombre: salían saludos como "Hola la," (de "la bendición de Dios"), "Hola
+ * 🙌🏼🩷🌸," o "Hola +584128203166,". Solo se usa si parece un nombre de verdad;
+ * si no, se saluda sin nombre, que es mejor que saludar raro.
+ */
+const NO_SON_NOMBRES = new Set([
+  'la', 'el', 'los', 'las', 'de', 'del', 'mi', 'tu', 'su', 'un', 'una', 'yo', 'soy',
+  'dios', 'bendicion', 'bendiciones', 'amor', 'mama', 'papa', 'hola', 'bella', 'reina',
+  'princesa', 'negra', 'negrita', 'flaca', 'gorda', 'bebe', 'baby', 'sra', 'sr', 'dra', 'dr',
+]);
+export function primerNombre(crudo: string | null): string {
+  const palabra = (crudo || '').trim().split(/\s+/)[0] ?? '';
+  if (/\d/.test(palabra)) return '';                       // un teléfono o un usuario
+  // Los emojis pegados al nombre ("Merlyn❤") se quitan; lo que queda tiene que ser letras.
+  const letras = palabra.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '');
+  if (letras.length < 3) return '';
+  // Todo en minúscula y largo es un usuario ("neydamolerob"), no un nombre.
+  if (letras === letras.toLowerCase() && letras.length > 10) return '';
+  const base = letras.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (NO_SON_NOMBRES.has(base)) return '';
+  return letras.charAt(0).toUpperCase() + letras.slice(1).toLowerCase();
+}
+
 function textoSeguimiento(l: Lead, toque: number): string {
   if (toque === 2) return textoSegundoToque(l);
   const link = `${baseUrl()}/reservar`;
-  const nombre = (l.nombre || '').split(' ')[0];
+  const nombre = primerNombre(l.nombre);
   const hola = nombre ? `Hola ${nombre}, ` : 'Hola, ';
   const fuera = !l.telefono.startsWith('58');
   const online = fuera
@@ -196,9 +220,9 @@ function textoSeguimiento(l: Lead, toque: number): string {
  */
 function textoSegundoToque(l: Lead): string {
   const link = `${baseUrl()}/reservar`;
-  const nombre = (l.nombre || '').split(' ')[0];
-  const hola = nombre ? `${nombre}, ` : '';
-  return `${hola}no te escribo mas para no molestarte. Te dejo el enlace por si en algun `
+  const nombre = primerNombre(l.nombre);
+  const inicio = nombre ? `${nombre}, no` : 'No';
+  return `${inicio} te escribo mas para no molestarte. Te dejo el enlace por si en algun `
     + `momento quieres que el doctor te evalue: ${link}\n\nY si prefieres preguntarme algo `
     + `antes de decidir, escribeme cuando quieras y con gusto te ayudo.`;
 }
@@ -286,7 +310,7 @@ async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boole
     clave: 'seguimiento',
     destino: l.telefono,
     variables: {
-      nombre: (l.nombre || '').split(' ')[0] || 'hola',
+      nombre: primerNombre(l.nombre) || 'de nuevo',
       // La plantilla lleva el tema en el medio de la frase: si no lo detectamos,
       // se pone algo que encaje en la oración y no quede un hueco.
       tema,
