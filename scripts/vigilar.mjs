@@ -130,8 +130,6 @@ try {
   // así que solo se activa en el sistema si quedó UTILITY.
   const VIGILADAS = [
     { nombre: 'mg_seguimiento', clave: null, que: 'la plantilla del primer seguimiento' },
-    { nombre: 'mg_recordatorio_valoracion', clave: 'seguimiento_2',
-      que: 'la plantilla del recordatorio (segundo seguimiento)' },
   ];
   for (const v of VIGILADAS) {
     const t = (pl?.data ?? []).find((x) => x.name === v.nombre);
