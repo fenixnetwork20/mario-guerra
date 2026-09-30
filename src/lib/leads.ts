@@ -89,23 +89,28 @@ export function yaAgendo(telefono: string): boolean {
  * primera palabra. Gana la coincidencia más larga.
  */
 function detectarTema(textos: string[]): string | null {
-  const limpia = (s: string) =>
-    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const limpia = (t: string) =>
+    t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const catalogo = (db.prepare(
     `SELECT nombre FROM procedimientos_catalogo WHERE activo = 1 AND nombre NOT LIKE 'Otro%'`
   ).all() as Array<{ nombre: string }>).map((x) => x.nombre);
 
-  const terminos = new Set<string>();
+  // Cada término se guarda con la forma en que se va a mostrar: con tildes y
+  // sin lo que va entre paréntesis ("Ácido hialurónico (1 ampolla)").
+  const terminos = new Map<string, string>();
   for (const nombre of catalogo) {
-    terminos.add(limpia(nombre));
-    const primera = limpia(nombre).split(' ')[0];
-    if (primera.length >= 5) terminos.add(primera);
+    const bonito = nombre.replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase();
+    terminos.set(limpia(bonito), bonito);
+    const primera = bonito.split(' ')[0];
+    if (primera.length >= 5 && !terminos.has(limpia(primera))) terminos.set(limpia(primera), primera);
   }
 
-  const todo = limpia(textos.join(' '));
-  const hallados = [...terminos].filter((t) => todo.includes(t));
+  // Palabras enteras, no pedazos: "flácido" contiene "ácido", y a quien
+  // preguntó por su abdomen flácido se le habló de ácido hialurónico.
+  const todo = ` ${limpia(textos.join(' ')).replace(/[^a-z0-9ñ]+/g, ' ')} `;
+  const hallados = [...terminos.keys()].filter((t) => todo.includes(` ${t} `));
   if (!hallados.length) return null;
-  return hallados.sort((a, b) => b.length - a.length)[0];
+  return terminos.get(hallados.sort((a, b) => b.length - a.length)[0]) ?? null;
 }
 
 /** Lee el buzón y anota a los que preguntaron. No escribe nada todavía. */
