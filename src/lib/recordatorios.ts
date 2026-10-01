@@ -94,7 +94,7 @@ export async function correrTick() {
   const citas = db.prepare(
     `SELECT c.*, p.nombre AS paciente_nombre, p.whatsapp
        FROM citas c JOIN pacientes p ON p.id = c.paciente_id
-      WHERE c.tipo = 'valoracion'
+      WHERE (c.tipo = 'valoracion' OR (c.tipo = 'revision' AND c.origen = 'link'))
         AND c.estado IN ('reservada','confirmada')
         AND c.fecha_hora >= ?
       ORDER BY c.fecha_hora`

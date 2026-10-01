@@ -57,7 +57,7 @@ export default async function PaginaCita({
         <div className="contenedor grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-5 lg:gap-8 items-start">
           <Aparece as="section" className="tarjeta p-5 sm:p-6 min-w-0">
             <div className="flex items-start justify-between gap-4">
-              <p className="marca text-[9.5px] text-[var(--color-cobre)]">Consulta de valoración</p>
+              <p className="marca text-[9.5px] text-[var(--color-cobre)]">{cita.tipo === 'revision' ? 'Cita de control' : 'Consulta de valoración'}</p>
               <EstadoPill estado={cita.estado} />
             </div>
 

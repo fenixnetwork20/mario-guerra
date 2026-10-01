@@ -23,7 +23,7 @@ type CitaHallada = {
   /** La confirmación se abre el día anterior, cuando sale el recordatorio. */
   puedeConfirmar: boolean;
 };
-type Modo = 'menu' | 'agendar' | 'confirmar' | 'gestionar';
+type Modo = 'menu' | 'agendar' | 'control' | 'confirmar' | 'gestionar';
 
 type Cobro = {
   usd: number; bs: string | null; tasa: number | null;
@@ -60,8 +60,10 @@ export function AsistenteCitas({
     <>
       <div className="mx-auto w-full max-w-[34rem]">
         {modo === 'menu' && <Menu ir={setModo} hayCupos={dias.length > 0} />}
-        {modo === 'agendar' && (
+        {(modo === 'agendar' || modo === 'control') && (
           <Agendar
+            key={modo}
+            control={modo === 'control'}
             dias={dias}
             procedimientos={procedimientos}
             reprogramando={reprogramando}
@@ -143,13 +145,14 @@ function Ayuda({ whatsapp }: { whatsapp: string }) {
 function Menu({ ir, hayCupos }: { ir: (m: Modo) => void; hayCupos: boolean }) {
   const opciones: [Modo, string, string, string][] = [
     ['agendar', '→', 'Agendar mi cita', 'Escoge el día y la hora'],
+    ['control', '+', 'Cita de control', 'Si ya eres paciente del doctor · no tiene costo'],
     ['confirmar', '✓', 'Confirmar mi cita', 'Avísanos que sí vas a asistir'],
     ['gestionar', '↻', 'Cancelar o reprogramar', 'Cambia la fecha o libera tu cupo'],
   ];
 
   return (
     <Tarjeta>
-      <p className="etiqueta">Consulta de valoración</p>
+      <p className="etiqueta">Agenda en línea</p>
       <h1 className="display text-[26px] sm:text-[32px] mt-3">Tu cita,<br />en un minuto</h1>
       <span className="block h-px w-14 bg-[var(--color-cobre-luz)] mt-4" />
       <p className="text-[14.5px] text-[var(--color-nude)]/75 mt-4 leading-relaxed">
@@ -192,8 +195,10 @@ function Menu({ ir, hayCupos }: { ir: (m: Modo) => void; hayCupos: boolean }) {
 /* ── Agendar ────────────────────────────────────────────────────────────── */
 
 function Agendar({
-  dias, procedimientos, reprogramando, whatsapp: whatsappConsultorio, volver,
+  dias, procedimientos, reprogramando, whatsapp: whatsappConsultorio, volver, control = false,
 }: {
+  /** Paciente que ya pasó por el doctor y viene a control: no paga. */
+  control?: boolean;
   dias: DiaCupos[];
   procedimientos: string[];
   reprogramando: Reprogramando | null;
@@ -226,7 +231,7 @@ function Agendar({
   /** Los datos de cobro se piden al llegar al paso del pago, no antes: el monto
    *  depende de la modalidad y la tasa cambia durante el día. */
   useEffect(() => {
-    if (paso !== 4) return;
+    if (paso !== 4 || control) return;
     fetch(api(`/api/publico/cobro?modalidad=${modalidad}`))
       .then((r) => r.json())
       .then((c) => {
@@ -239,7 +244,7 @@ function Agendar({
   const atras = () => {
     if (paso === 0) return volver();
     // El paso de pago se salta en los dos sentidos si no hay con qué cobrar.
-    if (paso === 5 && (!hayComoPagar(cobro) || yaPago)) return setPaso(3);
+    if (paso === 5 && (control || !hayComoPagar(cobro) || yaPago)) return setPaso(3);
     setPaso(paso - 1);
   };
 
@@ -259,7 +264,10 @@ function Agendar({
   function validarDatos(): boolean {
     const e = primerError(validarNombre(nombre), validarCedula(cedula), validarWhatsapp(whatsapp));
     if (e) { setError(e); return false; }
-    if (!procedimiento) { setError('Escoge el procedimiento que te interesa.'); return false; }
+    if (!procedimiento) {
+      setError(control ? 'Escoge el procedimiento que te hiciste.' : 'Escoge el procedimiento que te interesa.');
+      return false;
+    }
     setError(null);
     return true;
   }
@@ -270,6 +278,7 @@ function Agendar({
     try {
       const cuerpo = new FormData();
       Object.entries({ nombre, cedula, whatsapp, procedimiento, modalidad, inicio, referencia, metodo: metodoPago,
+                       tipo: control ? 'control' : 'valoracion',
                        desde: reprogramando?.token ?? '' }).forEach(([k, v]) => cuerpo.append(k, v));
       if (comprobante) cuerpo.append('comprobante', comprobante);
       const r = await fetch(api('/api/publico/reservar'), { method: 'POST', body: cuerpo });
@@ -294,7 +303,7 @@ function Agendar({
       <div key={paso} className="paso-entra">
         {paso === 0 && (
           <>
-            <Cabecera titulo="¿Qué día te sirve?" volver={atras} paso={1} />
+            <Cabecera titulo={control ? '¿Qué día te sirve para tu control?' : '¿Qué día te sirve?'} volver={atras} paso={1} />
             {reprogramando && (
               <p className="rounded-lg border border-[var(--color-cobre-luz)]/40 bg-[var(--color-cobre)]/20 px-4 py-3 text-[13.5px] mb-4">
                 Estás cambiando tu cita del {fechaLarga(reprogramando.fechaActual.slice(0, 10))} a las{' '}
@@ -389,7 +398,7 @@ function Agendar({
                 </span>
               </label>
               <label className="block">
-                <span className="text-[13px] font-medium">Procedimiento de interés</span>
+                <span className="text-[13px] font-medium">{control ? '¿De qué procedimiento es tu control?' : 'Procedimiento de interés'}</span>
                 <select className="campo-oscuro mt-1" value={procedimiento} onChange={(e) => setProcedimiento(e.target.value)}>
                   <option value="">Selecciona…</option>
                   {procedimientos.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -398,7 +407,7 @@ function Agendar({
             </div>
             {error && <div className="mt-4"><Aviso texto={error} /></div>}
             <button className="btn btn-cobre w-full py-3 text-[15px] mt-5"
-              onClick={() => { if (validarDatos()) setPaso(4); }}>
+              onClick={() => { if (validarDatos()) setPaso(control ? 5 : 4); }}>
               Continuar
             </button>
           </>
@@ -528,8 +537,10 @@ function Agendar({
               <Resumen titulo="Cuándo" valor={`${fechaLarga(inicio.slice(0, 10))} a las ${hora12(inicio.slice(11, 16))}`} />
               <Resumen titulo="Modalidad" valor={modalidad === 'presencial' ? 'En el consultorio' : 'Por videollamada'} />
               <Resumen titulo="Paciente" valor={nombre} />
-              <Resumen titulo="Procedimiento de interés" valor={procedimiento} />
-              {yaPago ? (
+              <Resumen titulo={control ? 'Control de' : 'Procedimiento de interés'} valor={procedimiento} />
+              {control ? (
+                <Resumen titulo="Pago" valor="Cita de control · no tiene costo" />
+              ) : yaPago ? (
                 <Resumen titulo="Pago" valor={`${reprogramando!.yaPagoUsd} $ ya pagados · no se cobra de nuevo`} />
               ) : cobro && (
                 <Resumen titulo="Pago" valor={
@@ -542,11 +553,11 @@ function Agendar({
             {error && <div className="mt-4"><Aviso texto={error} /></div>}
             <button className="btn btn-cobre w-full py-3 text-[15px] mt-5"
               disabled={enviando} onClick={reservar}>
-              {enviando ? 'Guardando…' : reprogramando ? 'Confirmar nueva fecha' : 'Reservar mi cita'}
+              {enviando ? 'Guardando…' : reprogramando ? 'Confirmar nueva fecha' : control ? 'Reservar mi control' : 'Reservar mi cita'}
             </button>
             <p className="text-[12.5px] text-[var(--color-nude)]/70 mt-4 leading-relaxed">
               <strong className="text-[var(--color-cobre-luz)]">Llega puntual.</strong> Si pasan 5 minutos
-              de la hora, la valoración se cancela.
+              de la hora, la {control ? 'cita' : 'valoración'} se cancela.
             </p>
             <p className="text-[12.5px] text-[var(--color-nude)]/55 mt-2 leading-relaxed">
               Al reservar aceptas que el consultorio use tus datos para gestionar tu cita.

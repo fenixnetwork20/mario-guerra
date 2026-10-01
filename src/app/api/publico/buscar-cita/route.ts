@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     `SELECT c.id, c.token_gestion, c.fecha_hora, c.modalidad, c.estado
        FROM citas c JOIN pacientes p ON p.id = c.paciente_id
       WHERE p.cedula = ?
-        AND c.tipo = 'valoracion'
+        AND (c.tipo = 'valoracion' OR (c.tipo = 'revision' AND c.origen = 'link'))
         AND c.estado IN ('reservada', 'confirmada')
         AND c.fecha_hora >= ?
       ORDER BY c.fecha_hora

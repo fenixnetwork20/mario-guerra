@@ -109,7 +109,7 @@ async function VistaDia({ fecha }: { fecha: string }) {
                       </div>
                     </td>
                     <td className="capitalize text-[13.5px]">
-                      {c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
+                      {c.tipo === 'revision' ? 'control' : c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
                       <div className="text-[12px] text-[var(--color-tinta-3)]">{c.duracion} min · {c.origen}</div>
                     </td>
                     <td><Estado valor={c.estado} /></td>

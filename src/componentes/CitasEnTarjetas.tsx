@@ -43,7 +43,7 @@ export function CitasEnTarjetas({
             <EnlacePaciente id={c.paciente_id} nombre={c.paciente_nombre} />
             <div className="text-[12.5px] text-[var(--color-tinta-3)]">{c.whatsapp}</div>
             <div className="text-[12.5px] text-[var(--color-tinta-3)] capitalize">
-              {c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
+              {c.tipo === 'revision' ? 'control' : c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
               {c.procedimiento_interes ? ` · ${c.procedimiento_interes}` : ''}
             </div>
           </div>

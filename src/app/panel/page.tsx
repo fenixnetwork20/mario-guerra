@@ -83,7 +83,7 @@ export default async function Hoy() {
                       </div>
                     </td>
                     <td className="capitalize text-[13.5px]">
-                      {c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
+                      {c.tipo === 'revision' ? 'control' : c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
                     </td>
                     <td><Estado valor={c.estado} /></td>
                     <td>

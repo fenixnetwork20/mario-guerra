@@ -11,6 +11,7 @@ const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   verificado: { texto: 'Verificado', clase: 'bg-[var(--color-acento-luz)] text-[var(--color-acento)]' },
   rechazado: { texto: 'Rechazado', clase: 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]' },
   por_devolver: { texto: 'Por devolver', clase: 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]' },
+  no_aplica: { texto: 'No paga (control)', clase: 'bg-[var(--color-tinta-3)]/15 text-[var(--color-tinta-2)]' },
   devuelto: { texto: 'Devuelto', clase: 'bg-[var(--color-tinta-3)]/15 text-[var(--color-tinta-2)]' },
 };
 

@@ -10,7 +10,7 @@ import { enviarPlantilla, linkGestion } from '@/lib/mensajeria';
 import { permitido, ipDe } from '@/lib/ratelimit';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import {
-  primerError, validarCedula, validarEdad, validarMomento, validarNombre, validarWhatsapp,
+  primerError, validarCedula, validarEdad, validarMomento, validarNombre, validarWhatsapp, normalizarCedula,
 } from '@/lib/validar';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +54,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Elige el procedimiento que te interesa.' }, { status: 400 });
   }
 
+  // Los controles —pacientes que ya pasaron por el doctor— no pagan. Se
+  // guardan como "revisión" para que al marcarlos atendidos no generen cobro
+  // en la contabilidad, que solo nace de las valoraciones.
+  const esControl = b.tipo === 'control';
+
   // Reprogramación: viene con el token de la cita anterior.
   const anterior = b.desde ? citaPorToken(b.desde) : undefined;
   const excluir = anterior && ['reservada', 'confirmada'].includes(anterior.estado) ? anterior.id : undefined;
@@ -72,7 +77,7 @@ export async function POST(req: Request) {
   const hayQuePagar = cfgNum(
     b.modalidad === 'online' ? 'precio_consulta_online' : 'precio_consulta_presencial', 0
   ) > 0;
-  if (hayQuePagar && !excluir) {
+  if (hayQuePagar && !excluir && !esControl) {
     if (!['transferencia', 'efectivo'].includes(metodo)) {
       return NextResponse.json({ error: 'Falta decir cómo vas a pagar la consulta.' }, { status: 400 });
     }
@@ -93,6 +98,12 @@ export async function POST(req: Request) {
     }
   }
 
+  // El control es gratis, así que conviene saber si quien lo pide ya estaba en
+  // el sistema. No se bloquea —la mayoría de los pacientes de antes no están
+  // cargados—, pero recepción lo ve marcado.
+  const yaEraPaciente = Boolean(
+    db.prepare('SELECT 1 FROM pacientes WHERE cedula = ?').get(normalizarCedula(b.cedula))
+  );
   const paciente = buscarOCrearPaciente({
     nombre: b.nombre, cedula: b.cedula, whatsapp: b.whatsapp,
     edad: b.edad ? Number(b.edad) : null,
@@ -121,7 +132,7 @@ export async function POST(req: Request) {
     }
     return crearCita({
       pacienteId: paciente.id,
-      tipo: 'valoracion',
+      tipo: esControl ? 'revision' : 'valoracion',
       modalidad: b.modalidad as 'presencial' | 'online',
       fechaHora: b.inicio,
       origen: 'link',
@@ -129,7 +140,11 @@ export async function POST(req: Request) {
     });
   })();
 
-  if (traePago && pagoPrevio) {
+  if (esControl) {
+    db.prepare(
+      `UPDATE citas SET pago_estado = 'no_aplica', notas = ? WHERE id = ?`
+    ).run(yaEraPaciente ? 'Cita de control.' : 'Cita de control de alguien que no estaba registrado: verificar que sea paciente.', cita.id);
+  } else if (traePago && pagoPrevio) {
     // El pago viaja tal cual: si estaba verificado sigue verificado, con su
     // referencia y su comprobante. Y se suelta de la cita vieja para que el
     // mismo dinero no aparezca dos veces en la agenda.
@@ -193,7 +208,8 @@ export async function POST(req: Request) {
 
   notificar(
     'reserva_nueva',
-    `${excluir ? 'Reprogramación' : 'Nueva reserva'}: ${paciente.nombre} — ${cuando} (${b.modalidad})`,
+    `${excluir ? 'Reprogramación' : esControl ? 'Nueva cita de control' : 'Nueva reserva'}: ${paciente.nombre} — ${cuando} (${b.modalidad})`
+      + (esControl && !yaEraPaciente ? ' — no estaba registrado como paciente, verificar' : ''),
     `/panel/agenda?fecha=${soloFecha(cita.fecha_hora)}`
   );
 
