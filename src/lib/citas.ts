@@ -113,11 +113,19 @@ export async function cancelarCita(id: number, op: OpcionesCancelar): Promise<bo
   if (op.notificarInterno !== false) {
     // La plata no se queda en el limbo: la cita cancelada queda marcada por
     // devolver y no se pierde de vista hasta que alguien la devuelva de verdad.
-    if (cita.pago_monto_usd != null && !['devuelto', 'por_devolver'].includes(cita.pago_estado)) {
+    // Solo hay algo que devolver si hay señal de que pagó: un pago verificado,
+    // un comprobante o una referencia. pago_monto_usd es lo que se le cobraría,
+    // no lo que pagó: quien eligió efectivo o se agendó antes de que existiera
+    // el cobro lo tiene igual, y el panel mandaba a devolverles plata que nunca
+    // entró.
+    const pago = cita.pago_monto_usd != null && cita.pago_metodo !== 'efectivo' && (
+      cita.pago_estado === 'verificado' || Boolean(cita.pago_archivo) || Boolean(cita.pago_referencia)
+    );
+    if (pago && !['devuelto', 'por_devolver'].includes(cita.pago_estado)) {
       db.prepare("UPDATE citas SET pago_estado = 'por_devolver' WHERE id = ?").run(id);
     }
 
-    const traiaPago = cita.pago_monto_usd != null
+    const traiaPago = pago
       ? ` — hay que devolverle ${cita.pago_monto_usd} $${cita.pago_estado === 'verificado' ? '' : ' (el pago no estaba verificado: confirma que entró antes de devolver)'}`
       : '';
     notificar(
