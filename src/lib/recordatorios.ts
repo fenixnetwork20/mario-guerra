@@ -1,7 +1,7 @@
 import 'server-only';
 import { db, cfg, cfgNum } from './db';
 import { ahoraVET, hoyVET, soloFecha, soloHora, sumarDias, sumarMinutos, fechaLarga, hora12, utcAVET } from './fechas';
-import { enviarPlantilla, linkGestion } from './mensajeria';
+import { enviarPlantilla, linkGestion, claveParaCita } from './mensajeria';
 import { notificar } from './notificaciones';
 import { cancelarCita } from './citas';
 import { cuotasVencidas } from './dinero';
@@ -106,7 +106,7 @@ export async function correrTick() {
     // Recordatorio 1: siempre, una sola vez, dentro de la ventana del día anterior.
     if (!c.r1_enviado_at && ahora >= m.r1Desde && ahora <= m.r1Hasta) {
       await enviarPlantilla({
-        clave: 'recordatorio_1', pacienteId: c.paciente_id, citaId: c.id,
+        clave: claveParaCita('recordatorio_1', c.tipo), pacienteId: c.paciente_id, citaId: c.id,
         destino: c.whatsapp, variables: varsRecordatorio(c),
       });
       db.prepare('UPDATE citas SET r1_enviado_at = ? WHERE id = ?').run(ahora, c.id);

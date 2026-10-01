@@ -93,6 +93,25 @@ type Envio = {
  * Dispara una plantilla y deja el rastro en mensajes_enviados.
  * Devuelve false si la plantilla no está configurada o el envío falló.
  */
+/**
+ * Las citas de control tienen sus propias plantillas, que dicen "cita de
+ * control" y no "cita de valoración". Mientras Meta no las apruebe (o si
+ * alguien las desactiva) se usa la de siempre: un texto con la palabra
+ * equivocada es mejor que un mensaje que no sale.
+ */
+const VERSION_CONTROL: Record<string, string> = {
+  reserva_recibida: 'control_reservado',
+  recordatorio_1: 'control_recordatorio',
+};
+export function claveParaCita(clave: string, tipo: string | null | undefined): string {
+  const alterna = VERSION_CONTROL[clave];
+  if (tipo !== 'revision' || !alterna) return clave;
+  const fila = db.prepare(
+    'SELECT activa, meta_template_name FROM plantillas_mensajes WHERE clave = ?'
+  ).get(alterna) as { activa: number; meta_template_name: string | null } | undefined;
+  return fila?.activa && fila.meta_template_name ? alterna : clave;
+}
+
 export async function enviarPlantilla(e: Envio): Promise<boolean> {
   const pl = db
     .prepare('SELECT * FROM plantillas_mensajes WHERE clave = ?')

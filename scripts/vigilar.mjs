@@ -130,6 +130,10 @@ try {
   // así que solo se activa en el sistema si quedó UTILITY.
   const VIGILADAS = [
     { nombre: 'mg_seguimiento', clave: null, que: 'la plantilla del primer seguimiento' },
+    { nombre: 'mg_control_reservado', clave: 'control_reservado', titulo: 'Reserva recibida (control)',
+      variables: '["nombre","fecha","hora","link"]', que: 'la plantilla de reserva de las citas de control' },
+    { nombre: 'mg_control_recordatorio', clave: 'control_recordatorio', titulo: 'Recordatorio (control)',
+      variables: '["nombre","fecha","hora","link"]', que: 'la plantilla de recordatorio de las citas de control' },
   ];
   for (const v of VIGILADAS) {
     const t = (pl?.data ?? []).find((x) => x.name === v.nombre);
@@ -146,8 +150,8 @@ try {
             const rw = new Database(path.join(RAIZ, 'data', 'marioguerra.db'));
             rw.prepare(`INSERT OR REPLACE INTO plantillas_mensajes
               (clave, nombre, meta_template_name, idioma, variables, activa)
-              VALUES (?, ?, ?, 'es', '["nombre","tema","link"]', 1)`)
-              .run(v.clave, 'Recordatorio de la valoración', v.nombre);
+              VALUES (?, ?, ?, 'es', ?, 1)`)
+              .run(v.clave, v.titulo ?? v.nombre, v.nombre, v.variables ?? '["nombre","tema","link"]');
             rw.close();
           }
           aviso = `✅ Meta aprobó ${v.que} como UTILITY.${v.clave ? ' Ya quedó activa en el sistema.' : ''}`;

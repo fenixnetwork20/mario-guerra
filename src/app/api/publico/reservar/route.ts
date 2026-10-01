@@ -6,7 +6,7 @@ import { tasaDelDia } from '@/lib/tasa';
 import { cupoDisponible } from '@/lib/agenda';
 import { buscarOCrearPaciente, crearCita, citaPorToken } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
-import { enviarPlantilla, linkGestion } from '@/lib/mensajeria';
+import { enviarPlantilla, linkGestion, claveParaCita } from '@/lib/mensajeria';
 import { permitido, ipDe } from '@/lib/ratelimit';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import {
@@ -194,7 +194,7 @@ export async function POST(req: Request) {
   // El enlace privado también por WhatsApp: en pantalla se ve una vez y se pierde.
   // Si falla, la reserva ya está hecha y el motivo queda en mensajes_enviados.
   await enviarPlantilla({
-    clave: 'reserva_recibida',
+    clave: claveParaCita('reserva_recibida', cita.tipo),
     pacienteId: paciente.id,
     citaId: cita.id,
     destino: paciente.whatsapp,
