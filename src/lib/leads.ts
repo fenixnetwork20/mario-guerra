@@ -38,6 +38,7 @@ const ANTIGUEDAD_MAX_DIAS = 3;
 
 type Lead = {
   id: number; telefono: string; nombre: string | null; conversacion_id: number;
+  contacto_id: number | null;
   tema: string | null; ultimo_mensaje_at: string;
   seg1_at: string | null; seg2_at: string | null; estado: string;
 };
@@ -101,8 +102,14 @@ function detectarTema(textos: string[]): string | null {
   for (const nombre of catalogo) {
     const bonito = nombre.replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase();
     terminos.set(limpia(bonito), bonito);
+    // "mastopexia" sola dice algo; "aumento" solo no ("lo que me preguntaste
+    // sobre aumento" se le mandó a quien pidió aumento de senos).
     const primera = bonito.split(' ')[0];
-    if (primera.length >= 5 && !terminos.has(limpia(primera))) terminos.set(limpia(primera), primera);
+    const GENERICAS = ['aumento', 'reduccion', 'correccion', 'reconstruccion', 'recambio',
+      'armonizacion', 'acido', 'botox', 'lipo', 'mela'];
+    if (primera.length >= 5 && !GENERICAS.includes(limpia(primera)) && !terminos.has(limpia(primera))) {
+      terminos.set(limpia(primera), primera);
+    }
   }
 
   // Palabras enteras, no pedazos: "flácido" contiene "ácido", y a quien
@@ -128,14 +135,17 @@ export async function sincronizarLeads() {
     const entrantes = ms.filter((m: Record<string, unknown>) => m.message_type === 0);
     if (!entrantes.length) continue;
 
-    // Si una persona del consultorio entró a la conversación, el bot no se mete.
+    const ultimoEpoch = Math.max(...entrantes.map((m: Record<string, number>) => m.created_at ?? 0));
+    const ultimo = desdeEpochVET(ultimoEpoch);
+
+    // Si una persona del consultorio contestó después del último mensaje del
+    // paciente, la conversación está en sus manos y el seguimiento no se mete.
+    // Si el paciente escribió después y nadie le respondió (pasó con quien
+    // preguntó el precio de una lipo y esperó tres días), no está atendido.
     const humano = ms.some((m: Record<string, unknown>) =>
       m.message_type === 1 &&
-      Boolean((m.content_attributes as Record<string, unknown> | undefined)?.external_echo));
-
-    const ultimo = desdeEpochVET(
-      Math.max(...entrantes.map((m: Record<string, number>) => m.created_at ?? 0))
-    );
+      Boolean((m.content_attributes as Record<string, unknown> | undefined)?.external_echo) &&
+      Number(m.created_at ?? 0) >= ultimoEpoch);
     const textos = entrantes
       .map((m: Record<string, string>) => (m.content || '').trim())
       .filter(Boolean);
@@ -159,16 +169,16 @@ export async function sincronizarLeads() {
 
     if (!previo) {
       db.prepare(
-        `INSERT INTO leads_wa (telefono, nombre, conversacion_id, tema, ultimo_mensaje_at, estado)
-         VALUES (?,?,?,?,?,?)`
-      ).run(tel, contacto.name ?? null, c.id, tema, ultimo, estado);
+        `INSERT INTO leads_wa (telefono, nombre, conversacion_id, contacto_id, tema, ultimo_mensaje_at, estado)
+         VALUES (?,?,?,?,?,?,?)`
+      ).run(tel, contacto.name ?? null, c.id, contacto.id ?? null, tema, ultimo, estado);
       nuevos++;
     } else {
       db.prepare(
-        `UPDATE leads_wa SET nombre = ?, conversacion_id = ?, tema = COALESCE(?, tema),
+        `UPDATE leads_wa SET nombre = ?, conversacion_id = ?, contacto_id = ?, tema = COALESCE(?, tema),
                              ultimo_mensaje_at = ?, estado = ?
           WHERE id = ?`
-      ).run(contacto.name ?? previo.nombre, c.id, tema, ultimo, estado, previo.id);
+      ).run(contacto.name ?? previo.nombre, c.id, contacto.id ?? null, tema, ultimo, estado, previo.id);
       if (estado !== 'abierto' && previo.estado === 'abierto') cerrados++;
     }
   }
@@ -187,7 +197,10 @@ const NO_SON_NOMBRES = new Set([
   'princesa', 'negra', 'negrita', 'flaca', 'gorda', 'bebe', 'baby', 'sra', 'sr', 'dra', 'dr',
 ]);
 export function primerNombre(crudo: string | null): string {
-  const palabra = (crudo || '').trim().split(/\s+/)[0] ?? '';
+  // Fuera títulos pegados o sueltos: "Msc.Lisdreliz L." → Lisdreliz.
+  const sinTitulo = (crudo || '').trim()
+    .replace(/^(msc|lic|licda|ing|dra?|sra?|srta|prof|abg|tsu)\.?\s*/i, '');
+  const palabra = sinTitulo.split(/\s+/)[0] ?? '';
   if (/\d/.test(palabra)) return '';                       // un teléfono o un usuario
   // Los emojis pegados al nombre ("Merlyn❤") se quitan; lo que queda tiene que ser letras.
   const letras = palabra.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '');
@@ -236,6 +249,37 @@ function textoSegundoToque(l: Lead): string {
   return `${hola}te recuerdo que la valoración con el Dr. Mario Guerra es un paso muy importante `
     + `${que}. En la consulta el doctor te evalúa personalmente, resuelve todas tus dudas y te da `
     + `un presupuesto exacto.${fuera}\n\nPuedes escoger el día y la hora que te sirva aquí: ${link}`;
+}
+
+/**
+ * Lo que el seguimiento le escribe a una persona se anota también en la memoria
+ * del bot. Si no, cuando contesta, el bot no sabe qué le dijimos y se vuelve a
+ * presentar desde cero ("Hola, soy Valentina…") como si no la conociera.
+ */
+async function anotarEnMemoria(l: Lead, texto: string) {
+  const url = process.env.MEMORIA_SUPABASE_URL;
+  const llave = process.env.MEMORIA_SUPABASE_KEY;
+  if (!url || !llave || !l.contacto_id) return;
+  await fetch(`${url}/rest/v1/mario_guerra_ig`, {
+    method: 'POST',
+    headers: { apikey: llave, Authorization: `Bearer ${llave}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      session_id: String(l.contacto_id),
+      message: {
+        type: 'ai',
+        content: JSON.stringify({ mensaje: texto, status: 'conversando' }),
+        tool_calls: [], additional_kwargs: {}, response_metadata: {}, invalid_tool_calls: [],
+      },
+    }),
+    signal: AbortSignal.timeout(15000),
+  }).catch(() => { /* la memoria es ayuda, no requisito: el envío ya salió */ });
+}
+
+/** El texto de una plantilla aprobada, con sus variables puestas, para la memoria. */
+function textoDePlantilla(clave: string, valores: string[]): string {
+  const fila = db.prepare('SELECT cuerpo_ejemplo FROM plantillas_mensajes WHERE clave = ?')
+    .get(clave) as { cuerpo_ejemplo: string | null } | undefined;
+  return (fila?.cuerpo_ejemplo || '').replace(/\{\{(\d+)\}\}/g, (_, n) => valores[Number(n) - 1] ?? '');
 }
 
 async function escribirEnChatwoot(conversacionId: number, texto: string) {
@@ -309,7 +353,10 @@ export async function correrSeguimientos() {
  */
 async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boolean | 'sin_via'> {
   if (dentroDeVentana(l.ultimo_mensaje_at, ahora)) {
-    return escribirEnChatwoot(l.conversacion_id, textoSeguimiento(l, toque));
+    const texto = textoSeguimiento(l, toque);
+    const ok = await escribirEnChatwoot(l.conversacion_id, texto);
+    if (ok) await anotarEnMemoria(l, texto);
+    return ok;
   }
   // El segundo toque va con su propia plantilla —el recordatorio de por qué
   // importa la valoración— para no mandarle dos veces el mismo texto. Si esa
@@ -323,11 +370,13 @@ async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boole
   if (!plantilla?.activa || !plantilla.meta_template_name) return 'sin_via';
 
   const tema = l.tema || 'lo que nos consultaste';
+  const nombre = primerNombre(l.nombre) || 'de nuevo';
+  const link = `${baseUrl()}/reservar`;
   const ok = await enviarPlantilla({
     clave,
     destino: l.telefono,
     variables: {
-      nombre: primerNombre(l.nombre) || 'de nuevo',
+      nombre,
       // La plantilla lleva el tema en el medio de la frase: si no lo detectamos,
       // se pone algo que encaje en la oración y no quede un hueco.
       tema,
@@ -339,6 +388,7 @@ async function mandarToque(l: Lead, ahora: string, toque: number): Promise<boole
   // panel la conversación se ve muerta mientras al paciente ya le escribimos.
   // Queda como nota interna: no se le reenvía nada, pero el consultorio lo ve.
   if (ok) {
+    await anotarEnMemoria(l, textoDePlantilla(clave, [nombre, tema, link]));
     await fetch(`${ODI}/conversations/${l.conversacion_id}/messages`, {
       method: 'POST',
       headers: { api_access_token: TOKEN, 'Content-Type': 'application/json' },
