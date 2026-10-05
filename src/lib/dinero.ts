@@ -145,12 +145,20 @@ export function pagosPorRevisar(dias = 7) {
             c.pago_referencia, c.pago_archivo,
             p.id AS paciente_id, p.nombre AS paciente, p.whatsapp
        FROM citas c JOIN pacientes p ON p.id = c.paciente_id
-      WHERE c.estado IN ('reservada','confirmada')
-        AND c.fecha_hora >= ?
-        AND c.fecha_hora <= ?
-        AND c.pago_estado = 'pendiente'
+      WHERE c.pago_estado = 'pendiente'
+        AND (
+          -- Lo que viene: hay que saber antes de la cita si pagó o viene a pagar.
+          (c.estado IN ('reservada','confirmada')
+            AND c.fecha_hora >= ? AND c.fecha_hora <= ?)
+          -- Lo que ya pasó con comprobante sin revisar: plata que alguien mandó.
+          -- Antes desaparecía de la lista al pasar la fecha de la cita, y un
+          -- pago de 40 $ quedó sin verificar y sin que nadie lo viera.
+          OR (c.estado <> 'cancelada' AND COALESCE(c.pago_archivo, '') <> ''
+            AND c.fecha_hora >= ? AND c.fecha_hora < ?)
+        )
       ORDER BY c.fecha_hora`
-  ).all(`${hoyVET()} 00:00`, `${sumarDias(hoyVET(), dias)} 23:59`) as Array<{
+  ).all(`${hoyVET()} 00:00`, `${sumarDias(hoyVET(), dias)} 23:59`,
+        `${sumarDias(hoyVET(), -30)} 00:00`, `${hoyVET()} 00:00`) as Array<{
     id: number; fecha_hora: string; modalidad: string | null; estado: string;
     pago_estado: string; pago_metodo: string | null;
     pago_monto_usd: number | null; pago_monto_bs: number | null;
