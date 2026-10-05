@@ -32,7 +32,11 @@ export function validarCedula(v: string): Resultado {
 export function validarWhatsapp(v: string): Resultado {
   const crudo = (v || '').trim();
   const d = crudo.replace(/\D/g, '');
-  if (/^04\d{9}$/.test(d) || /^584\d{9}$/.test(d) || /^4\d{9}$/.test(d)) return { ok: true };
+  // Solo los prefijos de celular venezolanos. Antes valía cualquier número de
+  // diez dígitos que empezara por 4: un 479-505-8502 de Estados Unidos pasó como
+  // venezolano, se le pegó el 58 y sus mensajes se fueron a un número que no existe.
+  const ve = '4(?:12|14|16|22|24|26)\\d{7}';
+  if (new RegExp(`^(?:0|58)?${ve}$`).test(d)) return { ok: true };
   if (crudo.startsWith('+') && /^\d{8,15}$/.test(d)) return { ok: true };
   return {
     ok: false,
