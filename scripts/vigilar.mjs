@@ -4,7 +4,7 @@
  *
  * Mira de punta a punta lo que un paciente toca —la web, los cupos, el cobro—
  * y lo que sostiene al bot —el workflow, el buzón, las plantillas—. Lee además
- * lo que Mayelis está respondiendo de verdad, porque un sistema puede estar
+ * lo que Valentina está respondiendo de verdad, porque un sistema puede estar
  * "arriba" y aun así estar diciendo disparates.
  *
  * Arregla solo lo que es seguro arreglar sin criterio: levantar el proceso,
@@ -193,7 +193,7 @@ try {
   else if (enLinea !== local) notas.push('el prompt de Supabase no es igual al del repositorio');
 } catch (e) { mal(`no se pudo leer el prompt: ${e.message}`); }
 
-// ── 6. Lo que Mayelis está respondiendo de verdad ──────────────────────────
+// ── 6. Lo que Valentina está respondiendo de verdad ──────────────────────────
 const REGLAS = [
   [/\$\s?\d{3,}|(?<!4)(?<!5)0\s?\$/, 'dio un monto que no es el de la consulta'],
   [/[\u{1F300}-\u{1FAFF}]/u, 'usó emojis'],

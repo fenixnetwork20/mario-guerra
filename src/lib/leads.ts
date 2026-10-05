@@ -209,12 +209,12 @@ function textoSeguimiento(l: Lead, toque: number): string {
     ? ' Si estas fuera de Venezuela, la valoracion tambien se puede hacer por videollamada.'
     : '';
   if (l.tema) {
-    return `${hola}soy Mayelis, la asistente del Dr. Mario Guerra. Quede pendiente de lo que me `
+    return `${hola}soy Valentina, la asistente del Dr. Mario Guerra. Quede pendiente de lo que me `
       + `preguntaste sobre ${l.tema.toLowerCase()}. El doctor lo evalua en la valoracion y ahi mismo `
       + `te dice que aplica en tu caso y cuanto seria.${online} Si quieres avanzar, aqui escoges el `
       + `dia y la hora que te sirva: ${link}\n\nY si te quedo alguna duda, escribeme por aqui y te ayudo.`;
   }
-  return `${hola}soy Mayelis, la asistente del Dr. Mario Guerra. Me quede con la duda de si pude `
+  return `${hola}soy Valentina, la asistente del Dr. Mario Guerra. Me quede con la duda de si pude `
     + `ayudarte con lo que buscabas.${online} Si me dices que procedimiento te interesa, te explico `
     + `por aqui. Y si prefieres que el doctor te evalue, aqui escoges dia y hora: ${link}`;
 }
