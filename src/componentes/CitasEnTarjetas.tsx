@@ -48,7 +48,7 @@ export function CitasEnTarjetas({
             </div>
           </div>
 
-          {verificar && (
+          {verificar && (!['cancelada', 'reprogramada'].includes(c.estado) || ['por_devolver', 'devuelto'].includes(c.pago_estado ?? '')) && (
             <div className="border-t border-[var(--color-linea)] pt-2.5">
               <p className="etiqueta mb-1.5">Pago</p>
               <CeldaPago

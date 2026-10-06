@@ -1,13 +1,15 @@
 import Link from 'next/link';
 
 export function Seccion({
-  titulo, descripcion, acciones, children, className = '',
+  titulo, descripcion, acciones, children, className = '', id,
 }: {
   titulo?: string; descripcion?: string; acciones?: React.ReactNode;
   children: React.ReactNode; className?: string;
+  /** Para poder enlazar a la sección desde un aviso (#pagos). */
+  id?: string;
 }) {
   return (
-    <section className={`tarjeta ${className}`}>
+    <section id={id} className={`tarjeta scroll-mt-4 ${className}`}>
       {(titulo || acciones) && (
         <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-3 border-b border-[var(--color-linea)]">
           <div>

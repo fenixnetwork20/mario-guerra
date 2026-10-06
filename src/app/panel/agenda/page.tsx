@@ -114,7 +114,7 @@ async function VistaDia({ fecha }: { fecha: string }) {
                     </td>
                     <td><Estado valor={c.estado} /></td>
                     <td>
-                      <CeldaPago
+                      {(!['cancelada', 'reprogramada'].includes(c.estado) || ['por_devolver', 'devuelto'].includes(c.pago_estado ?? '')) && <CeldaPago
                         cita={{
                           id: c.id,
                           estado: c.pago_estado ?? 'pendiente',
@@ -125,7 +125,7 @@ async function VistaDia({ fecha }: { fecha: string }) {
                           tieneArchivo: Boolean(c.pago_archivo),
                         }}
                         verificar={verificarPago}
-                      />
+                      />}
                     </td>
                     <td>
                       <AccionesRapidasCita

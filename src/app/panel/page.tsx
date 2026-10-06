@@ -28,6 +28,9 @@ export default async function Hoy() {
   const porCerrar = puede(usuario, 'agenda') ? citasPorCerrar() : [];
   const leads = metricasLeads();
   const cobros = puede(usuario, 'pagos') ? pagosPorRevisar() : [];
+  // Los que dicen haber pagado (subieron captura o pusieron referencia): eso es
+  // lo único que hay que verificar. El efectivo se cobra al llegar.
+  const porVerificar = cobros.filter((c) => c.pago_archivo || c.pago_referencia).length;
   const resumen = resumenMensual(mesActual());
 
   return (
@@ -50,6 +53,52 @@ export default async function Hoy() {
         )}
       </div>
 
+      {porVerificar > 0 && (
+        <a href="#pagos" className="block rounded-xl border border-[var(--color-aviso)]/40 bg-[var(--color-aviso-luz)] px-4 py-3.5">
+          <p className="font-semibold text-[var(--color-aviso)] text-[15.5px]">
+            {porVerificar === 1 ? 'Tienes 1 pago por verificar' : `Tienes ${porVerificar} pagos por verificar`}
+          </p>
+          <p className="text-[13px] text-[var(--color-tinta-2)] mt-0.5">
+            Pacientes que ya mandaron su comprobante. Revisa que el dinero haya entrado y márcalo como pagado.
+          </p>
+        </a>
+      )}
+
+      {cobros.length > 0 && (
+        <Seccion
+          id="pagos"
+          titulo="Pagos por revisar"
+          descripcion="Toca la etiqueta de cada uno para ver la captura y marcarlo como pagado."
+        >
+          <ul className="space-y-3">
+            {cobros.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-start justify-between gap-3 text-[14px]">
+                <div className="min-w-0">
+                  <EnlacePaciente id={c.paciente_id} nombre={c.paciente} />
+                  <div className="text-[12.5px] text-[var(--color-tinta-3)]">
+                    {fechaLarga(c.fecha_hora.slice(0, 10))} a las {hora12(soloHora(c.fecha_hora))}
+                    {c.modalidad ? ` · ${c.modalidad}` : ''} · {c.whatsapp}
+                  </div>
+
+                </div>
+                <CeldaPago
+                  cita={{
+                    id: c.id,
+                    estado: c.pago_estado,
+                    usd: c.pago_monto_usd,
+                    bs: c.pago_monto_bs,
+                    referencia: c.pago_referencia,
+                    tieneArchivo: Boolean(c.pago_archivo),
+                    metodo: c.pago_metodo,
+                  }}
+                  verificar={verificarPago}
+                />
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      )}
+
       <Seccion
         titulo="Agenda de hoy"
         acciones={<Link href="/panel/agenda" className="btn btn-borde h-9">Ver agenda</Link>}
@@ -69,7 +118,7 @@ export default async function Hoy() {
             <table className="tabla min-w-[720px]">
               <thead>
                 <tr>
-                  <th>Hora</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Acciones</th>
+                  <th>Hora</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Pago</th><th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,6 +135,22 @@ export default async function Hoy() {
                       {c.tipo === 'revision' ? 'control' : c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}
                     </td>
                     <td><Estado valor={c.estado} /></td>
+                    <td>
+                      {puede(usuario, 'pagos') && (!['cancelada', 'reprogramada'].includes(c.estado) || ['por_devolver', 'devuelto'].includes(c.pago_estado ?? '')) ? (
+                        <CeldaPago
+                          cita={{
+                            id: c.id,
+                            estado: c.pago_estado ?? 'pendiente',
+                            usd: c.pago_monto_usd ?? null,
+                            bs: c.pago_monto_bs ?? null,
+                            referencia: c.pago_referencia ?? null,
+                            tieneArchivo: Boolean(c.pago_archivo),
+                            metodo: c.pago_metodo ?? null,
+                          }}
+                          verificar={verificarPago}
+                        />
+                      ) : '—'}
+                    </td>
                     <td>
                       <AccionesRapidasCita
                         citaId={c.id}
@@ -142,47 +207,6 @@ export default async function Hoy() {
         </Seccion>
         )}
       </div>
-
-      {cobros.length > 0 && (
-        <Seccion
-          titulo="Pagos sin resolver"
-          descripcion="Citas que vienen y todavía no se sabe si el paciente pagó. Toca la etiqueta para ver el comprobante y marcarlo."
-        >
-          <ul className="space-y-3">
-            {cobros.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-start justify-between gap-3 text-[14px]">
-                <div className="min-w-0">
-                  <EnlacePaciente id={c.paciente_id} nombre={c.paciente} />
-                  <div className="text-[12.5px] text-[var(--color-tinta-3)]">
-                    {fechaLarga(c.fecha_hora.slice(0, 10))} a las {hora12(soloHora(c.fecha_hora))}
-                    {c.modalidad ? ` · ${c.modalidad}` : ''} · {c.whatsapp}
-                  </div>
-                  <div className={`text-[12.5px] mt-0.5 ${
-                    c.pago_metodo === 'efectivo' ? 'text-[var(--color-aviso)]' : 'text-[var(--color-alerta)]'}`}>
-                    {c.pago_metodo === 'efectivo'
-                      ? 'Paga en efectivo al llegar — hay que cobrarle'
-                      : c.pago_archivo
-                        ? 'Mandó comprobante — falta revisarlo'
-                        : 'Sin comprobante ni referencia'}
-                  </div>
-                </div>
-                <CeldaPago
-                  cita={{
-                    id: c.id,
-                    estado: c.pago_estado,
-                    usd: c.pago_monto_usd,
-                    bs: c.pago_monto_bs,
-                    referencia: c.pago_referencia,
-                    tieneArchivo: Boolean(c.pago_archivo),
-                    metodo: c.pago_metodo,
-                  }}
-                  verificar={verificarPago}
-                />
-              </li>
-            ))}
-          </ul>
-        </Seccion>
-      )}
 
       {leads.total > 0 && (
         <Seccion
