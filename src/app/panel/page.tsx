@@ -61,6 +61,7 @@ export default async function Hoy() {
           <p className="text-[13px] text-[var(--color-tinta-2)] mt-0.5">
             Pacientes que ya mandaron su comprobante. Revisa que el dinero haya entrado y márcalo como pagado.
           </p>
+          <span className="btn btn-principal mt-3 inline-flex">Verificar pagos →</span>
         </a>
       )}
 
@@ -68,7 +69,7 @@ export default async function Hoy() {
         <Seccion
           id="pagos"
           titulo="Pagos por revisar"
-          descripcion="Toca la etiqueta de cada uno para ver la captura y marcarlo como pagado."
+          descripcion="Abre la captura, revisa en el banco que el dinero entró y toca Marcar como pagado."
         >
           <ul className="space-y-3">
             {cobros.map((c) => (
@@ -92,6 +93,7 @@ export default async function Hoy() {
                     metodo: c.pago_metodo,
                   }}
                   verificar={verificarPago}
+                  siempreAbierto
                 />
               </li>
             ))}

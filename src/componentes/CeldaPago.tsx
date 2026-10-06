@@ -31,12 +31,14 @@ export function etiquetaPago(c: { estado: string; metodo?: string | null; tieneA
 
 /** El pago de una consulta: qué mandó el paciente y si recepción ya lo revisó. */
 export function CeldaPago({
-  cita, verificar,
+  cita, verificar, siempreAbierto = false,
 }: {
+  /** En la lista de pagos por revisar: los botones a la vista, sin tener que adivinar que la etiqueta se toca. */
+  siempreAbierto?: boolean;
   cita: { id: number; estado: string; usd: number | null; bs: number | null; referencia: string | null; tieneArchivo: boolean; metodo?: string | null };
   verificar: Accion;
 }) {
-  const [abierto, setAbierto] = useState(false);
+  const [abierto, setAbierto] = useState(siempreAbierto);
   const e = etiquetaPago(cita);
 
   return (
@@ -49,6 +51,19 @@ export function CeldaPago({
           {cita.usd} $
           {cita.bs != null && ` · ${cita.bs.toLocaleString('es-VE', { maximumFractionDigits: 2 })} Bs`}
         </div>
+      )}
+
+      {!abierto && cita.estado === 'pendiente' && (cita.tieneArchivo || cita.referencia) && (
+        <button type="button" onClick={() => setAbierto(true)}
+          className="btn btn-principal py-1.5 px-3 text-[12.5px]">
+          Verificar pago
+        </button>
+      )}
+      {!abierto && cita.estado === 'pendiente' && !cita.tieneArchivo && !cita.referencia && cita.metodo === 'efectivo' && (
+        <button type="button" onClick={() => setAbierto(true)}
+          className="btn btn-borde py-1.5 px-3 text-[12.5px]">
+          Registrar pago en efectivo
+        </button>
       )}
 
       {abierto && cita.estado !== 'no_aplica' && (
