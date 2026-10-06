@@ -72,8 +72,15 @@ export function CeldaPago({
             </p>
           )}
           <div className="flex flex-wrap gap-1.5 pt-1">
-            {(['verificado', 'rechazado', 'pendiente', 'por_devolver', 'devuelto'] as const)
-              .filter((x) => x !== cita.estado)
+            {/* Solo lo que tiene sentido en cada caso: con cinco botones a la vez
+                nadie sabía cuál apretar para verificar un pago. */}
+            {(({
+              pendiente: ['verificado', 'rechazado'],
+              verificado: ['pendiente', 'por_devolver'],
+              rechazado: ['verificado', 'pendiente'],
+              por_devolver: ['devuelto', 'verificado'],
+              devuelto: ['por_devolver'],
+            } as Record<string, Array<'verificado' | 'rechazado' | 'pendiente' | 'por_devolver' | 'devuelto'>>)[cita.estado] ?? [])
               .map((x) => (
                 <FormAccion key={x} accion={verificar} onOk={() => setAbierto(false)}>
                   <input type="hidden" name="cita_id" value={cita.id} />
