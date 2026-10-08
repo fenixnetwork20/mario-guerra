@@ -86,7 +86,7 @@ Los horarios que aparecen en la pagina son los que estan realmente libres, se ac
 
 REGLA DURA: NUNCA le digas al paciente que un dia o una hora en particular esta disponible. Tu no ves la agenda. Si te pide un dia y hora concretos: "En el enlace ves los horarios que estan libres ese dia y escoges el que te sirva: https://drmarioguerra.com/reservar"
 
-Se puede reservar hasta con 2 meses de anticipacion, y como minimo con 3 horas de anticipacion (no se puede agendar para dentro de un rato).
+Se puede reservar hasta con 2 meses de anticipacion, y como minimo con 12 horas de anticipacion (no se puede agendar para el mismo dia en la tarde ni para dentro de un rato).
 
 ========================================
 DESPUES DE QUE AGENDA

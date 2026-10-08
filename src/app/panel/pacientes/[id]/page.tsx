@@ -16,8 +16,6 @@ import { guardarPaciente, subirDocumento, eliminarDocumento, marcarProceso } fro
 import {
   registrarPago, registrarCargo, guardarCirugia, registrarCosto, guardarPlan, eliminarPlan,
 } from '@/acciones/dinero';
-import { crearSeguimiento } from '@/acciones/seguimiento';
-import { FormSeguimiento } from '@/componentes/FormSeguimiento';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,9 +42,8 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   const documentos = db.prepare('SELECT * FROM documentos WHERE paciente_id = ? ORDER BY fecha DESC, id DESC').all(pacienteId) as
     Array<{ id: number; tipo: string; nombre: string; fecha: string; mime: string | null }>;
 
-  const catalogo = db.prepare('SELECT nombre, precio_referencia FROM procedimientos_catalogo WHERE activo = 1 ORDER BY orden, nombre')
-    .all() as { nombre: string; precio_referencia: number | null }[];
-  const precios = Object.fromEntries(catalogo.map((c) => [c.nombre, c.precio_referencia]));
+  const catalogo = db.prepare('SELECT nombre FROM procedimientos_catalogo WHERE activo = 1 ORDER BY orden, nombre')
+    .all() as { nombre: string }[];
   const nombresProc = catalogo.map((c) => c.nombre);
   const cirugiasSimples = cirugias.map((c) => ({ id: c.id, procedimiento: c.procedimiento }));
 
@@ -256,7 +253,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
                     <Plegable titulo="Editar cirugía">
                       <div className="pt-2">
                         <FormCirugia accion={guardarCirugia} pacienteId={pacienteId}
-                          procedimientos={nombresProc} precios={precios} cirugia={c} />
+                          procedimientos={nombresProc} cirugia={c} />
                       </div>
                     </Plegable>
                   )}
@@ -269,7 +266,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
             <Plegable titulo="Registrar cirugía nueva">
               <div className="pt-3">
                 <FormCirugia accion={guardarCirugia} pacienteId={pacienteId}
-                  procedimientos={nombresProc} precios={precios} />
+                  procedimientos={nombresProc} />
               </div>
             </Plegable>
           )}
@@ -353,11 +350,6 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
         )}
       </Seccion>
 
-      {puede(usuario, 'seguimiento') && (
-        <Seccion titulo="Seguimiento" descripcion="Anota cuándo retomar a este paciente">
-          <FormSeguimiento accion={crearSeguimiento} pacienteId={pacienteId} />
-        </Seccion>
-      )}
     </div>
   );
 }

@@ -200,11 +200,6 @@ export function FormProcedimiento({
         <span className="text-[12.5px] font-medium">Procedimiento</span>
         <input name="nombre" className="campo mt-1" defaultValue={procedimiento?.nombre ?? ''} required />
       </label>
-      <label className="block w-40">
-        <span className="text-[12.5px] font-medium">Precio referencia</span>
-        <input name="precio_referencia" type="number" step="0.01" min="0" className="campo mt-1"
-          defaultValue={procedimiento?.precio_referencia ?? ''} />
-      </label>
       {procedimiento && (
         <label className="flex items-center gap-2 text-[13px] pb-2">
           <input type="checkbox" name="activo" value="1" defaultChecked={!!procedimiento.activo} />

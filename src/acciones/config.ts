@@ -78,8 +78,8 @@ export async function guardarProcedimiento(_prev: Respuesta | null, datos: FormD
   const id = Number(datos.get('procedimiento_id') || 0);
   const nombre = String(datos.get('nombre') ?? '').trim();
   if (!nombre) return { ok: false, error: 'Escribe el nombre del procedimiento.' };
-  const precio = datos.get('precio_referencia') === '' ? null : Number(datos.get('precio_referencia'));
-  if (precio !== null && !(precio >= 0)) return { ok: false, error: 'Precio inválido.' };
+  // El consultorio no da precios de nada: el campo se quitó y no se guarda.
+  const precio = null;
 
   try {
     if (id) {

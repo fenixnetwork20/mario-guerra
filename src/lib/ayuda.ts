@@ -46,13 +46,14 @@ PACIENTES — La ficha de cada uno.
 - Si el paciente reprograma, el pago se mueve solo a la cita nueva. No se le cobra otra vez.
 - Para subir un examen: "Documentos" dentro de la ficha.
 - Para un plan de cuotas: "Financiamiento" dentro de la ficha del paciente.
+- "Marcar: inicio su proceso" (arriba en la ficha): para que no le llegue el seguimiento de los 7 dias.
 
 DINERO — El negocio, no un paciente.
 - Ingresos del mes, costos de operaciones, gastos fijos y ganancia neta.
 - Ingresos por metodo de pago y ganancia por operacion.
 - Cuotas vencidas de los pacientes con financiamiento.
 
-SEGUIMIENTO — A quien hay que escribirle: citas sin confirmar, revisiones postoperatorias y pacientes pendientes de plata.
+SEGUIMIENTO — Ya no es una pantalla: es automatico. A los 7 dias de la valoracion el sistema le escribe una vez al paciente por WhatsApp. Si ya inicio su proceso (preoperatorio u operacion), entra a su ficha y toca "Marcar: inicio su proceso" para que no le escriban.
 
 MENSAJERIA — Los WhatsApp que manda el sistema.
 - Plantillas: los textos aprobados por Meta. El texto real vive en Meta; aqui se carga el nombre aprobado.

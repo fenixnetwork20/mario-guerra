@@ -60,7 +60,7 @@ export function cuposLibres(diasAdelante?: number, excluirCitaId?: number, modal
   // presencial puede empezar a las 9 o a las 10, siempre que quepan las dos horas.
   const paso = 60;
   const maxDias = diasAdelante ?? cfgNum('dias_max_reserva', 60);
-  const minAnticip = cfgNum('horas_min_anticipacion', 3) * 60;
+  const minAnticip = cfgNum('horas_min_anticipacion', 12) * 60;
 
   const desde = hoyVET();
   const hasta = sumarDias(desde, maxDias);

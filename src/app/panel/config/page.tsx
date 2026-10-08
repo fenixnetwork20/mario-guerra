@@ -1,7 +1,6 @@
 import { db, leerConfig } from '@/lib/db';
 import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
-import { usd } from '@/lib/dinero';
 import { AvisosPush } from '@/componentes/AvisosPush';
 import { SubirQR } from '@/componentes/SubirQR';
 import { Seccion, Vacio } from '@/componentes/ui';
@@ -72,17 +71,12 @@ export default async function Config() {
 
       <Seccion
         titulo="Catálogo de procedimientos"
-        descripcion="Los precios son referencia interna. Nunca se muestran en páginas públicas."
+        descripcion="Los procedimientos que aparecen al registrar una cirugía. Sin precios: el presupuesto lo da el doctor en la valoración."
       >
         <div className="space-y-3">
           {procedimientos.map((p) => (
             <div key={p.id} className="border-b border-[var(--color-papel-2)] pb-3 last:border-0">
               <FormProcedimiento accion={guardarProcedimiento} procedimiento={p} />
-              {p.precio_referencia != null && (
-                <p className="text-[12px] text-[var(--color-tinta-3)] mt-1">
-                  Referencia actual: {usd(p.precio_referencia)}
-                </p>
-              )}
             </div>
           ))}
         </div>

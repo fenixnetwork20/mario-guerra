@@ -9,7 +9,7 @@ import { buscarOCrearPaciente, crearCita, citaPorToken } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
 import { enviarPlantilla, linkGestion, claveParaCita } from '@/lib/mensajeria';
 import { permitido, ipDe } from '@/lib/ratelimit';
-import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
+import { fechaLarga, hora12, soloFecha, soloHora, sumarMinutos, ahoraVET } from '@/lib/fechas';
 import {
   primerError, validarCedula, validarEdad, validarMomento, validarNombre, validarWhatsapp, normalizarCedula,
 } from '@/lib/validar';
@@ -63,6 +63,16 @@ export async function POST(req: Request) {
   // Reprogramación: viene con el token de la cita anterior.
   const anterior = b.desde ? citaPorToken(b.desde) : undefined;
   const excluir = anterior && ['reservada', 'confirmada'].includes(anterior.estado) ? anterior.id : undefined;
+
+  // La página solo ofrece horarios con la anticipación mínima, pero la API no
+  // lo revisaba: un envío directo podía apartar una hora para dentro de un rato.
+  const horasMin = cfgNum('horas_min_anticipacion', 12);
+  if (b.inicio < sumarMinutos(ahoraVET(), horasMin * 60)) {
+    return NextResponse.json(
+      { error: `Las citas se reservan con al menos ${horasMin} horas de anticipación. Elige otro horario, por favor.`, recargar: true },
+      { status: 409 }
+    );
+  }
 
   if (!cupoDisponible(b.inicio, duracionDe(b.modalidad), excluir)) {
     return NextResponse.json(

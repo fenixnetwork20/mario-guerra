@@ -143,14 +143,12 @@ export function FormCargo({
 }
 
 export function FormCirugia({
-  accion, pacienteId, procedimientos, precios, cirugia,
+  accion, pacienteId, procedimientos, cirugia,
 }: {
   accion: Accion; pacienteId: number; procedimientos: string[];
-  precios: Record<string, number | null>;
   cirugia?: { id: number; procedimiento: string; fecha: string | null; precio_acordado: number; estado: string; notas: string | null };
 }) {
   const [proc, setProc] = useState(cirugia?.procedimiento ?? '');
-  const referencia = precios[proc];
 
   return (
     <FormAccion accion={accion} className="space-y-3">
@@ -174,11 +172,8 @@ export function FormCirugia({
           <input
             key={proc}
             name="precio_acordado" type="number" step="0.01" min="0" className="campo mt-1"
-            defaultValue={cirugia?.precio_acordado ?? (referencia ?? '')}
+            defaultValue={cirugia?.precio_acordado ?? ''}
           />
-          {referencia != null && (
-            <span className="text-[12px] text-[var(--color-tinta-3)]">Referencia interna: ${referencia}</span>
-          )}
         </label>
       </div>
       {cirugia && (

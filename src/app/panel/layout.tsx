@@ -27,7 +27,6 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: '/panel/agenda', texto: 'Agenda', ver: puede(usuario, 'agenda') },
     { href: '/panel/pacientes', texto: 'Pacientes', ver: puede(usuario, 'pacientes_ver') },
     { href: '/panel/dinero', texto: 'Dinero', ver: puede(usuario, 'contabilidad_ver') },
-    { href: '/panel/seguimiento', texto: 'Seguimiento', ver: puede(usuario, 'seguimiento') },
     { href: '/panel/mensajeria', texto: 'Mensajería', ver: puede(usuario, 'mensajeria') },
     { href: '/panel/config', texto: 'Configuración', ver: puede(usuario, 'configuracion') },
     { href: '/panel/correcciones', texto: 'Correcciones', ver: true },
