@@ -26,7 +26,7 @@ const INBOX = Number(process.env.ODICHAT_INBOX || 85);
  * Se dan dos horas de margen porque el tick corre cada quince minutos y un
  * envío que se perdió su franja debe esperar la siguiente, no salir a deshora.
  */
-const FRANJAS: Array<[string, string]> = [['18:00', '20:00'], ['08:00', '10:00']];
+export const FRANJAS: Array<[string, string]> = [['18:00', '20:00'], ['08:00', '10:00']];
 /** Entre un toque y el siguiente: garantiza que caigan en franjas distintas. */
 const HORAS_ENTRE_TOQUES = 8;
 /** Nunca se intenta texto libre pegado al límite: un retraso y Meta lo rechaza. */
@@ -43,7 +43,7 @@ type Lead = {
   seg1_at: string | null; seg2_at: string | null; estado: string;
 };
 
-async function odi(ruta: string) {
+export async function odi(ruta: string) {
   const r = await fetch(`${ODI}${ruta}`, {
     headers: { api_access_token: TOKEN, 'User-Agent': 'marioguerra/1.0' },
     signal: AbortSignal.timeout(20000),
@@ -256,7 +256,7 @@ function textoSegundoToque(l: Lead): string {
  * del bot. Si no, cuando contesta, el bot no sabe qué le dijimos y se vuelve a
  * presentar desde cero ("Hola, soy Valentina…") como si no la conociera.
  */
-async function anotarEnMemoria(l: Lead, texto: string) {
+export async function anotarEnMemoria(l: Pick<Lead, 'contacto_id'>, texto: string) {
   const url = process.env.MEMORIA_SUPABASE_URL;
   const llave = process.env.MEMORIA_SUPABASE_KEY;
   if (!url || !llave || !l.contacto_id) return;
@@ -276,7 +276,7 @@ async function anotarEnMemoria(l: Lead, texto: string) {
 }
 
 /** El texto de una plantilla aprobada, con sus variables puestas, para la memoria. */
-function textoDePlantilla(clave: string, valores: string[]): string {
+export function textoDePlantilla(clave: string, valores: string[]): string {
   const fila = db.prepare('SELECT cuerpo_ejemplo FROM plantillas_mensajes WHERE clave = ?')
     .get(clave) as { cuerpo_ejemplo: string | null } | undefined;
   return (fila?.cuerpo_ejemplo || '').replace(/\{\{(\d+)\}\}/g, (_, n) => valores[Number(n) - 1] ?? '');

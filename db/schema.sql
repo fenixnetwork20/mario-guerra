@@ -313,3 +313,9 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- a la vez "voy a pagar en efectivo" y "me salté el paso", y en recepción no
 -- había manera de distinguirlos.
 -- ALTER TABLE citas ADD COLUMN pago_metodo TEXT;  -- 'transferencia' | 'efectivo'
+
+-- Seguimiento después de la valoración. La marca del paciente dice "ya arrancó
+-- su proceso (preoperatorio, operación), no le escriban"; la de la cita dice que
+-- ese seguimiento ya salió y no se repite.
+-- ALTER TABLE pacientes ADD COLUMN proceso_iniciado_at TEXT;
+-- ALTER TABLE citas ADD COLUMN postconsulta_at TEXT;

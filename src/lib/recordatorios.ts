@@ -6,6 +6,7 @@ import { notificar } from './notificaciones';
 import { cancelarCita } from './citas';
 import { cuotasVencidas } from './dinero';
 import { sincronizarLeads, correrSeguimientos } from './leads';
+import { correrPostconsulta } from './postconsulta';
 import type { Cita } from './tipos';
 
 type CitaConPaciente = Cita & { paciente_nombre: string; whatsapp: string };
@@ -158,6 +159,7 @@ export async function correrTick() {
     await sincronizarLeads();
     const seg = await correrSeguimientos();
     Object.assign(reporte, { seg1: seg.seg1, seg2: seg.seg2, esperanPlantilla: seg.esperanPlantilla });
+    Object.assign(reporte, await correrPostconsulta());
   } catch (e) {
     // Que falle odichat no puede tumbar los recordatorios de las citas.
     console.error('seguimiento de leads', e);

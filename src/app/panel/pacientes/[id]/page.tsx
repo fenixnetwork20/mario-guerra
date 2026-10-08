@@ -12,7 +12,7 @@ import {
   Plegable, FormPaciente, FormPago, FormCargo, FormCirugia, FormCosto, FormPlan,
   FormDocumento, BotonForm,
 } from '@/componentes/FormulariosFicha';
-import { guardarPaciente, subirDocumento, eliminarDocumento } from '@/acciones/pacientes';
+import { guardarPaciente, subirDocumento, eliminarDocumento, marcarProceso } from '@/acciones/pacientes';
 import {
   registrarPago, registrarCargo, guardarCirugia, registrarCosto, guardarPlan, eliminarPlan,
 } from '@/acciones/dinero';
@@ -27,7 +27,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   const pacienteId = Number(id);
 
   const paciente = db.prepare('SELECT * FROM pacientes WHERE id = ?').get(pacienteId) as
-    | { id: number; nombre: string; cedula: string; whatsapp: string; edad: number | null; notas_medicas: string | null; created_at: string }
+    | { id: number; nombre: string; cedula: string; whatsapp: string; edad: number | null; notas_medicas: string | null; created_at: string; proceso_iniciado_at: string | null }
     | undefined;
   if (!paciente) notFound();
 
@@ -50,6 +50,10 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   const nombresProc = catalogo.map((c) => c.nombre);
   const cirugiasSimples = cirugias.map((c) => ({ id: c.id, procedimiento: c.procedimiento }));
 
+  // Inició su proceso = marca a mano o cirugía registrada. Cualquiera de las dos
+  // apaga el seguimiento de los 7 días después de la valoración.
+  const enProceso = Boolean(paciente.proceso_iniciado_at) || cirugias.length > 0;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -60,6 +64,19 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
             {paciente.cedula} · {paciente.whatsapp}
             {paciente.edad ? ` · ${paciente.edad} años` : ''}
           </p>
+          <div className="flex flex-wrap items-center gap-2 mt-2.5">
+            {enProceso ? (
+              <span className="pill bg-[var(--color-cobre-fondo)] text-[var(--color-cobre)]">Inició su proceso</span>
+            ) : (
+              <span className="pill bg-[var(--color-papel-2)] text-[var(--color-tinta-2)]">Sin iniciar proceso · recibe seguimiento a los 7 días de su valoración</span>
+            )}
+            {puede(usuario, 'pacientes_editar') && !cirugias.length && (
+              <BotonForm accion={marcarProceso}
+                campos={{ paciente_id: paciente.id, iniciado: paciente.proceso_iniciado_at ? '0' : '1' }}
+                texto={paciente.proceso_iniciado_at ? 'Quitar marca' : 'Marcar: inició su proceso'}
+                variante={paciente.proceso_iniciado_at ? 'borde' : 'principal'} />
+            )}
+          </div>
         </div>
         <Link href="/panel/pacientes" className="btn btn-borde h-9">Volver</Link>
       </div>

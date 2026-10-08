@@ -93,3 +93,19 @@ export async function eliminarDocumento(_prev: Respuesta | null, datos: FormData
   revalidatePath(`/panel/pacientes/${doc.paciente_id}`);
   return { ok: true, aviso: 'Documento eliminado.' };
 }
+
+/**
+ * "Inició su proceso": el paciente ya arrancó preoperatorio u operación, así
+ * que el seguimiento de los 7 días después de la valoración no le escribe.
+ */
+export async function marcarProceso(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('pacientes_editar');
+  const id = Number(datos.get('paciente_id'));
+  const iniciado = datos.get('iniciado') === '1';
+  if (!id) return { ok: false, error: 'Falta el paciente.' };
+  db.prepare("UPDATE pacientes SET proceso_iniciado_at = CASE WHEN ? THEN datetime('now') ELSE NULL END WHERE id = ?")
+    .run(iniciado ? 1 : 0, id);
+  revalidatePath(`/panel/pacientes/${id}`);
+  revalidatePath('/panel/pacientes');
+  return { ok: true, aviso: iniciado ? 'Marcado: ya inició su proceso. No se le hará seguimiento.' : 'Marca quitada.' };
+}
