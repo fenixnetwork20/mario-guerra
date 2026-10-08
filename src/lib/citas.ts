@@ -1,4 +1,5 @@
 import 'server-only';
+import { sincronizarIngresoCita, moverIngresoCita } from './dinero';
 import { db, cfgNum } from './db';
 import { tokenNuevo, cupoDisponible } from './agenda';
 import { enviarPlantilla, linkGestion } from './mensajeria';
@@ -124,6 +125,7 @@ export async function cancelarCita(id: number, op: OpcionesCancelar): Promise<bo
     if (pago && !['devuelto', 'por_devolver'].includes(cita.pago_estado)) {
       db.prepare("UPDATE citas SET pago_estado = 'por_devolver' WHERE id = ?").run(id);
     }
+    sincronizarIngresoCita(id);
 
     const traiaPago = pago
       ? ` — hay que devolverle ${cita.pago_monto_usd} $${cita.pago_estado === 'verificado' ? '' : ' (el pago no estaba verificado: confirma que entró antes de devolver)'}`
@@ -192,6 +194,7 @@ export function reprogramarCita(citaId: number, nuevaFechaHora: string): Cita | 
                           notas = TRIM(COALESCE(notas, '') || ?)
           WHERE id = ?`
       ).run(`\nPago trasladado a la cita del ${nuevaFechaHora}.`, citaId);
+      moverIngresoCita(citaId, nueva.id);
     }
 
     notificar(

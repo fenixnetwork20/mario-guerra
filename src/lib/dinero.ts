@@ -169,3 +169,56 @@ export function pagosPorRevisar(dias = 7) {
 
 export const usd = (n: number) =>
   `$${(Math.round((n + Number.EPSILON) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const NOMBRE_METODO: Record<string, string> = {
+  efectivo: 'Efectivo',
+  zelle: 'Zelle',
+  binance: 'Binance',
+  pago_movil: 'Pago móvil',
+  transferencia: 'Transferencia / pago móvil',
+};
+
+// Marca del ingreso que nace de una cita: así se distingue de un pago cargado a
+// mano en la ficha aunque lleve el mismo cita_id.
+const MARCA_CONSULTA = '· pago de la cita';
+
+/**
+ * La consulta cobrada entra como ingreso. Antes verificar el pago solo cambiaba
+ * la cita y Dinero no se enteraba: el mes salía en cero con consultas pagadas.
+ * Regla: verificado = hay ingreso; por_devolver = se queda (la plata entró y
+ * todavía no salió); pendiente, rechazado o devuelto = no hay ingreso.
+ */
+export function sincronizarIngresoCita(citaId: number) {
+  const c = db.prepare(
+    'SELECT id, paciente_id, modalidad, pago_estado, pago_monto_usd, pago_metodo FROM citas WHERE id = ?'
+  ).get(citaId) as {
+    id: number; paciente_id: number; modalidad: string | null; pago_estado: string;
+    pago_monto_usd: number | null; pago_metodo: string | null;
+  } | undefined;
+  if (!c) return;
+  const fila = db.prepare(
+    `SELECT id FROM pagos WHERE cita_id = ? AND concepto LIKE ?`
+  ).get(citaId, `%${MARCA_CONSULTA}`) as { id: number } | undefined;
+
+  const monto = c.pago_monto_usd ?? 0;
+  if (c.pago_estado === 'verificado' && monto > 0) {
+    const metodo = c.pago_metodo === 'efectivo' ? 'efectivo' : 'transferencia';
+    const concepto = `Consulta ${c.modalidad === 'online' ? 'online' : 'presencial'} ${MARCA_CONSULTA}`;
+    if (fila) {
+      db.prepare('UPDATE pagos SET monto = ?, metodo = ?, concepto = ? WHERE id = ?')
+        .run(monto, metodo, concepto, fila.id);
+    } else {
+      db.prepare(
+        'INSERT INTO pagos (paciente_id, cita_id, monto, metodo, fecha, concepto) VALUES (?,?,?,?,?,?)'
+      ).run(c.paciente_id, citaId, monto, metodo, hoyVET(), concepto);
+    }
+  } else if (c.pago_estado !== 'por_devolver' && fila) {
+    db.prepare('DELETE FROM pagos WHERE id = ?').run(fila.id);
+  }
+}
+
+/** Al reprogramar el pago viaja de cita: el ingreso va con él y conserva su fecha. */
+export function moverIngresoCita(deCitaId: number, aCitaId: number) {
+  db.prepare(`UPDATE pagos SET cita_id = ? WHERE cita_id = ? AND concepto LIKE ?`)
+    .run(aCitaId, deCitaId, `%${MARCA_CONSULTA}`);
+}

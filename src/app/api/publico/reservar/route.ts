@@ -1,3 +1,4 @@
+import { moverIngresoCita } from '@/lib/dinero';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
@@ -165,6 +166,7 @@ export async function POST(req: Request) {
                         notas = TRIM(COALESCE(notas, '') || ?)
         WHERE id = ?`
     ).run(`\nPago trasladado a la cita del ${b.inicio}.`, excluir);
+    if (excluir) moverIngresoCita(excluir, cita.id);
   } else {
   // El pago: monto, tasa del día y comprobante. La cita queda 'pendiente' hasta
   // que recepción lo verifique; el cupo ya está apartado igual.

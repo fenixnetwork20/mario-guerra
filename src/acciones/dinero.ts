@@ -9,7 +9,7 @@ import { hoyVET, mesDe } from '@/lib/fechas';
 import { validarFecha, validarMes } from '@/lib/validar';
 import type { Respuesta } from '@/componentes/FormAccion';
 
-const METODOS = ['zelle', 'efectivo', 'binance'];
+const METODOS = ['zelle', 'efectivo', 'binance', 'pago_movil', 'transferencia'];
 
 function monto(datos: FormData, campo = 'monto'): number | null {
   const n = Number(datos.get(campo));

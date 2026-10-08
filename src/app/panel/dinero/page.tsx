@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
-import { resumenMensual, mesActual, usd, cuotasVencidas } from '@/lib/dinero';
+import { resumenMensual, mesActual, usd, cuotasVencidas, NOMBRE_METODO } from '@/lib/dinero';
 import { Seccion, Cifra, Vacio, EnlacePaciente } from '@/componentes/ui';
 import { Plegable, BotonForm } from '@/componentes/FormulariosFicha';
 import { FormGastoFijo } from '@/componentes/FormGastoFijo';
@@ -67,7 +67,7 @@ export default async function Dinero({ searchParams }: { searchParams: Promise<{
         <div className="flex flex-wrap gap-3">
           {r.porMetodo.map((m) => (
             <div key={m.metodo} className="rounded-lg border border-[var(--color-linea)] px-4 py-2">
-              <span className="etiqueta capitalize">{m.metodo}</span>
+              <span className="etiqueta">{NOMBRE_METODO[m.metodo] ?? m.metodo}</span>
               <p className="titulo text-[18px]">{usd(m.s)}</p>
             </div>
           ))}
@@ -85,7 +85,7 @@ export default async function Dinero({ searchParams }: { searchParams: Promise<{
                   <tr key={p.id}>
                     <td className="whitespace-nowrap">{p.fecha}</td>
                     <td><EnlacePaciente id={p.pid} nombre={p.paciente} /></td>
-                    <td className="capitalize">{p.metodo}</td>
+                    <td>{NOMBRE_METODO[p.metodo] ?? p.metodo}</td>
                     <td className="text-[13.5px]">{p.concepto || '—'}</td>
                     <td className="text-right font-medium">{usd(p.monto)}</td>
                   </tr>

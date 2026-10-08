@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS pagos (
   cirugia_id  INTEGER REFERENCES cirugias(id) ON DELETE SET NULL,
   cita_id     INTEGER REFERENCES citas(id) ON DELETE SET NULL,
   monto       REAL NOT NULL,
-  metodo      TEXT NOT NULL CHECK (metodo IN ('zelle','efectivo','binance')),
+  metodo      TEXT NOT NULL CHECK (metodo IN ('zelle','efectivo','binance','pago_movil','transferencia')),
   fecha       TEXT NOT NULL,  -- 'YYYY-MM-DD'
   concepto    TEXT,
   created_by  INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,

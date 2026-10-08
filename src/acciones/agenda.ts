@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { sincronizarIngresoCita } from '@/lib/dinero';
 import { db, cfgNum } from '@/lib/db';
 import { exigirPermiso } from '@/lib/permisos';
 import {
@@ -189,7 +190,9 @@ export async function verificarPago(_prev: Respuesta | null, datos: FormData): P
 
   db.prepare("UPDATE citas SET pago_estado = ?, pago_verificado_at = datetime('now') WHERE id = ?")
     .run(estado, id);
+  sincronizarIngresoCita(id);
   refrescar(soloFecha(c.fecha_hora));
+  revalidatePath('/panel/dinero');
   return {
     ok: true,
     aviso: estado === 'verificado' ? 'Pago verificado.'

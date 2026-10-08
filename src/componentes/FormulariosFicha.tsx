@@ -85,6 +85,8 @@ export function FormPago({
           <select name="metodo" className="campo mt-1" required>
             <option value="">—</option>
             <option value="efectivo">Efectivo</option>
+            <option value="pago_movil">Pago móvil</option>
+            <option value="transferencia">Transferencia</option>
             <option value="zelle">Zelle</option>
             <option value="binance">Binance</option>
           </select>
