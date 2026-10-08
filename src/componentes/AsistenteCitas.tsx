@@ -39,15 +39,27 @@ const PASOS_AGENDAR = 6;
 const hayComoPagar = (c: Cobro | null) => Boolean(c && (c.pagoMovil || c.binance || c.zelle || c.efectivo));
 const DIAS_VISIBLES = 12;
 
+/** 120 → "2 horas", 60 → "1 hora", 90 → "1 hora y media". */
+function textoDuracion(min: number): string {
+  const h = Math.floor(min / 60), m = min % 60;
+  const horas = h === 1 ? '1 hora' : `${h} horas`;
+  if (!m) return horas;
+  if (m === 30) return `${horas} y media`;
+  return h ? `${horas} y ${m} minutos` : `${m} minutos`;
+}
+
 /**
  * Menú guiado de citas: agendar, confirmar y cancelar/reprogramar, todo dentro
  * de la misma tarjeta. Un paso por pantalla — el paciente nunca ve el
  * formulario completo de golpe, que es lo que hace que la gente abandone.
  */
 export function AsistenteCitas({
-  dias, procedimientos, reprogramando, whatsapp: whatsappConsultorio, children,
+  diasPorModalidad, duraciones, procedimientos, reprogramando, whatsapp: whatsappConsultorio, children,
 }: {
-  dias: DiaCupos[];
+  /** Los cupos dependen de la modalidad: la presencial dura más y no cabe en cualquier hueco. */
+  diasPorModalidad: { presencial: DiaCupos[]; online: DiaCupos[] };
+  /** Minutos de cada consulta, para decírselo al paciente. */
+  duraciones: { presencial: number; online: number };
   procedimientos: string[];
   reprogramando: Reprogramando | null;
   whatsapp: string;
@@ -59,12 +71,15 @@ export function AsistenteCitas({
   return (
     <>
       <div className="mx-auto w-full max-w-[34rem]">
-        {modo === 'menu' && <Menu ir={setModo} hayCupos={dias.length > 0} />}
+        {modo === 'menu' && (
+          <Menu ir={setModo} hayCupos={diasPorModalidad.presencial.length + diasPorModalidad.online.length > 0} />
+        )}
         {(modo === 'agendar' || modo === 'control') && (
           <Agendar
             key={modo}
             control={modo === 'control'}
-            dias={dias}
+            diasPorModalidad={diasPorModalidad}
+            duraciones={duraciones}
             procedimientos={procedimientos}
             reprogramando={reprogramando}
             whatsapp={whatsappConsultorio}
@@ -195,11 +210,12 @@ function Menu({ ir, hayCupos }: { ir: (m: Modo) => void; hayCupos: boolean }) {
 /* ── Agendar ────────────────────────────────────────────────────────────── */
 
 function Agendar({
-  dias, procedimientos, reprogramando, whatsapp: whatsappConsultorio, volver, control = false,
+  diasPorModalidad, duraciones, procedimientos, reprogramando, whatsapp: whatsappConsultorio, volver, control = false,
 }: {
   /** Paciente que ya pasó por el doctor y viene a control: no paga. */
   control?: boolean;
-  dias: DiaCupos[];
+  diasPorModalidad: { presencial: DiaCupos[]; online: DiaCupos[] };
+  duraciones: { presencial: number; online: number };
   procedimientos: string[];
   reprogramando: Reprogramando | null;
   whatsapp: string;
@@ -226,6 +242,8 @@ function Agendar({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Primero se escoge la modalidad: de ella dependen los días y las horas que caben.
+  const dias = diasPorModalidad[modalidad];
   const horas = useMemo(() => dias.find((d) => d.fecha === fecha)?.cupos ?? [], [dias, fecha]);
 
   /** Los datos de cobro se piden al llegar al paso del pago, no antes: el monto
@@ -248,7 +266,7 @@ function Agendar({
     setPaso(paso - 1);
   };
 
-  if (!dias.length) {
+  if (!diasPorModalidad.presencial.length && !diasPorModalidad.online.length) {
     return (
       <Tarjeta>
         <Cabecera
@@ -285,7 +303,7 @@ function Agendar({
       const datos = await r.json();
       if (!r.ok) {
         setError(datos.error ?? 'No se pudo guardar la reserva.');
-        if (datos.recargar) { setInicio(''); setPaso(0); setTimeout(() => router.refresh(), 1500); }
+        if (datos.recargar) { setInicio(''); setPaso(1); setTimeout(() => router.refresh(), 1500); }
         return;
       }
       router.push(`/cita/${datos.token}?nueva=1`);
@@ -303,7 +321,7 @@ function Agendar({
       <div key={paso} className="paso-entra">
         {paso === 0 && (
           <>
-            <Cabecera titulo={control ? '¿Qué día te sirve para tu control?' : '¿Qué día te sirve?'} volver={atras} paso={1} />
+            <Cabecera titulo={control ? '¿Cómo prefieres tu control?' : '¿Cómo prefieres la consulta?'} volver={atras} paso={1} />
             {reprogramando && (
               <p className="rounded-lg border border-[var(--color-cobre-luz)]/40 bg-[var(--color-cobre)]/20 px-4 py-3 text-[13.5px] mb-4">
                 Estás cambiando tu cita del {fechaLarga(reprogramando.fechaActual.slice(0, 10))} a las{' '}
@@ -311,12 +329,40 @@ function Agendar({
                 {yaPago && ` Tu pago de ${reprogramando.yaPagoUsd} $ sigue en pie: cambiar la fecha no se cobra otra vez.`}
               </p>
             )}
+            <div className="space-y-3">
+              {([
+                ['presencial', 'En el consultorio', `Nos vemos en Bella Vista, Maracaibo. Dura alrededor de ${textoDuracion(duraciones.presencial)}.`],
+                ['online', 'Por videollamada', `Desde donde estés, ideal si no vives en Maracaibo. Dura alrededor de ${textoDuracion(duraciones.online)}.`],
+              ] as const).map(([m, titulo, pie]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => { setModalidad(m); setFecha(''); setInicio(''); setVerTodos(false); setPaso(1); }}
+                  className={`opcion px-4 py-4 ${modalidad === m && reprogramando ? 'opcion-activa' : ''}`}
+                >
+                  <span className="block text-[15.5px] font-semibold">{titulo}</span>
+                  <span className="block text-[13px] text-[var(--color-nude)]/60 mt-1 leading-relaxed">{pie}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {paso === 1 && (
+          <>
+            <Cabecera titulo={control ? '¿Qué día te sirve para tu control?' : '¿Qué día te sirve?'}
+              sub={modalidad === 'presencial' ? 'En el consultorio' : 'Por videollamada'} volver={atras} paso={2} />
+            {!dias.length && (
+              <p className="text-[14px] text-[var(--color-nude)]/75">
+                No hay horarios libres para esta modalidad en este momento. Prueba con la otra o escríbenos por WhatsApp.
+              </p>
+            )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {visibles.map((d) => (
                 <button
                   key={d.fecha}
                   type="button"
-                  onClick={() => { setFecha(d.fecha); setInicio(''); setPaso(1); }}
+                  onClick={() => { setFecha(d.fecha); setInicio(''); setPaso(2); }}
                   className="opcion px-3 py-3"
                 >
                   <span className="block text-[14px] font-medium">{fechaCorta(d.fecha)}</span>
@@ -335,40 +381,18 @@ function Agendar({
           </>
         )}
 
-        {paso === 1 && (
+        {paso === 2 && (
           <>
-            <Cabecera titulo="¿A qué hora?" sub={fechaLarga(fecha)} volver={atras} paso={2} />
+            <Cabecera titulo="¿A qué hora?" sub={fechaLarga(fecha)} volver={atras} paso={3} />
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {horas.map((c) => (
                 <button
                   key={c.inicio}
                   type="button"
-                  onClick={() => { setInicio(c.inicio); setPaso(2); }}
+                  onClick={() => { setInicio(c.inicio); setPaso(3); }}
                   className="opcion px-2 py-3 text-center text-[14px] font-medium"
                 >
                   {hora12(c.hora)}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {paso === 2 && (
-          <>
-            <Cabecera titulo="¿Cómo prefieres la consulta?" volver={atras} paso={3} />
-            <div className="space-y-3">
-              {([
-                ['presencial', 'En el consultorio', 'Nos vemos en Bella Vista, Maracaibo. Dura alrededor de una hora.'],
-                ['online', 'Por videollamada', 'Desde donde estés, ideal si no vives en Maracaibo.'],
-              ] as const).map(([m, titulo, pie]) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => { setModalidad(m); setPaso(3); }}
-                  className={`opcion px-4 py-4 ${modalidad === m ? 'opcion-activa' : ''}`}
-                >
-                  <span className="block text-[15.5px] font-semibold">{titulo}</span>
-                  <span className="block text-[13px] text-[var(--color-nude)]/60 mt-1 leading-relaxed">{pie}</span>
                 </button>
               ))}
             </div>

@@ -21,10 +21,12 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
     if (v && !HORA.test(v)) return { ok: false, error: `Hora inválida en ${h}.` };
   }
 
+  // Solo números de verdad. El banco, los titulares y el usuario de Binance
+  // estaban aquí: "Banesco" no es un número, así que la pantalla entera se
+  // negaba a guardar cualquier cambio.
   const numeros = [
-    'duracion_cita', 'precio_consulta_presencial', 'precio_consulta_online',
-    'pm_banco', 'pm_telefono', 'pm_cedula', 'pm_titular', 'tasa_manual',
-    'binance_usuario', 'zelle_correo', 'zelle_titular',
+    'duracion_cita', 'duracion_presencial', 'duracion_online',
+    'precio_consulta_presencial', 'precio_consulta_online', 'tasa_manual',
     'autocancel_offset_horas', 'dias_max_reserva', 'horas_min_anticipacion',
   ];
   for (const n of numeros) {
@@ -32,7 +34,11 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
     if (v !== null && v !== '' && !(Number(v) >= 0)) return { ok: false, error: `Valor inválido en ${n}.` };
   }
 
-  const textos = ['nombre_consultorio', 'direccion', 'whatsapp_consultorio', 'whatsapp_emergencias'];
+  const textos = [
+    'nombre_consultorio', 'direccion', 'whatsapp_consultorio', 'whatsapp_emergencias',
+    'pm_banco', 'pm_telefono', 'pm_cedula', 'pm_titular',
+    'binance_usuario', 'zelle_correo', 'zelle_titular',
+  ];
   for (const clave of [...horas, ...numeros, ...textos]) {
     const v = datos.get(clave);
     if (v !== null) guardarConfig(clave, String(v));

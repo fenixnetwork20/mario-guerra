@@ -3,7 +3,7 @@ import path from 'node:path';
 import Image from 'next/image';
 import { ruta } from '@/lib/rutas';
 import { db, cfg } from '@/lib/db';
-import { cuposLibres } from '@/lib/agenda';
+import { cuposLibres, duracionDe } from '@/lib/agenda';
 import { citaPorToken } from '@/lib/citas';
 import { MarcoPublico } from '@/componentes/MarcoPublico';
 import { Aparece } from '@/componentes/Aparece';
@@ -91,7 +91,11 @@ export default async function Reservar({
               y el paciente no ve el paso de reprogramación. */}
           <AsistenteCitas
             key={desde ?? 'menu'}
-            dias={cuposLibres(undefined, excluir)}
+            diasPorModalidad={{
+              presencial: cuposLibres(undefined, excluir, 'presencial'),
+              online: cuposLibres(undefined, excluir, 'online'),
+            }}
+            duraciones={{ presencial: duracionDe('presencial'), online: duracionDe('online') }}
             procedimientos={procedimientos}
             whatsapp={cfg('whatsapp_consultorio', '')}
             reprogramando={
@@ -119,10 +123,13 @@ export default async function Reservar({
   );
 }
 
+const horasTexto = (min: number) =>
+  min % 60 === 0 ? (min === 60 ? '1 hora' : `${min / 60} horas`) : `${min} minutos`;
+
 /** Debajo de la tarjeta y solo en el menú: qué pasa en la consulta. */
 function QueIncluye() {
   const puntos = [
-    ['Una hora contigo', 'Tiempo suficiente para revisarte, escuchar lo que buscas y responder cada duda.'],
+    ['Tiempo para ti', `La presencial dura unas ${horasTexto(duracionDe('presencial'))} y la online unas ${horasTexto(duracionDe('online'))}: tiempo para revisarte, escuchar lo que buscas y responder cada duda.`],
     ['Valoración y presupuesto', 'El doctor evalúa tu caso y te explica qué procedimiento aplica y qué implica.'],
     ['La fecha de tu cirugía', 'Si decides avanzar, de esa misma consulta sale la fecha y el plan de pago.'],
     ['Presencial u online', 'Si estás fuera de Maracaibo, la primera valoración puede ser por videollamada.'],

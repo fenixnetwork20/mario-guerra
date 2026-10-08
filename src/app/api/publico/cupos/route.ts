@@ -9,5 +9,8 @@ export async function GET(req: Request) {
   if (!permitido(`cupos:${ip}`, 60, 300)) {
     return NextResponse.json({ error: 'Demasiadas consultas. Espera un momento.' }, { status: 429 });
   }
-  return NextResponse.json({ dias: cuposLibres() });
+  // Sin modalidad devuelve los de la presencial, que es la más larga: un cupo
+  // que sirve para dos horas sirve para una.
+  const modalidad = new URL(req.url).searchParams.get('modalidad');
+  return NextResponse.json({ dias: cuposLibres(undefined, undefined, modalidad) });
 }

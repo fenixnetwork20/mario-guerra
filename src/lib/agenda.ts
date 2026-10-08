@@ -37,6 +37,16 @@ function ocupados(desde: string, hasta: string, excluirCitaId?: number): Ocupado
   ];
 }
 
+/**
+ * Cuánto dura una consulta según cómo se hace: la presencial lleva más (examen
+ * físico); la online, una hora. Configurable en Configuración → Agenda.
+ */
+export function duracionDe(modalidad?: string | null): number {
+  return modalidad === 'online'
+    ? cfgNum('duracion_online', 60)
+    : cfgNum('duracion_presencial', cfgNum('duracion_cita', 60));
+}
+
 const seSolapan = (aIni: string, aFin: string, bIni: string, bFin: string) =>
   aIni < bFin && bIni < aFin;
 
@@ -44,8 +54,11 @@ const seSolapan = (aIni: string, aFin: string, bIni: string, bFin: string) =>
  * Cupos libres para la reserva pública: se generan desde los horarios de atención
  * y se descuentan citas activas, bloqueos y lo que ya no cumple la anticipación mínima.
  */
-export function cuposLibres(diasAdelante?: number, excluirCitaId?: number): DiaCupos[] {
-  const dur = cfgNum('duracion_cita', 60);
+export function cuposLibres(diasAdelante?: number, excluirCitaId?: number, modalidad?: string | null): DiaCupos[] {
+  const dur = duracionDe(modalidad);
+  // Los cupos arrancan cada hora aunque la consulta dure dos: así una
+  // presencial puede empezar a las 9 o a las 10, siempre que quepan las dos horas.
+  const paso = 60;
   const maxDias = diasAdelante ?? cfgNum('dias_max_reserva', 60);
   const minAnticip = cfgNum('horas_min_anticipacion', 3) * 60;
 
@@ -69,7 +82,7 @@ export function cuposLibres(diasAdelante?: number, excluirCitaId?: number): DiaC
     for (const h of delDia) {
       const ini = minutosDeHora(h.hora_inicio);
       const fin = minutosDeHora(h.hora_fin);
-      for (let m = ini; m + dur <= fin; m += dur) {
+      for (let m = ini; m + dur <= fin; m += paso) {
         const hora = horaDeMinutos(m);
         const inicio = `${fecha} ${hora}`;
         if (minutosEntre(ahora, inicio) < minAnticip) continue;
@@ -85,7 +98,7 @@ export function cuposLibres(diasAdelante?: number, excluirCitaId?: number): DiaC
 
 /** ¿Ese momento exacto sigue libre? Se revalida antes de escribir la reserva. */
 export function cupoDisponible(inicio: string, duracion?: number, excluirCitaId?: number): boolean {
-  const dur = duracion ?? cfgNum('duracion_cita', 60);
+  const dur = duracion ?? duracionDe(null);
   const fecha = soloFecha(inicio);
   const fin = sumarMinutos(inicio, dur);
 

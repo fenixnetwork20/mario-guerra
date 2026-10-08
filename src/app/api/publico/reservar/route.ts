@@ -3,7 +3,7 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { db, cfgNum } from '@/lib/db';
 import { tasaDelDia } from '@/lib/tasa';
-import { cupoDisponible } from '@/lib/agenda';
+import { cupoDisponible, duracionDe } from '@/lib/agenda';
 import { buscarOCrearPaciente, crearCita, citaPorToken } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
 import { enviarPlantilla, linkGestion, claveParaCita } from '@/lib/mensajeria';
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   const anterior = b.desde ? citaPorToken(b.desde) : undefined;
   const excluir = anterior && ['reservada', 'confirmada'].includes(anterior.estado) ? anterior.id : undefined;
 
-  if (!cupoDisponible(b.inicio, undefined, excluir)) {
+  if (!cupoDisponible(b.inicio, duracionDe(b.modalidad), excluir)) {
     return NextResponse.json(
       { error: 'Ese horario acaba de ocuparse. Elige otro, por favor.', recargar: true },
       { status: 409 }
@@ -134,6 +134,7 @@ export async function POST(req: Request) {
       pacienteId: paciente.id,
       tipo: esControl ? 'revision' : 'valoracion',
       modalidad: b.modalidad as 'presencial' | 'online',
+      duracion: duracionDe(b.modalidad),
       fechaHora: b.inicio,
       origen: 'link',
       procedimientoInteres: b.procedimiento,

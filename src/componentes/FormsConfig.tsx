@@ -88,8 +88,9 @@ export function FormAjustes({ accion, cfg }: { accion: Accion; cfg: Record<strin
     <FormAccion accion={accion} className="space-y-5">
       <div>
         <p className="etiqueta">Agenda</p>
-        <div className="grid sm:grid-cols-3 gap-3 mt-2">
-          {campo('duracion_cita', 'Duración de cita (min)', 'number')}
+        <div className="grid sm:grid-cols-2 gap-3 mt-2">
+          {campo('duracion_presencial', 'Consulta presencial (min)', 'number')}
+          {campo('duracion_online', 'Consulta online (min)', 'number')}
           {campo('dias_max_reserva', 'Días que se pueden reservar hacia adelante', 'number')}
           {campo('horas_min_anticipacion', 'Anticipación mínima (horas)', 'number')}
         </div>
