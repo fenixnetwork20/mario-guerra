@@ -319,3 +319,5 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- ese seguimiento ya salió y no se repite.
 -- ALTER TABLE pacientes ADD COLUMN proceso_iniciado_at TEXT;
 -- ALTER TABLE citas ADD COLUMN postconsulta_at TEXT;
+-- Aviso de "cita en 30 minutos" al consultorio: una sola vez por cita.
+-- ALTER TABLE citas ADD COLUMN aviso_previo_at TEXT;

@@ -7,6 +7,7 @@ import { cancelarCita } from './citas';
 import { cuotasVencidas } from './dinero';
 import { sincronizarLeads, correrSeguimientos } from './leads';
 import { correrPostconsulta } from './postconsulta';
+import { avisarCitasProximas } from './proxima';
 import type { Cita } from './tipos';
 
 type CitaConPaciente = Cita & { paciente_nombre: string; whatsapp: string };
@@ -193,6 +194,9 @@ export async function correrTick() {
     db.prepare('UPDATE citas SET pago_aviso_at = ? WHERE id = ?').run(ahora, c.id);
     reporte.pagos++;
   }
+
+  // La cita que viene en ~30 minutos: aviso al panel y al teléfono.
+  Object.assign(reporte, { proximas: avisarCitasProximas(ahora) });
 
   // Cuotas vencidas: una sola notificación por cuota.
   for (const cu of cuotasVencidas()) {

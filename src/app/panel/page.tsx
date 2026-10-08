@@ -12,6 +12,9 @@ import { CitasEnTarjetas } from '@/componentes/CitasEnTarjetas';
 import { CeldaPago } from '@/componentes/CeldaPago';
 import { cambiarEstadoCita, cancelarDesdePanel, reprogramarDesdePanel, verificarPago } from '@/acciones/agenda';
 import { FormAccion, Boton } from '@/componentes/FormAccion';
+import { Refrescar } from '@/componentes/Refrescar';
+import { citasProximas, pagoListo } from '@/lib/proxima';
+import { ahoraVET, minutosEntre } from '@/lib/fechas';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,13 +35,39 @@ export default async function Hoy() {
   // lo único que hay que verificar. El efectivo se cobra al llegar.
   const porVerificar = cobros.filter((c) => c.pago_archivo || c.pago_referencia).length;
   const resumen = resumenMensual(mesActual());
+  const ahora = ahoraVET();
+  const proximas = puede(usuario, 'agenda') ? citasProximas(ahora) : [];
 
   return (
     <div className="space-y-6">
+      <Refrescar segundos={60} />
       <div>
         <p className="etiqueta">{fechaLarga(hoy)}</p>
         <h1 className="titulo text-[28px] mt-0.5">Buen día, {usuario.nombre.split(' ')[0]}</h1>
       </div>
+
+      {/* La cita que viene o la que está en curso, arriba de todo. Verde: pagó o
+          es control. Rojo: falta el pago (o cobrarlo al llegar). */}
+      {proximas.map((c) => {
+        const pago = pagoListo(c);
+        const faltan = minutosEntre(ahora, c.fecha_hora);
+        const cuando = faltan > 0 ? `Empieza en ${faltan} min` : 'En curso ahora';
+        const como = c.tipo === 'revision' ? 'Control' : c.modalidad === 'online' ? 'Videollamada' : 'Presencial';
+        return (
+          <Link key={c.id} href={`/panel/pacientes/${c.paciente_id}`}
+            className={`block rounded-xl border-2 px-4 py-3.5 ${pago.ok
+              ? 'border-[var(--color-bien)] bg-[var(--color-bien-luz)]'
+              : 'border-[var(--color-alerta)] bg-[var(--color-alerta-luz)]'}`}>
+            <p className={`text-[12px] font-bold uppercase tracking-[.12em] ${pago.ok ? 'text-[var(--color-bien)]' : 'text-[var(--color-alerta)]'}`}>
+              {cuando} · {hora12(soloHora(c.fecha_hora))}
+            </p>
+            <p className="titulo text-[20px] mt-0.5 text-[var(--color-tinta)]">{c.paciente_nombre}</p>
+            <p className="text-[14px] mt-0.5 text-[var(--color-tinta-2)]">
+              {como} · <span className={`font-semibold ${pago.ok ? 'text-[var(--color-bien)]' : 'text-[var(--color-alerta)]'}`}>{pago.texto}</span>
+            </p>
+          </Link>
+        );
+      })}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Cifra titulo="Citas de hoy" valor={String(activas.length)} detalle={`${citas.length} en total`} />

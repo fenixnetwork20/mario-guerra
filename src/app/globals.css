@@ -35,6 +35,8 @@
   --color-alerta-luz: #f8e9e5;
   --color-aviso:      #8a6a1f;
   --color-aviso-luz:  #f8f1de;
+  --color-bien:       #2f6b45;
+  --color-bien-luz:   #e5f1e8;
 
   --font-sans: var(--fuente-marca), ui-sans-serif, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
