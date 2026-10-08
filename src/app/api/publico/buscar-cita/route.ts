@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { permitido, ipDe } from '@/lib/ratelimit';
-import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
+import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora, sumarMinutos } from '@/lib/fechas';
 import { normalizarCedula, validarCedula } from '@/lib/validar';
 import { puedeConfirmarse } from '@/lib/recordatorios';
 
@@ -50,7 +50,10 @@ export async function POST(req: Request) {
         AND c.fecha_hora >= ?
       ORDER BY c.fecha_hora
       LIMIT 5`
-  ).all(normalizarCedula(b.cedula), ahoraVET()) as Fila[];
+  // Desde dos horas atrás: la cita que está en curso también cuenta. Antes se
+  // pedía fecha_hora >= ahora y a las 12:03 una paciente con cita a las 12:00
+  // leyó "no encontramos una cita" con el pago hecho y la consulta empezando.
+  ).all(normalizarCedula(b.cedula), sumarMinutos(ahoraVET(), -120)) as Fila[];
 
   if (!filas.length) return NextResponse.json({ error: GENERICO }, { status: 404 });
 

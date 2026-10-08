@@ -337,7 +337,7 @@ function Agendar({
                 <button
                   key={m}
                   type="button"
-                  onClick={() => { setModalidad(m); setFecha(''); setInicio(''); setVerTodos(false); setPaso(1); }}
+                  onClick={() => { setModalidad(m); setMetodoPago(''); setFecha(''); setInicio(''); setVerTodos(false); setPaso(1); }}
                   className={`opcion px-4 py-4 ${modalidad === m && reprogramando ? 'opcion-activa' : ''}`}
                 >
                   <span className="block text-[15.5px] font-semibold">{titulo}</span>
@@ -482,7 +482,8 @@ function Agendar({
                       apartado tu cupo.
                     </span>
                   </button>
-                  {cobro.efectivo && (
+                  {/* Efectivo solo en el consultorio: por videollamada no hay a quién dárselo. */}
+                  {cobro.efectivo && modalidad === 'presencial' && (
                     <button type="button" onClick={() => setMetodoPago('efectivo')}
                       className={`w-full text-left rounded-lg border px-4 py-3 ${
                         metodoPago === 'efectivo'

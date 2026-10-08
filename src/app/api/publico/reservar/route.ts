@@ -92,6 +92,14 @@ export async function POST(req: Request) {
     if (!['transferencia', 'efectivo'].includes(metodo)) {
       return NextResponse.json({ error: 'Falta decir cómo vas a pagar la consulta.' }, { status: 400 });
     }
+    // El efectivo se entrega en el consultorio: en una videollamada no hay a
+    // quién dárselo. Pasó: una cita online quedó "en efectivo" y sin pagar.
+    if (metodo === 'efectivo' && b.modalidad === 'online') {
+      return NextResponse.json(
+        { error: 'El pago en efectivo es solo para consultas en el consultorio. Para la videollamada paga por transferencia o pago móvil.' },
+        { status: 400 }
+      );
+    }
     if (metodo === 'transferencia' && (!comprobante || !String(b.referencia ?? '').trim())) {
       return NextResponse.json(
         { error: 'Para apartar tu cupo hacen falta las dos cosas: la referencia del pago y la captura.' },
