@@ -3,17 +3,19 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * El único gesto de movimiento del sitio público: el bloque aparece cuando
- * entra en pantalla. Se dispara una sola vez — un elemento que se desvanece al
- * volver a subir se siente roto, no elegante.
+ * El bloque aparece cuando entra en pantalla. Se dispara una sola vez — un
+ * elemento que se desvanece al volver a subir se siente roto, no elegante.
+ * Variantes: 'sube' (opacidad y 18px), 'cortina' (la foto se descubre de abajo
+ * hacia arriba) y 'lado' (entra desde la izquierda).
  */
 export function Aparece({
-  children, retraso = 0, className = '', as: Etiqueta = 'div',
+  children, retraso = 0, className = '', as: Etiqueta = 'div', variante = 'sube',
 }: {
   children: React.ReactNode;
   retraso?: number;
   className?: string;
-  as?: 'div' | 'section' | 'li' | 'header';
+  as?: 'div' | 'section' | 'li' | 'header' | 'ul' | 'ol';
+  variante?: 'sube' | 'cortina' | 'lado';
 }) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
@@ -41,7 +43,7 @@ export function Aparece({
   return (
     <Etiqueta
       ref={ref as React.Ref<never>}
-      className={`aparece ${visible ? 'visible' : ''} ${className}`}
+      className={`aparece ${variante === 'sube' ? '' : variante} ${visible ? 'visible' : ''} ${className}`}
       style={{ ['--retraso' as string]: `${retraso}ms` }}
     >
       {children}

@@ -15,10 +15,17 @@ const ENLACES = [
 
 export function CabeceraLanding({ whatsapp }: { whatsapp: string }) {
   const [encogida, setEncogida] = useState(false);
+  const [oculta, setOculta] = useState(false);
   const [menu, setMenu] = useState(false);
 
+  // Al bajar se esconde para dejar leer; al subir (alguien busca el menú) vuelve.
   useEffect(() => {
-    const alScroll = () => setEncogida(window.scrollY > 40);
+    let antes = window.scrollY;
+    const alScroll = () => {
+      const y = window.scrollY;
+      setEncogida(y > 40);
+      if (Math.abs(y - antes) > 6) { setOculta(y > antes && y > 500); antes = y; }
+    };
     alScroll();
     window.addEventListener('scroll', alScroll, { passive: true });
     return () => window.removeEventListener('scroll', alScroll);
@@ -33,7 +40,7 @@ export function CabeceraLanding({ whatsapp }: { whatsapp: string }) {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${oculta && !menu ? 'cabecera-oculta' : ''} ${
           encogida
             ? 'bg-[var(--color-tinta)]/95 backdrop-blur py-2.5 shadow-[0_1px_0_rgba(255,255,255,.08)]'
             : 'bg-gradient-to-b from-[var(--color-tinta)]/85 to-transparent py-5'
@@ -65,7 +72,7 @@ export function CabeceraLanding({ whatsapp }: { whatsapp: string }) {
               WhatsApp
             </a>
             <Link href="/reservar"
-              className="hidden lg:inline-flex btn h-9 whitespace-nowrap bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]">
+              className="hidden lg:inline-flex btn brillo h-9 whitespace-nowrap bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]">
               Agendar consulta
             </Link>
             <button

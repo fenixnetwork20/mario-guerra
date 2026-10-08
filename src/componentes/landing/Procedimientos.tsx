@@ -38,7 +38,7 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
                 onClick={() => abrir(c.clave, seleccionada)}
                 aria-expanded={seleccionada}
                 aria-controls="detalle-procedimientos"
-                className={`w-full text-left h-full rounded-lg border p-5 transition-colors ${
+                className={`levanta w-full text-left h-full rounded-lg border p-5 ${
                   seleccionada
                     ? 'border-[var(--color-cobre-luz)] bg-[var(--color-tarjeta)]'
                     : 'border-[var(--color-linea)] bg-[var(--color-tarjeta)] hover:border-[var(--color-tinta-3)]'
@@ -77,14 +77,14 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
       </div>
 
       {activa && (
-        <div id="detalle-procedimientos" className="mt-4 tarjeta overflow-hidden">
+        <div id="detalle-procedimientos" key={activa.clave} className="despliega mt-4 tarjeta overflow-hidden">
           <div className="px-5 sm:px-7 py-6">
             <p className="marca text-[9.5px] text-[var(--color-cobre)]">{activa.nombre}</p>
             {/* En monitores anchos van en dos columnas: si no, el nombre y los
                 datos quedan separados por medio metro de vacío. */}
             <ul className="mt-5 grid xl:grid-cols-2 gap-x-14">
-              {activa.procedimientos.map((p) => (
-                <li key={p.nombre}
+              {activa.procedimientos.map((p, i) => (
+                <li key={p.nombre} style={{ ['--i' as string]: i }}
                   className="py-4 border-b border-[var(--color-papel-2)] grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 items-baseline">
                   <span className="text-[15px] font-medium">{p.nombre}</span>
                   <span className="flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] text-[var(--color-tinta-3)]">
@@ -105,8 +105,8 @@ export function Procedimientos({ categorias }: { categorias: Categoria[] }) {
         <p className="entradilla text-[var(--color-tinta-2)]">
           ¿No sabes cuál es el indicado para ti? Agenda tu valoración.
         </p>
-        <Link href="/reservar" className="btn btn-principal py-3 px-6 shrink-0">
-          Agendar consulta
+        <Link href="/reservar" className="btn btn-principal brillo py-3 px-6 shrink-0">
+          Agendar consulta <span className="flecha" aria-hidden>→</span>
         </Link>
       </div>
     </div>

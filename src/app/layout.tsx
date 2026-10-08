@@ -7,7 +7,7 @@ import './globals.css';
 // logotipo ("DR. MARIO GUERRA" en versalitas anchas).
 const montserrat = Montserrat({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['200', '300', '400', '500', '600', '700'],
   variable: '--fuente-marca',
   display: 'swap',
 });

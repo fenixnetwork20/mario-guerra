@@ -11,6 +11,9 @@ import { HeroLanding } from '@/componentes/landing/HeroLanding';
 import { Procedimientos, type Categoria } from '@/componentes/landing/Procedimientos';
 import { Testimonios, type Testimonio } from '@/componentes/landing/Testimonios';
 import { BarraMovil } from '@/componentes/landing/BarraMovil';
+import { Movimiento } from '@/componentes/landing/Movimiento';
+import { Cinta } from '@/componentes/landing/Cinta';
+import { Contador } from '@/componentes/landing/Contador';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,6 +108,7 @@ export default function Landing() {
 
   return (
     <div className="bg-[var(--color-papel)] pb-16 lg:pb-0">
+      <Movimiento />
       <CabeceraLanding whatsapp={whatsapp} />
 
       <HeroLanding
@@ -115,10 +119,13 @@ export default function Landing() {
         ]}
       />
 
+      <Cinta items={CATEGORIAS.flatMap((c) => c.procedimientos.map((p) => p.nombre))
+        .filter((n) => !n.startsWith('Reconstrucción del'))} />
+
       {/* ── Enfoque ─────────────────────────────────────────────────────── */}
       <section id="doctor" className="seccion">
         <div className="contenedor grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <Aparece>
+          <Aparece variante="lado">
             <p className="marca text-[9.5px] text-[var(--color-cobre)]">Sobre el doctor</p>
             <h2 className="titular-menor mt-4">Un enfoque honesto y cercano</h2>
             <span className="regla-cobre mt-6" />
@@ -133,8 +140,11 @@ export default function Landing() {
             </p>
           </Aparece>
 
-          <Aparece retraso={110}>
-            <div className="zoom-suave relative aspect-[4/5] rounded-lg">
+          <div className="relative">
+            {/* Marco de cobre desplazado detrás de la foto: se mueve con el scroll
+                un poco distinto que la foto y da profundidad. */}
+            <div className="absolute inset-0 translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6 rounded-lg border border-[var(--color-cobre-luz)]/60 paralaje" data-paralaje="0.05" aria-hidden />
+          <Aparece retraso={110} variante="cortina" className="zoom-suave relative aspect-[4/5] rounded-lg">
               <Image
                 src={ruta('/marca/doctor-retrato.jpg')}
                 alt="Retrato del Dr. Mario Guerra"
@@ -142,8 +152,12 @@ export default function Landing() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-[50%_18%]"
               />
-            </div>
           </Aparece>
+            <div className="vidrio absolute -left-3 sm:-left-8 bottom-8 px-5 py-4 max-w-[15rem] entra" aria-hidden>
+              <p className="marca text-[9px] text-[var(--color-cobre-luz)]">Especialidad</p>
+              <p className="text-[14px] text-white mt-1.5 leading-snug">Cirugía plástica, estética y reconstructiva</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -171,15 +185,17 @@ export default function Landing() {
             resultado que se vea natural.
           </EncabezadoSeccion>
 
-          <Aparece retraso={90} className="mt-12 grid sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="mt-12 galeria-movil sm:grid sm:grid-cols-3 sm:gap-4">
             {[
               ['quirofano-a.jpg', 'El Dr. Guerra operando'],
               ['quirofano-b.jpg', 'El Dr. Guerra durante una cirugía'],
               ['quirofano-c.jpg', 'El Dr. Guerra en el quirófano'],
             ].map(([archivo, alt], i) => (
-              <div
+              <Aparece
                 key={archivo}
-                className={`zoom-suave relative aspect-[3/4] rounded-lg ${i === 2 ? 'hidden sm:block' : ''}`}
+                variante="cortina"
+                retraso={i * 160}
+                className={`zoom-suave relative aspect-[3/4] rounded-lg ${i === 1 ? 'sm:translate-y-10' : ''}`}
               >
                 <Image
                   src={ruta(`/marca/${archivo}`)}
@@ -188,9 +204,9 @@ export default function Landing() {
                   sizes="(max-width: 640px) 50vw, 33vw"
                   className="object-cover"
                 />
-              </div>
+              </Aparece>
             ))}
-          </Aparece>
+          </div>
         </div>
       </section>
 
@@ -203,7 +219,7 @@ export default function Landing() {
             Los casos se publican en Instagram, siempre con la autorización de cada paciente.
           </EncabezadoSeccion>
 
-          <Aparece retraso={140} className="mt-10 grid lg:grid-cols-[minmax(0,1fr)_auto] gap-6 lg:gap-10 items-center tarjeta p-6 sm:p-8">
+          <Aparece retraso={140} className="mt-10 grid lg:grid-cols-[minmax(0,1fr)_auto] gap-6 lg:gap-10 items-center tarjeta levanta p-6 sm:p-8">
             <div>
               <p className="marca text-[9.5px] text-[var(--color-cobre)]">Instagram</p>
               <p className="titular-menor mt-3">{REDES[0].usuario}</p>
@@ -211,8 +227,8 @@ export default function Landing() {
                 Antes y después, videos y casos del día a día del consultorio.
               </p>
             </div>
-            <a href={REDES[0].url} target="_blank" rel="noreferrer" className="btn btn-principal py-3 px-6">
-              Ver el perfil
+            <a href={REDES[0].url} target="_blank" rel="noreferrer" className="btn btn-principal brillo py-3 px-6">
+              Ver el perfil <span className="flecha" aria-hidden>→</span>
             </a>
           </Aparece>
 
@@ -232,13 +248,13 @@ export default function Landing() {
             <p className="marca text-[9.5px] text-[var(--color-cobre-luz)]">Respaldo</p>
             <div className="grid sm:grid-cols-3 gap-8 mt-8">
               {[
-                ['+8 años', 'de experiencia en cirugía plástica y reconstructiva'],
-                ['+500', 'procedimientos realizados con éxito'],
-                ['Certificado', 'con certificaciones profesionales vigentes'],
-              ].map(([cifra, texto]) => (
-                <div key={cifra}>
-                  <p className="titular-menor text-white">{cifra}</p>
-                  <p className="text-[13.5px] text-[var(--color-nude)]/70 mt-2 leading-relaxed">{texto}</p>
+                { cifra: <><Contador hasta={8} prefijo="+" /> años</>, texto: 'de experiencia en cirugía plástica y reconstructiva' },
+                { cifra: <Contador hasta={500} prefijo="+" />, texto: 'procedimientos realizados con éxito' },
+                { cifra: 'Certificado', texto: 'con certificaciones profesionales vigentes' },
+              ].map((c, i) => (
+                <div key={i} className="border-t border-white/12 pt-6">
+                  <p className="font-extralight uppercase tracking-[.04em] text-white leading-none text-[clamp(2.2rem,4.2vw,3.6rem)]">{c.cifra}</p>
+                  <p className="text-[13.5px] text-[var(--color-nude)]/70 mt-3 leading-relaxed">{c.texto}</p>
                 </div>
               ))}
             </div>
@@ -266,18 +282,19 @@ export default function Landing() {
             <p className="entradilla text-[var(--color-tinta-2)] mt-6">
               Disponible presencial u online. Esto es lo que pasa, en orden:
             </p>
-            <ol className="mt-8 space-y-5">
+            {/* Los pasos sí son una secuencia: la línea de cobre se llena al bajar
+                y cada paso se enciende cuando la línea llega a él. */}
+            <ol className="mt-8 relative space-y-6" data-pasos>
+              <span className="linea-pasos" aria-hidden />
               {[
                 'El doctor te evalúa.',
                 'Aclara todas tus dudas.',
                 'Arma tu presupuesto personalizado.',
                 'Si lo deseas, define la fecha de tu cirugía.',
               ].map((paso, i) => (
-                <li key={paso} className="flex gap-4 items-baseline">
-                  <span className="marca text-[10px] text-[var(--color-cobre)] tabular-nums">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-[15px]">{paso}</span>
+                <li key={paso} className="relative flex gap-4 items-center" data-paso>
+                  <span className="paso-punto tabular-nums">{i + 1}</span>
+                  <span className="paso-texto text-[15.5px]">{paso}</span>
                 </li>
               ))}
             </ol>
@@ -286,13 +303,12 @@ export default function Landing() {
               El doctor ofrece planes que se adaptan a cada paciente. Los conversamos contigo en la
               consulta para encontrar la mejor opción.
             </p>
-            <Link href="/reservar" className="btn btn-principal py-3 px-6 mt-8">
-              Agendar consulta
+            <Link href="/reservar" className="btn btn-principal brillo py-3 px-6 mt-8">
+              Agendar consulta <span className="flecha" aria-hidden>→</span>
             </Link>
           </Aparece>
 
-          <Aparece retraso={110} className="lg:order-1">
-            <div className="zoom-suave relative aspect-[4/5] rounded-lg">
+          <Aparece retraso={110} variante="cortina" className="lg:order-1 zoom-suave relative aspect-[4/5] rounded-lg">
               <Image
                 src={ruta('/marca/consulta-escritorio.jpg')}
                 alt="El Dr. Guerra en su consultorio"
@@ -300,17 +316,17 @@ export default function Landing() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-[50%_35%]"
               />
-            </div>
           </Aparece>
         </div>
       </section>
 
       {/* ── Cierre y contacto ───────────────────────────────────────────── */}
-      <section id="contacto" className="seccion modulo-oscuro">
-        <div className="contenedor">
+      <section id="contacto" className="seccion modulo-oscuro relative overflow-hidden">
+        <div className="resplandor" aria-hidden />
+        <div className="contenedor relative">
           <Aparece className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-8 lg:gap-16 items-end">
             <div>
-              <h2 className="titular text-[var(--color-nude)]">Agenda tu consulta</h2>
+              <h2 className="titular-hero text-[var(--color-nude)]">Agenda tu<br />consulta</h2>
               <span className="regla-cobre mt-6" />
               <p className="entradilla medida text-[var(--color-nude)]/80 mt-6">
                 Escoge día y hora tú mismo, o escríbenos y te ayudamos.
@@ -318,11 +334,11 @@ export default function Landing() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link href="/reservar"
-                className="btn py-3.5 px-7 bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]">
-                Agendar consulta
+                className="btn brillo py-3.5 px-7 bg-[var(--color-cobre-luz)] text-[var(--color-tinta)] hover:bg-[var(--color-nude)]">
+                Agendar consulta <span className="flecha" aria-hidden>→</span>
               </Link>
               <a href={whatsapp} target="_blank" rel="noreferrer"
-                className="btn py-3.5 px-7 border-white/30 text-[var(--color-nude)] hover:bg-white/10">
+                className="btn brillo py-3.5 px-7 border-white/30 text-[var(--color-nude)] hover:bg-white/10">
                 Escríbenos por WhatsApp
               </a>
             </div>
@@ -412,7 +428,7 @@ function SiNo() {
         <Aparece className="bg-[var(--color-nude)] px-6 sm:px-10 lg:px-14 py-14 sm:py-20">
           <div className="lg:ml-auto lg:max-w-md">
             <p className="marca text-[9.5px] text-[var(--color-cobre)]">El Dr. Mario Guerra sí</p>
-            <ul className="mt-8 space-y-5 text-[15px] text-[var(--color-tinta)] leading-relaxed">
+            <ul className="cascada mt-8 space-y-5 text-[15px] text-[var(--color-tinta)] leading-relaxed">
               <li>Te escucha y evalúa tu caso con honestidad.</li>
               <li>Te dice si lo que buscas es posible, y si no, te propone alternativas y te explica por qué.</li>
               <li>Te muestra casos similares para que sepas qué esperar.</li>
@@ -424,7 +440,7 @@ function SiNo() {
         <Aparece retraso={120} className="bg-[var(--color-tinta)] px-6 sm:px-10 lg:px-14 py-14 sm:py-20">
           <div className="lg:max-w-md">
             <p className="marca text-[9.5px] text-[var(--color-cobre-luz)]">El Dr. Mario Guerra no</p>
-            <ul className="mt-8 space-y-5 text-[15px] text-[var(--color-nude)]/85 leading-relaxed">
+            <ul className="cascada mt-8 space-y-5 text-[15px] text-[var(--color-nude)]/85 leading-relaxed">
               <li>No te promete resultados irreales ni te dice solo lo que quieres oír.</li>
               <li>No te vende procedimientos que no necesitas.</li>
               <li>No te da un presupuesto sin evaluarte primero.</li>
@@ -433,7 +449,9 @@ function SiNo() {
           </div>
         </Aparece>
       </div>
-      <span className="hidden lg:block absolute inset-y-0 left-1/2 w-px bg-[var(--color-cobre-luz)]" aria-hidden />
+      <Aparece className="hidden lg:block absolute inset-y-0 left-1/2 w-px">
+        <span className="partir block h-full w-px bg-[var(--color-cobre-luz)]" aria-hidden />
+      </Aparece>
     </section>
   );
 }

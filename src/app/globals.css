@@ -372,9 +372,167 @@
     line-height: 1.15; font-size: clamp(1.35rem, 4.4vw, 2.1rem);
   }
   .entradilla { font-size: clamp(1rem, 2.4vw, 1.15rem); line-height: 1.7; }
+  .titular-hero {
+    font-weight: 200; text-transform: uppercase; letter-spacing: .04em;
+    line-height: .98; font-size: clamp(2.9rem, 11vw, 7.2rem);
+  }
 
   .seccion { padding: 4.5rem 0; }
   @media (min-width: 768px) { .seccion { padding: 7rem 0; } }
 
   .regla-cobre { display: block; height: 1px; width: 4rem; background: var(--color-cobre-luz); }
+
+  /* ══ Landing con movimiento (2026-10-08) ═══════════════════════════════════
+     El hilo es el trazo de cobre: se dibuja en el hero, llena la línea de los
+     pasos de la consulta y parte en dos el Sí/No. Todo es transform/opacity/
+     clip-path (lo que el navegador anima sin recalcular la página) y todo se
+     apaga con prefers-reduced-motion. El estado "antes de animar" solo existe
+     con .js: sin JavaScript la página se ve completa y quieta. */
+
+  /* Barra de progreso de lectura: el ancho sale de --progreso (0..1). */
+  .progreso-lectura {
+    position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 70;
+    background: linear-gradient(90deg, var(--color-cobre), var(--color-cobre-luz));
+    transform-origin: 0 50%; transform: scaleX(var(--progreso, 0));
+    pointer-events: none;
+  }
+
+  /* Titular que sale de una ranura, línea por línea, al cargar. */
+  .ranura { display: block; overflow: hidden; padding-bottom: .08em; }
+  .ranura > span { display: block; }
+  .js .ranura > span { animation: ranura-sube 1.1s var(--salida-quint) both; animation-delay: var(--retraso, 0ms); }
+  @keyframes ranura-sube { from { transform: translateY(105%); } to { transform: none; } }
+
+  /* Entrada simple al cargar (sin esperar al scroll): kicker, bajada, botones. */
+  .js .entra { animation: entra .9s var(--salida-quint) both; animation-delay: var(--retraso, 0ms); }
+  @keyframes entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* El trazo de cobre que se dibuja. */
+  .js .trazo { transform-origin: 0 50%; animation: trazo 1.2s var(--salida-quint) both; animation-delay: var(--retraso, 0ms); }
+  @keyframes trazo { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .js .aparece .regla-cobre { transform-origin: 0 50%; transform: scaleX(0); transition: transform 1s var(--salida-quint) .25s; }
+  .js .aparece.visible .regla-cobre { transform: scaleX(1); }
+
+  /* Foto del hero: acercamiento lento y continuo, como respirando. */
+  .js .respira { animation: respira 18s var(--entrada-salida) infinite alternate; }
+  @keyframes respira { from { transform: scale(1.12); } to { transform: scale(1.02); } }
+
+  /* Parallax: el desplazamiento lo pone el script en --dy. */
+  .paralaje { transform: translate3d(0, var(--dy, 0px), 0); will-change: transform; }
+
+  /* Indicador para bajar. */
+  .baja { position: relative; width: 1px; height: 52px; background: rgba(213,200,200,.18); overflow: hidden; }
+  .baja::after {
+    content: ''; position: absolute; left: 0; top: 0; width: 1px; height: 45%;
+    background: var(--color-cobre-luz); animation: baja 2.2s var(--entrada-salida) infinite;
+  }
+  @keyframes baja { from { transform: translateY(-100%); } to { transform: translateY(230%); } }
+
+  /* Cortina: la foto se descubre de abajo hacia arriba al entrar. */
+  .js .aparece.cortina { opacity: 1; transform: none; clip-path: inset(100% 0 0 0); transition: clip-path 1.15s var(--salida-quint); transition-delay: var(--retraso, 0ms); }
+  .js .aparece.cortina.visible { clip-path: inset(0 0 0 0); }
+  .js .aparece.cortina img { transform: scale(1.18); transition: transform 1.6s var(--salida-quint); transition-delay: var(--retraso, 0ms); }
+  .js .aparece.cortina.visible img { transform: scale(1); }
+  .js .aparece.cortina.visible.zoom-suave:hover img { transform: scale(1.045); }
+
+  /* Desde un costado. */
+  .js .aparece.lado { transform: translateX(-28px); }
+  .js .aparece.lado.visible { transform: none; }
+
+  /* Hijos en cascada: cada <li> entra un poco después del anterior. */
+  .js .cascada > * { opacity: 0; transform: translateY(14px); transition: opacity .6s var(--salida-quint), transform .6s var(--salida-quint); }
+  .js .visible .cascada > *, .js .cascada.visible > * { opacity: 1; transform: none; }
+  .cascada > *:nth-child(1) { transition-delay: .10s; } .cascada > *:nth-child(2) { transition-delay: .18s; }
+  .cascada > *:nth-child(3) { transition-delay: .26s; } .cascada > *:nth-child(4) { transition-delay: .34s; }
+  .cascada > *:nth-child(5) { transition-delay: .42s; } .cascada > *:nth-child(6) { transition-delay: .50s; }
+  .cascada > *:nth-child(7) { transition-delay: .58s; } .cascada > *:nth-child(8) { transition-delay: .66s; }
+
+  /* Cinta de procedimientos: texto hueco grande que no para. */
+  .cinta { overflow: hidden; white-space: nowrap; user-select: none; }
+  .cinta-pista { display: inline-flex; animation: cinta 46s linear infinite; }
+  .cinta:hover .cinta-pista { animation-play-state: paused; }
+  .cinta-item {
+    font-weight: 300; text-transform: uppercase; letter-spacing: .04em;
+    font-size: clamp(2.2rem, 7vw, 5.2rem); line-height: 1;
+    color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--color-nude) 55%, transparent);
+    padding-inline: .45em; display: inline-flex; align-items: center; gap: .9em;
+    transition: color .4s, -webkit-text-stroke-color .4s;
+  }
+  .cinta-item:hover { color: var(--color-cobre-luz); -webkit-text-stroke-color: var(--color-cobre-luz); }
+  .cinta-item::after { content: ''; width: .16em; height: .16em; border-radius: 99px; background: var(--color-cobre-luz); }
+  @keyframes cinta { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Botón con brillo que cruza al pasar el cursor. */
+  .brillo { position: relative; overflow: hidden; isolation: isolate; }
+  .brillo::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.38) 50%, transparent 70%);
+    transform: translateX(-120%); transition: transform .8s var(--salida-quint);
+  }
+  .brillo:hover::before, .brillo:focus-visible::before { transform: translateX(120%); }
+  .brillo .flecha { display: inline-block; transition: transform .35s var(--salida-quint); }
+  .brillo:hover .flecha { transform: translateX(4px); }
+
+  /* Tarjeta que se levanta. */
+  .levanta { transition: transform .45s var(--salida-quint), box-shadow .45s var(--salida-quint), border-color .2s; }
+  .levanta:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -26px rgba(6,23,32,.45); }
+
+  /* Panel de procedimientos que se despliega. */
+  .js .despliega { animation: despliega .55s var(--salida-quint) both; }
+  .js .despliega li { animation: entra .5s var(--salida-quint) both; animation-delay: calc(var(--i, 0) * 45ms + 120ms); }
+  @keyframes despliega { from { opacity: 0; transform: translateY(-8px); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
+
+  /* Línea de los pasos que se llena con el scroll (--lleno 0..1 la pone el script). */
+  .linea-pasos { position: absolute; left: 11px; top: 6px; bottom: 6px; width: 1px; background: var(--color-linea); }
+  .linea-pasos::after {
+    content: ''; position: absolute; inset: 0; background: var(--color-cobre-luz);
+    transform-origin: 50% 0; transform: scaleY(var(--lleno, 0));
+  }
+  .paso-punto {
+    width: 23px; height: 23px; border-radius: 99px; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--color-linea); background: var(--color-papel);
+    font-size: 10px; font-weight: 600; color: var(--color-tinta-3);
+    transition: background-color .4s, border-color .4s, color .4s, transform .4s var(--salida-quint);
+  }
+  .paso-activo .paso-punto { background: var(--color-cobre-luz); border-color: var(--color-cobre-luz); color: #fff; transform: scale(1.12); }
+  .paso-texto { transition: color .4s; color: var(--color-tinta-3); }
+  .paso-activo .paso-texto { color: var(--color-tinta); }
+
+  /* La línea vertical del Sí/No se dibuja de arriba abajo. */
+  .js .partir { transform-origin: 50% 0; transform: scaleY(0); transition: transform 1.4s var(--salida-quint) .2s; }
+  .js .visible .partir, .js .partir.visible { transform: scaleY(1); }
+
+  /* Resplandor de cobre que se mueve despacio detrás del cierre. */
+  .resplandor { position: absolute; inset: -20%; pointer-events: none; opacity: .55;
+    background:
+      radial-gradient(40% 50% at 20% 30%, color-mix(in srgb, var(--color-cobre) 55%, transparent), transparent 70%),
+      radial-gradient(35% 45% at 80% 70%, color-mix(in srgb, var(--color-cobre-luz) 35%, transparent), transparent 70%);
+    filter: blur(40px); animation: resplandor 16s var(--entrada-salida) infinite alternate; }
+  @keyframes resplandor { from { transform: translate3d(-4%, -3%, 0) rotate(0deg); } to { transform: translate3d(5%, 4%, 0) rotate(8deg); } }
+
+  /* Cabecera que se esconde al bajar y vuelve al subir. */
+  .cabecera-oculta { transform: translateY(-110%); }
+
+  /* Galería: en el teléfono se desliza de lado, una foto tras otra. */
+  @media (max-width: 639px) {
+    .galeria-movil { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px;
+      margin-inline: calc(-1 * clamp(1.25rem, 4.5vw, 5rem)); padding-inline: clamp(1.25rem, 4.5vw, 5rem);
+      scrollbar-width: none; }
+    .galeria-movil::-webkit-scrollbar { display: none; }
+    .galeria-movil > * { flex: 0 0 78%; scroll-snap-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .ranura > span, .js .entra, .js .trazo, .js .respira, .js .despliega, .js .despliega li { animation: none; }
+    .paralaje { transform: none; }
+    .baja::after, .resplandor, .cinta-pista { animation: none; }
+    .js .aparece.cortina { clip-path: none; transition: none; }
+    .js .aparece.cortina img { transform: none; transition: none; }
+    .js .aparece.lado { transform: none; }
+    .js .cascada > * { opacity: 1; transform: none; transition: none; }
+    .js .aparece .regla-cobre, .js .partir { transform: none; transition: none; }
+    .brillo::before { display: none; }
+    .levanta, .levanta:hover { transform: none; transition: none; }
+    .progreso-lectura { display: none; }
+  }
 }

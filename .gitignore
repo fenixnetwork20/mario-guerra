@@ -27,3 +27,4 @@ respaldos/*
 !respaldos/mensual/
 respaldos/*/*
 !respaldos/*/*.tar.gz.gpg
+/.next-prueba/
