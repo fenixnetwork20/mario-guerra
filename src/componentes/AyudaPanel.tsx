@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { HelpCircle } from 'lucide-react';
 import { api } from '@/lib/rutas';
 
 type Mensaje = { rol: 'usuario' | 'ayudante'; texto: string };
@@ -71,9 +72,12 @@ export function AyudaPanel() {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="fixed bottom-5 right-[11.5rem] z-40 btn bg-[var(--color-acento)] text-white hover:bg-[var(--color-tinta)] shadow-lg py-2.5 px-4"
+        aria-label="¿Cómo hago…?"
+        className="fixed bottom-4 right-[4.25rem] sm:bottom-5 sm:right-[11.5rem] z-40 btn bg-[var(--color-acento)] text-white hover:bg-[var(--color-tinta)] shadow-lg h-11 w-11 p-0 justify-center rounded-full sm:h-auto sm:w-auto sm:rounded-lg sm:py-2.5 sm:px-4"
       >
-        ¿Cómo hago…?
+        {/* En el teléfono, el botón con texto tapaba "Verificar pago" y otros. */}
+        <HelpCircle size={20} className="sm:hidden" />
+        <span className="hidden sm:inline">¿Cómo hago…?</span>
       </button>
 
       {abierto && montado && createPortal(

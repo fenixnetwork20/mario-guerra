@@ -92,18 +92,18 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
         {citas.length === 0 && <Vacio>Sin citas registradas.</Vacio>}
         {citas.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[640px]">
+            <table className="tabla fichas sm:min-w-[640px]">
               <thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Interés</th><th></th></tr></thead>
               <tbody>
                 {citas.map((c) => (
                   <tr key={c.id}>
-                    <td className="whitespace-nowrap">
+                    <td data-l="Fecha" className="whitespace-nowrap">
                       {fechaCorta(c.fecha_hora.slice(0, 10))} · {hora12(soloHora(c.fecha_hora))}
                     </td>
-                    <td className="capitalize text-[13.5px]">{c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}</td>
-                    <td><Estado valor={c.estado} /></td>
-                    <td className="text-[13.5px]">{c.procedimiento_interes ?? '—'}</td>
-                    <td className="text-right">
+                    <td data-l="Tipo" className="capitalize text-[13.5px]">{c.tipo}{c.modalidad ? ` · ${c.modalidad}` : ''}</td>
+                    <td data-l="Estado"><Estado valor={c.estado} /></td>
+                    <td data-l="Interés" className="text-[13.5px]">{c.procedimiento_interes ?? '—'}</td>
+                    <td data-l="" className="text-right">
                       <Link href={`/cita/${c.token_gestion}`} target="_blank"
                         className="text-[12.5px] text-[var(--color-acento)] font-semibold hover:underline">
                         Enlace del paciente

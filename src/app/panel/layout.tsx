@@ -5,6 +5,7 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { noLeidas, ultimas } from '@/lib/notificaciones';
 import { Campanita } from '@/componentes/Campanita';
+import { utcAVET, fechaCorta, hora12 } from '@/lib/fechas';
 import { BotonCorreccion } from '@/componentes/BotonCorreccion';
 import { AyudaPanel } from '@/componentes/AyudaPanel';
 import { enviarCorreccion } from '@/acciones/correcciones';
@@ -51,7 +52,11 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             </span>
             <div className="ml-auto flex items-center gap-2">
               <SelectorAncho actual={ancho} />
-              <Campanita notificaciones={ultimas(30, verDinero)} sinLeer={noLeidas(verDinero)} />
+              <Campanita notificaciones={ultimas(30, verDinero).map((n) => {
+                // La base guarda en UTC: el aviso de las 2:45 pm salía como 18:45.
+                const vet = utcAVET(n.fecha);
+                return { ...n, fecha: `${fechaCorta(vet.slice(0, 10))} · ${hora12(vet.slice(11, 16))}` };
+              })} sinLeer={noLeidas(verDinero)} />
               <form action={salir}>
                 <button className="btn h-9 bg-[var(--color-tarjeta)]/10 border-white/15 text-[var(--color-nude)] hover:bg-[var(--color-tarjeta)]/20">
                   Salir
@@ -64,7 +69,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <main className={`${claseAncho} py-6`}>{children}</main>
+      <main className={`${claseAncho} pt-6 pb-24`}>{children}</main>
       <AyudaPanel />
       <BotonCorreccion enviar={enviarCorreccion} />
     </div>

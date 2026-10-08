@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
+import { MessageSquareWarning } from 'lucide-react';
 import { FormAccion, Boton, type Respuesta } from '@/componentes/FormAccion';
 
 type Accion = (prev: Respuesta | null, datos: FormData) => Promise<Respuesta>;
@@ -30,9 +31,11 @@ export function BotonCorreccion({ enviar }: { enviar: Accion }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="fixed bottom-5 right-5 z-40 btn bg-[var(--color-cobre)] text-white hover:bg-[var(--color-cobre-luz)] shadow-lg py-2.5 px-4"
+        aria-label="Reportar algo"
+        className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 btn bg-[var(--color-cobre)] text-white hover:bg-[var(--color-cobre-luz)] shadow-lg h-11 w-11 p-0 justify-center rounded-full sm:h-auto sm:w-auto sm:rounded-lg sm:py-2.5 sm:px-4"
       >
-        Reportar algo
+        <MessageSquareWarning size={20} className="sm:hidden" />
+        <span className="hidden sm:inline">Reportar algo</span>
       </button>
 
       {abierto && montado && createPortal(

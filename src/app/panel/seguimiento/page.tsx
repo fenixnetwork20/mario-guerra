@@ -89,24 +89,24 @@ export default async function Seguimiento({
       <Seccion titulo="Revisiones postoperatorias" descripcion="Programadas solas al registrar cada cirugía">
         {revisiones.length === 0 && <Vacio>Ninguna en las próximas semanas.</Vacio>}
         <div className="scroll-x">
-          <table className="tabla min-w-[700px]">
+          <table className="tabla fichas sm:min-w-[700px]">
             <thead><tr><th>Fecha</th><th>Paciente</th><th>Revisión</th><th>Estado</th><th></th></tr></thead>
             <tbody>
               {revisiones.map((r) => (
                 <tr key={r.id}>
-                  <td className={`whitespace-nowrap ${r.fecha_programada <= hoy ? 'font-medium text-[var(--color-alerta)]' : ''}`}>
+                  <td data-l="Fecha" className={`whitespace-nowrap ${r.fecha_programada <= hoy ? 'font-medium text-[var(--color-alerta)]' : ''}`}>
                     {fechaCorta(r.fecha_programada)}
                   </td>
-                  <td>
+                  <td data-l="Paciente">
                     <EnlacePaciente id={r.paciente_id} nombre={r.paciente} />
                     <div className="text-[12.5px] text-[var(--color-tinta-3)]">{r.whatsapp}</div>
                   </td>
-                  <td className="text-[13.5px]">
+                  <td data-l="Revisión" className="text-[13.5px]">
                     {ETIQUETAS[r.etiqueta] ?? r.etiqueta}
                     <div className="text-[12.5px] text-[var(--color-tinta-3)]">{r.procedimiento}</div>
                   </td>
-                  <td><Estado valor={r.estado} /></td>
-                  <td>
+                  <td data-l="Estado"><Estado valor={r.estado} /></td>
+                  <td data-l="">
                     <div className="flex flex-wrap gap-1.5 justify-end">
                       <Link href={`/panel/agenda?fecha=${r.fecha_programada}`} className="btn btn-borde h-8 px-2.5 text-[12.5px]">
                         Agendar

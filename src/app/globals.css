@@ -172,6 +172,30 @@
 
   .scroll-x { overflow-x: auto; }
 
+  /* En el teléfono una tabla de 5 columnas obliga a barrer de lado y lo que
+     importa (el monto) queda escondido. Debajo de 640px cada fila es una ficha
+     y cada dato lleva su etiqueta (data-l en la celda). */
+  @media (max-width: 639px) {
+    table.tabla.fichas thead { display: none; }
+    table.tabla.fichas, table.tabla.fichas tbody { display: block; }
+    table.tabla.fichas tr {
+      display: block; padding: 10px 2px; border-bottom: 1px solid var(--color-linea);
+    }
+    table.tabla.fichas tr:last-child { border-bottom: none; }
+    table.tabla.fichas td {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+      padding: 3px 0; border: none; text-align: right; white-space: normal;
+    }
+    table.tabla.fichas td[data-l]::before {
+      content: attr(data-l); flex: none; text-align: left;
+      font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--color-cobre); font-weight: 600;
+    }
+    table.tabla.fichas td[data-l=""]::before { content: none; }
+    table.tabla.fichas td[data-l=""] { justify-content: flex-start; }
+    table.tabla.fichas td:first-child { font-weight: 600; }
+  }
+
   /* Se lo lleva el lector de pantalla y el teclado, no la vista. Lo usan los
      campos de archivo: el control nativo dice "Choose File" en inglés y no hay
      manera de traducirlo, así que se esconde y la etiqueta hace de botón. */

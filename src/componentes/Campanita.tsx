@@ -28,7 +28,9 @@ export function Campanita({ notificaciones, sinLeer }: { notificaciones: Notif[]
       {abierto && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)} />
-          <div className="absolute right-0 z-50 mt-2 w-[min(92vw,380px)] tarjeta shadow-lg overflow-hidden">
+          {/* En el teléfono la campanita no está pegada al borde: anclado a ella el
+              recuadro se salía por la izquierda. Ahí ocupa el ancho de la pantalla. */}
+          <div className="fixed left-3 right-3 top-16 z-50 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[380px] tarjeta shadow-lg overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-linea)]">
               <span className="etiqueta">Notificaciones</span>
               {sinLeer > 0 && (
@@ -39,7 +41,7 @@ export function Campanita({ notificaciones, sinLeer }: { notificaciones: Notif[]
                 </form>
               )}
             </div>
-            <div className="max-h-[60vh] overflow-y-auto">
+            <div className="max-h-[70vh] sm:max-h-[60vh] overflow-y-auto">
               {notificaciones.length === 0 && (
                 <p className="px-4 py-6 text-[13.5px] text-[var(--color-tinta-3)]">Nada por ahora.</p>
               )}

@@ -78,16 +78,16 @@ export default async function Dinero({ searchParams }: { searchParams: Promise<{
         {pagos.length === 0 && <Vacio>Sin pagos registrados.</Vacio>}
         {pagos.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[640px]">
+            <table className="tabla fichas sm:min-w-[640px]">
               <thead><tr><th>Fecha</th><th>Paciente</th><th>Método</th><th>Concepto</th><th className="text-right">Monto</th></tr></thead>
               <tbody>
                 {pagos.map((p) => (
                   <tr key={p.id}>
-                    <td className="whitespace-nowrap">{p.fecha}</td>
-                    <td><EnlacePaciente id={p.pid} nombre={p.paciente} /></td>
-                    <td>{NOMBRE_METODO[p.metodo] ?? p.metodo}</td>
-                    <td className="text-[13.5px]">{p.concepto || '—'}</td>
-                    <td className="text-right font-medium">{usd(p.monto)}</td>
+                    <td data-l="Fecha" className="whitespace-nowrap">{p.fecha}</td>
+                    <td data-l="Paciente"><EnlacePaciente id={p.pid} nombre={p.paciente} /></td>
+                    <td data-l="Método">{NOMBRE_METODO[p.metodo] ?? p.metodo}</td>
+                    <td data-l="Concepto" className="text-[13.5px]">{p.concepto || '—'}</td>
+                    <td data-l="Monto" className="text-right font-medium">{usd(p.monto)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -100,7 +100,7 @@ export default async function Dinero({ searchParams }: { searchParams: Promise<{
         {operaciones.length === 0 && <Vacio>Sin cirugías registradas.</Vacio>}
         {operaciones.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[720px]">
+            <table className="tabla fichas sm:min-w-[720px]">
               <thead>
                 <tr><th>Cirugía</th><th>Paciente</th><th>Fecha</th>
                   <th className="text-right">Ingresos</th><th className="text-right">Costos</th><th className="text-right">Ganancia</th></tr>
@@ -110,12 +110,12 @@ export default async function Dinero({ searchParams }: { searchParams: Promise<{
                   const g = +(o.ingresos - o.costos).toFixed(2);
                   return (
                     <tr key={o.id}>
-                      <td>{o.procedimiento}</td>
-                      <td><EnlacePaciente id={o.pid} nombre={o.paciente} /></td>
-                      <td className="whitespace-nowrap">{o.fecha ?? '—'}</td>
-                      <td className="text-right">{usd(o.ingresos)}</td>
-                      <td className="text-right">{usd(o.costos)}</td>
-                      <td className={`text-right font-medium ${g >= 0 ? 'text-[var(--color-acento)]' : 'text-[var(--color-alerta)]'}`}>
+                      <td data-l="Cirugía">{o.procedimiento}</td>
+                      <td data-l="Paciente"><EnlacePaciente id={o.pid} nombre={o.paciente} /></td>
+                      <td data-l="Fecha" className="whitespace-nowrap">{o.fecha ?? '—'}</td>
+                      <td data-l="Ingresos" className="text-right">{usd(o.ingresos)}</td>
+                      <td data-l="Costos" className="text-right">{usd(o.costos)}</td>
+                      <td data-l="Ganancia" className={`text-right font-medium ${g >= 0 ? 'text-[var(--color-acento)]' : 'text-[var(--color-alerta)]'}`}>
                         {usd(g)}
                       </td>
                     </tr>

@@ -60,7 +60,7 @@ export default async function Pacientes({
         {filas.length === 0 && <Vacio>No hay pacientes que coincidan.</Vacio>}
         {filas.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[720px]">
+            <table className="tabla fichas sm:min-w-[720px]">
               <thead>
                 <tr>
                   <th>Paciente</th><th>Cédula</th><th>WhatsApp</th><th>Última cita</th>
@@ -72,16 +72,16 @@ export default async function Pacientes({
                   const pendiente = +(f.total - f.pagado).toFixed(2);
                   return (
                     <tr key={f.id}>
-                      <td>
+                      <td data-l="Paciente">
                         <Link href={`/panel/pacientes/${f.id}`} className="font-medium hover:underline">
                           {f.nombre}
                         </Link>
                       </td>
-                      <td className="text-[13.5px]">{f.cedula}</td>
-                      <td className="text-[13.5px]">{f.whatsapp}</td>
-                      <td className="text-[13.5px] whitespace-nowrap">{f.ultima_cita?.slice(0, 16) ?? '—'}</td>
+                      <td data-l="Cédula" className="text-[13.5px]">{f.cedula}</td>
+                      <td data-l="WhatsApp" className="text-[13.5px]">{f.whatsapp}</td>
+                      <td data-l="Última cita" className="text-[13.5px] whitespace-nowrap">{f.ultima_cita?.slice(0, 16) ?? '—'}</td>
                       {verCuentas && (
-                        <td className={pendiente > 0 ? 'text-[var(--color-alerta)] font-medium' : ''}>
+                        <td data-l="Pendiente" className={pendiente > 0 ? 'text-[var(--color-alerta)] font-medium' : ''}>
                           {pendiente > 0 ? usd(pendiente) : '—'}
                         </td>
                       )}

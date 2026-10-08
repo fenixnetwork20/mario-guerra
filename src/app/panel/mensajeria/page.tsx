@@ -74,23 +74,23 @@ export default async function Mensajeria() {
         {registro.length === 0 && <Vacio>Nada enviado todavía.</Vacio>}
         {registro.length > 0 && (
           <div className="scroll-x">
-            <table className="tabla min-w-[720px]">
+            <table className="tabla fichas sm:min-w-[720px]">
               <thead><tr><th>Fecha</th><th>Paciente</th><th>Plantilla</th><th>Destino</th><th>Estado</th><th>Respuesta</th></tr></thead>
               <tbody>
                 {registro.map((m) => (
                   <tr key={m.id}>
-                    <td className="whitespace-nowrap text-[13px]">{m.fecha}</td>
-                    <td className="text-[13.5px]">{m.paciente ?? '—'}</td>
-                    <td className="text-[13.5px]">{m.plantilla}</td>
-                    <td className="text-[13px]">{m.destino}</td>
-                    <td>
+                    <td data-l="Fecha" className="whitespace-nowrap text-[13px]">{m.fecha}</td>
+                    <td data-l="Paciente" className="text-[13.5px]">{m.paciente ?? '—'}</td>
+                    <td data-l="Plantilla" className="text-[13.5px]">{m.plantilla}</td>
+                    <td data-l="Destino" className="text-[13px]">{m.destino}</td>
+                    <td data-l="Estado">
                       <span className={`pill ${
                         m.estado === 'enviado' ? 'bg-[var(--color-acento-luz)] text-[var(--color-acento)]'
                         : m.estado === 'error' ? 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]'
                         : 'bg-[var(--color-papel-2)] text-[var(--color-tinta-2)]'
                       }`}>{m.estado}</span>
                     </td>
-                    <td className="text-[12px] text-[var(--color-tinta-3)] max-w-[280px] break-words">
+                    <td data-l="Respuesta" className="text-[12px] text-[var(--color-tinta-3)] max-w-[280px] break-words">
                       {m.respuesta ?? '—'}
                     </td>
                   </tr>
