@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rediseño de la landing — Dr. Mario Guerra</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--fondo:#F2EEE9;--tinta:#141210;--gris:#6F675F;--linea:#DDD5CB;--cobre:#A0603A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--fondo);color:var(--tinta);font-family:Manrope,system-ui,sans-serif;line-height:1.55}
+a{color:inherit}
+.env{max-width:1200px;margin:auto;padding:clamp(28px,6vw,72px) clamp(16px,4vw,40px)}
+.k{font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--cobre)}
+h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:.98;letter-spacing:-.04em;font-weight:800;margin-top:14px;max-width:16ch}
+.intro{color:var(--gris);max-width:44rem;margin-top:18px;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px}
+.card{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;background:#fff;border:1px solid var(--linea);text-decoration:none;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s}
+.card:hover{transform:translateY(-6px);box-shadow:0 28px 50px -30px rgba(20,18,16,.5)}
+.muestra{height:210px;position:relative;display:flex;align-items:flex-end;padding:20px;overflow:hidden}
+.muestra img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.muestra .t{position:relative;font-size:30px;line-height:.95;letter-spacing:-.03em}
+.cuerpo{padding:22px;display:flex;flex-direction:column;gap:12px;flex:1}
+.cuerpo h2{font-size:21px;letter-spacing:-.02em}
+.cuerpo p{color:var(--gris);font-size:14.5px}
+.paleta{display:flex;gap:6px}.paleta i{width:26px;height:26px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags span{font-size:12px;font-weight:600;padding:5px 9px;border-radius:8px;background:var(--fondo)}
+.ir{margin-top:auto;font-weight:800;color:var(--cobre)}
+.est{margin-top:70px;border-top:1px solid var(--linea);padding-top:40px}
+.est h2{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.03em;margin-top:10px}
+.tabla{overflow-x:auto;margin-top:22px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}
+th{text-align:left;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);padding:10px;border-bottom:1px solid var(--linea)}
+td{padding:12px 10px;border-bottom:1px solid var(--linea);vertical-align:top}
+td:first-child{font-weight:700;white-space:nowrap}
+.falta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.falta div{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--linea);font-size:14px}
+.falta b{display:block;margin-bottom:4px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.falta{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="env">
+  <p class="k">Dr. Mario Guerra · Rediseño de la landing</p>
+  <h1>Tres caminos para la página nueva.</h1>
+  <p class="intro">Cada propuesta es una landing completa y navegable, con el contenido real del doctor (sin precios, sin testimonios ni resultados inventados). Ábrela en el teléfono y en la computadora: las tres se mueven distinto. Escoge una, o mezcla lo que más te guste de cada una.</p>
+
+  <div class="grid">
+    <a class="card" href="/propuestas/a-escultor">
+      <div class="muestra" style="background:#EFE8DF"><span class="t" style="font-family:Georgia,serif">El arte de lo <i style="color:#A0603A">natural.</i></span></div>
+      <div class="cuerpo">
+        <p class="k">Propuesta A</p>
+        <h2>Escultor — lujo editorial</h2>
+        <p>Como una revista de arte. Letra serif enorme, fotos en arco de escultura, el manifiesto del doctor que se va pintando palabra por palabra y un mapa del cuerpo: tocas rostro, mamas o abdomen sobre la foto y salen sus procedimientos.</p>
+        <div class="paleta"><i style="background:#EFE8DF"></i><i style="background:#14110F"></i><i style="background:#A0603A"></i><i style="background:#E4DACD"></i></div>
+        <div class="tags"><span>Mapa del cuerpo</span><span>Galería horizontal</span><span>Cursor propio</span><span>Sello giratorio</span></div>
+        <span class="ir">Ver propuesta A →</span>
+      </div>
+    </a>
+    <a class="card" href="/propuestas/b-nocturno">
+      <div class="muestra" style="background:#07090B;color:#ECE5DE"><img src="https://drmarioguerra.com/marca/hero-modelo.jpg" alt="" style="filter:grayscale(1) brightness(.35)"><span class="t" style="font-weight:800;text-transform:uppercase;font-size:40px">Mario<br><span style="-webkit-text-stroke:1px #ECE5DE;color:transparent">Guerra</span></span></div>
+      <div class="cuerpo">
+        <p class="k">Propuesta B</p>
+        <h2>Nocturno — cine oscuro</h2>
+        <p>Negro con brillos de cobre y grano de película. Un foco de luz sigue el cursor sobre la foto, tarjetas de vidrio que se inclinan en 3D, procedimientos en filas gigantes que muestran una foto al pasar, y un interruptor Sí hace / No hace.</p>
+        <div class="paleta"><i style="background:#07090B"></i><i style="background:#ECE5DE"></i><i style="background:#C98A5B"></i><i style="background:#161B1F"></i></div>
+        <div class="tags"><span>Foco de luz</span><span>Inclinación 3D</span><span>Botones magnéticos</span><span>Frase que crece</span></div>
+        <span class="ir">Ver propuesta B →</span>
+      </div>
+    </a>
+    <a class="card" href="/propuestas/c-clinica-viva">
+      <div class="muestra" style="background:#0D2B33;color:#F3F0EB"><span class="t" style="font-weight:300">Resultados<br><b style="font-weight:800">naturales,</b><br><span style="color:#E8B48C">en manos expertas.</span></span></div>
+      <div class="cuerpo">
+        <p class="k">Propuesta C</p>
+        <h2>Clínica viva — moderna tipo app</h2>
+        <p>Bloques como una app. Muestra en vivo el próximo cupo libre de la agenda real, selector por zona del cuerpo, un recorrido fijo de "tu camino" en 4 pasos con fotos que cambian, preguntas frecuentes y horarios para tocar y reservar.</p>
+        <div class="paleta"><i style="background:#F3F0EB"></i><i style="background:#0D2B33"></i><i style="background:#B8743F"></i><i style="background:#EFDDD5"></i></div>
+        <div class="tags"><span>Cupo en vivo</span><span>Tu camino</span><span>Preguntas</span><span>Horarios tocables</span></div>
+        <span class="ir">Ver propuesta C →</span>
+      </div>
+    </a>
+  </div>
+
+  <section class="est">
+    <p class="k">La página de hoy</p>
+    <h2>Cómo está estructurada la landing actual</h2>
+    <p class="intro" style="font-size:15px">Colores petróleo, nude y cobre · letra Montserrat · cero precios en público. El detalle completo está en <code>docs/landing-estructura.md</code> del proyecto.</p>
+    <div class="tabla"><table>
+      <tr><th>#</th><th>Sección</th><th>Qué dice</th></tr>
+      <tr><td>1</td><td>Hero</td><td>Dr. Mario Guerra · "Resultados naturales, en manos expertas" · Agendar / WhatsApp · +8 años, +500, 24/7</td></tr>
+      <tr><td>2</td><td>Cinta</td><td>Nombres de los procedimientos pasando</td></tr>
+      <tr><td>3</td><td>Sobre el doctor</td><td>"Un enfoque honesto y cercano"</td></tr>
+      <tr><td>4</td><td>Procedimientos</td><td>Cuerpo (8), Mamas (5), Rostro (4), No quirúrgico (4) con recuperación y anestesia</td></tr>
+      <tr><td>5</td><td>En quirófano</td><td>"Así trabaja el doctor" · 3 fotos operando</td></tr>
+      <tr><td>6</td><td>Resultados</td><td>Remite a Instagram @drmarioguerra</td></tr>
+      <tr><td>7</td><td>Sí / No</td><td>Lo que el doctor sí hace y lo que no</td></tr>
+      <tr><td>8</td><td>Respaldo</td><td>+8 años · +500 procedimientos · Certificado</td></tr>
+      <tr><td>9</td><td>Tu consulta</td><td>4 pasos + financiamiento</td></tr>
+      <tr><td>10</td><td>Contacto</td><td>Agendar, dirección, WhatsApp, emergencias, redes</td></tr>
+    </table></div>
+    <p class="k" style="margin-top:40px">Lo que haría cualquiera de las tres mucho mejor</p>
+    <div class="falta">
+      <div><b>Antes y después</b>Fotos autorizadas por las pacientes</div>
+      <div><b>Testimonios</b>Reales, con nombre o inicial</div>
+      <div><b>Video</b>10–15 s del doctor en consulta o quirófano</div>
+      <div><b>Glúteos / BBL</b>Su categoría y recuperación</div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

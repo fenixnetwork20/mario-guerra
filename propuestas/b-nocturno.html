@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta B · Nocturno — Dr. Mario Guerra</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --noche:#07090B; --noche-2:#0F1316; --noche-3:#161B1F;
+  --hueso:#ECE5DE; --gris:#8F8A84; --cobre:#C98A5B; --brasa:#EBB088;
+  --display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --sans:"DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --suave:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--noche);color:var(--hueso);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+.env{width:100%;max-width:1680px;margin-inline:auto;padding-inline:clamp(16px,4.5vw,72px)}
+.k{font:600 11px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--cobre)}
+:focus-visible{outline:2px solid var(--brasa);outline-offset:3px;border-radius:6px}
+
+/* Grano de película sobre todo */
+.grano{position:fixed;inset:-50%;z-index:90;pointer-events:none;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grano 1s steps(4) infinite}
+@keyframes grano{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}}
+
+/* Botones magnéticos */
+.btn{display:inline-flex;align-items:center;gap:.6em;padding:17px 28px;border-radius:999px;font:600 14.5px var(--sans);transition:transform .35s var(--suave),background .3s,color .3s,box-shadow .3s;will-change:transform}
+.btn-cobre{background:var(--cobre);color:var(--noche);box-shadow:0 0 0 0 rgba(201,138,91,.0)}
+.btn-cobre:hover{background:var(--brasa);box-shadow:0 18px 50px -12px rgba(201,138,91,.55)}
+.btn-vidrio{background:rgba(236,229,222,.06);border:1px solid rgba(236,229,222,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btn-vidrio:hover{background:rgba(236,229,222,.12)}
+
+/* Navegación */
+.nav{position:fixed;inset:16px 0 auto;z-index:50;pointer-events:none}
+.nav .env{display:flex;align-items:center;gap:12px}
+.nav .pill{pointer-events:auto;display:flex;align-items:center;gap:22px;padding:8px 8px 8px 22px;border-radius:99px;background:rgba(15,19,22,.62);border:1px solid rgba(236,229,222,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav .mg{font:800 18px var(--display);letter-spacing:-.02em}
+.nav .mg span{color:var(--cobre)}
+.nav ul{display:flex;gap:22px;list-style:none;font-size:13.5px;color:rgba(236,229,222,.75)}
+.nav ul a:hover{color:var(--hueso)}
+.nav .btn{padding:11px 18px;font-size:13px}
+.nav .der{margin-left:auto}
+@media(max-width:860px){.nav ul{display:none}}
+
+/* Hero con foco de luz */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;display:flex;align-items:flex-end}
+.capa{position:absolute;inset:0}
+.capa img{width:100%;height:100%;object-fit:cover;object-position:60% 18%}
+.capa.base img{filter:grayscale(1) brightness(.28) contrast(1.1)}
+.capa.luz{--mx:62%;--my:38%;-webkit-mask-image:radial-gradient(circle 28vmax at var(--mx) var(--my),#000 0%,rgba(0,0,0,.6) 40%,transparent 72%);mask-image:radial-gradient(circle 28vmax at var(--mx) var(--my),#000 0%,rgba(0,0,0,.6) 40%,transparent 72%)}
+.capa.luz img{filter:saturate(1.05) brightness(.95)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--noche) 4%,transparent 55%),linear-gradient(90deg,rgba(7,9,11,.7),transparent 60%);pointer-events:none}
+.hero .env{position:relative;z-index:2;padding-bottom:clamp(30px,6vh,70px)}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(3.6rem,15.5vw,17rem);line-height:.8;letter-spacing:-.055em;text-transform:uppercase}
+.hero h1 .fila{display:block;overflow:hidden}
+.hero h1 .le{display:inline-block;transform:translateY(105%);animation:letra 1s var(--suave) forwards}
+@keyframes letra{to{transform:none}}
+.hero h1 .fila:last-child{color:transparent;-webkit-text-stroke:1.5px var(--hueso);letter-spacing:.01em}
+.hero .bajo{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:28px;opacity:0;animation:sube .9s 1s var(--suave) forwards}
+.hero .bajo p{max-width:26rem;font-size:clamp(1rem,1.5vw,1.2rem);color:rgba(236,229,222,.82)}
+@keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font-size:12.5px;padding:8px 14px;border-radius:99px;border:1px solid rgba(236,229,222,.18);color:rgba(236,229,222,.8)}
+
+/* Bento de vidrio con inclinación */
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(180px,auto);gap:14px;padding-block:clamp(80px,10vw,140px)}
+.tile{position:relative;border-radius:26px;padding:28px;background:linear-gradient(160deg,rgba(236,229,222,.07),rgba(236,229,222,.02));border:1px solid rgba(236,229,222,.09);overflow:hidden;transform-style:preserve-3d;transition:transform .5s var(--suave),border-color .3s}
+.tile:hover{border-color:rgba(201,138,91,.45)}
+.tile::before{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--x,50%) var(--y,50%),rgba(201,138,91,.16),transparent 45%);opacity:0;transition:opacity .3s;pointer-events:none}
+.tile:hover::before{opacity:1}
+.tile .num{font:800 clamp(3.4rem,7vw,6.5rem)/.85 var(--display);letter-spacing:-.05em}
+.tile .num em{font-style:normal;color:var(--cobre)}
+.tile p{color:rgba(236,229,222,.7);margin-top:12px;font-size:14.5px;max-width:24rem}
+.tile.foto{padding:0}
+.tile.foto img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--suave)}
+.tile.foto:hover img{transform:scale(1.06)}
+.tile.foto .rotulo{position:absolute;left:22px;bottom:20px;font:700 22px var(--display);letter-spacing:-.02em}
+.t-1{grid-column:span 2;grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between}
+.t-1 h2{font:700 clamp(2rem,4vw,3.6rem)/.98 var(--display);letter-spacing:-.04em}
+.t-1 h2 span{color:var(--cobre)}
+.t-foto{grid-row:span 2}
+.t-ancha{grid-column:span 2}
+@media(max-width:980px){.bento{grid-template-columns:1fr 1fr}.t-1{grid-column:span 2}.t-ancha{grid-column:span 2}}
+@media(max-width:560px){.bento{grid-template-columns:1fr}.t-1,.t-ancha{grid-column:auto}.t-foto{grid-row:span 1;min-height:380px}}
+
+/* Procedimientos en filas gigantes con foto que sigue al cursor */
+.proc{padding-block:clamp(60px,8vw,120px)}
+.proc-cab{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:40px}
+.proc-cab h2{font:800 clamp(2.6rem,7vw,6.8rem)/.88 var(--display);letter-spacing:-.05em;text-transform:uppercase}
+.proc-cab p{max-width:26rem;color:rgba(236,229,222,.7)}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.filtros button{font:600 13px var(--sans);color:var(--hueso);background:transparent;border:1px solid rgba(236,229,222,.2);padding:10px 18px;border-radius:99px;cursor:pointer;transition:all .3s}
+.filtros button[aria-pressed=true]{background:var(--hueso);color:var(--noche)}
+.filas{list-style:none;border-top:1px solid rgba(236,229,222,.12)}
+.filas li{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:clamp(14px,2vw,22px) 0;border-bottom:1px solid rgba(236,229,222,.12);position:relative;cursor:default;transition:padding .45s var(--suave),color .3s}
+.filas li b{font:500 clamp(1.7rem,4.6vw,4.2rem)/1 var(--display);letter-spacing:-.04em;transition:transform .45s var(--suave)}
+.filas li small{font-size:12.5px;color:var(--gris);text-align:right;white-space:nowrap}
+.filas li:hover{color:var(--brasa)}
+.filas li:hover b{transform:translateX(18px)}
+.filas li.out{display:none}
+.preview{position:fixed;left:0;top:0;z-index:40;width:260px;aspect-ratio:3/4;border-radius:18px;overflow:hidden;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-6deg);transition:opacity .3s,transform .45s var(--suave)}
+.preview.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
+.preview img{width:100%;height:100%;object-fit:cover}
+@media(max-width:700px){.filas li{flex-direction:column;gap:6px}.filas li small{text-align:left}.preview{display:none}}
+
+/* Frase que crece con el scroll */
+.frase{height:180vh;position:relative}
+.frase .pega{position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden}
+.frase h2{font:800 clamp(2.6rem,9vw,10rem)/.86 var(--display);letter-spacing:-.05em;text-align:center;text-transform:uppercase;transform:scale(var(--s,.6));opacity:var(--o,.2)}
+.frase h2 span{display:block;color:var(--cobre)}
+.orbe{position:absolute;width:60vmax;height:60vmax;border-radius:50%;background:radial-gradient(circle,rgba(201,138,91,.22),transparent 60%);filter:blur(20px);animation:orbe 14s ease-in-out infinite alternate}
+@keyframes orbe{from{transform:translate(-20%,-10%)}to{transform:translate(20%,10%)}}
+
+/* Sí / No con interruptor */
+.sino{padding-block:clamp(80px,10vw,140px);display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(30px,6vw,100px);align-items:center}
+.sino h2{font:800 clamp(2.4rem,5.5vw,5rem)/.9 var(--display);letter-spacing:-.05em}
+.interruptor{display:inline-flex;margin-top:30px;padding:6px;border-radius:99px;background:var(--noche-3);border:1px solid rgba(236,229,222,.12);position:relative}
+.interruptor button{position:relative;z-index:1;font:700 15px var(--display);padding:12px 30px;border:0;background:none;color:var(--hueso);cursor:pointer;transition:color .3s}
+.interruptor .bola{position:absolute;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);border-radius:99px;background:var(--cobre);transition:transform .5s var(--suave)}
+.interruptor[data-v=no] .bola{transform:translateX(100%);background:var(--hueso)}
+.interruptor button[aria-pressed=true]{color:var(--noche)}
+.sino ul{list-style:none;counter-reset:x}
+.sino li{display:flex;gap:16px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(236,229,222,.1);font-size:clamp(1.05rem,1.8vw,1.35rem);line-height:1.35;animation:sube .5s var(--suave) both}
+.sino li i{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:14px;background:rgba(201,138,91,.16);color:var(--brasa)}
+@media(max-width:860px){.sino{grid-template-columns:1fr}}
+
+/* Quirófano en mosaico */
+.quir{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px;padding-bottom:clamp(80px,10vw,140px)}
+.quir figure{position:relative;border-radius:26px;overflow:hidden;aspect-ratio:3/4;clip-path:circle(0% at 50% 50%);transition:clip-path 1.4s var(--suave)}
+.quir figure.on{clip-path:circle(75% at 50% 50%)}
+.quir figure:first-child{aspect-ratio:auto;grid-row:span 1}
+.quir img{width:100%;height:100%;object-fit:cover}
+.quir figcaption{position:absolute;inset:auto 18px 16px;font:700 20px var(--display);letter-spacing:-.02em}
+@media(max-width:760px){.quir{grid-template-columns:1fr 1fr}.quir figure:first-child{grid-column:span 2;aspect-ratio:4/3}}
+
+/* Pasos */
+.pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px;counter-reset:p}
+.paso{border-radius:22px;padding:26px;background:var(--noche-2);border:1px solid rgba(236,229,222,.08);position:relative;overflow:hidden}
+.paso::before{counter-increment:p;content:"0" counter(p);font:800 64px/.8 var(--display);color:transparent;-webkit-text-stroke:1px rgba(201,138,91,.6);display:block;margin-bottom:40px}
+.paso h3{font:700 22px/1.1 var(--display);letter-spacing:-.02em}
+.paso p{color:rgba(236,229,222,.65);font-size:14px;margin-top:8px}
+.paso::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--cobre);transform:scaleX(0);transform-origin:left;transition:transform 1s var(--suave)}
+.paso.on::after{transform:scaleX(1)}
+@media(max-width:900px){.pasos{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.pasos{grid-template-columns:1fr}}
+
+/* Cierre */
+.cierre{position:relative;overflow:hidden;padding-block:clamp(100px,14vw,200px) 50px;border-top:1px solid rgba(236,229,222,.08)}
+.cierre h2{font:800 clamp(3.2rem,13vw,14rem)/.82 var(--display);letter-spacing:-.06em;text-transform:uppercase;background:linear-gradient(100deg,var(--hueso) 20%,var(--brasa) 45%,var(--hueso) 70%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:brillo 6s linear infinite}
+@keyframes brillo{to{background-position:-250% 0}}
+.cierre .acc{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px}
+.cierre .datos{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:80px;font-size:14.5px;color:rgba(236,229,222,.7)}
+.cierre .datos .k{display:block;margin-bottom:10px}
+.cierre .pie{margin-top:60px;font-size:12px;color:rgba(236,229,222,.4);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+@media(max-width:760px){.cierre .datos{grid-template-columns:1fr}}
+
+.rev{opacity:0;transform:translateY(34px);transition:opacity 1s var(--suave),transform 1s var(--suave)}
+.rev.on{opacity:1;transform:none}
+.marca-propuesta{position:fixed;left:14px;bottom:14px;z-index:95;background:var(--cobre);color:var(--noche);font:700 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:8px 12px;border-radius:99px}
+.wa{position:fixed;right:18px;bottom:18px;z-index:60;width:58px;height:58px;border-radius:50%;background:var(--cobre);color:var(--noche);display:grid;place-items:center;box-shadow:0 14px 40px -10px rgba(201,138,91,.6)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .rev{opacity:1;transform:none}.quir figure{clip-path:none}.frase h2{transform:none;opacity:1}.grano{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grano" aria-hidden="true"></div>
+<a class="marca-propuesta" href="/propuestas">Propuesta B · Nocturno</a>
+
+<header class="nav">
+  <div class="env">
+    <div class="pill">
+      <a href="#" class="mg">MG<span>.</span></a>
+      <ul><li><a href="#procedimientos">Procedimientos</a></li><li><a href="#sino">Compromiso</a></li><li><a href="#consulta">Consulta</a></li><li><a href="#contacto">Contacto</a></li></ul>
+    </div>
+    <a class="btn btn-cobre der magnetico" style="pointer-events:auto" href="https://drmarioguerra.com/reservar">Agendar →</a>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <div class="capa base"><img src="https://drmarioguerra.com/marca/hero-modelo.jpg" alt=""></div>
+  <div class="capa luz" id="luz"><img src="https://drmarioguerra.com/marca/hero-modelo.jpg" alt="El Dr. Mario Guerra con una paciente"></div>
+  <div class="env">
+    <p class="k" style="margin-bottom:22px">Dr. · Cirujano plástico · Maracaibo</p>
+    <h1 id="titulo"><span class="fila">Mario</span><span class="fila">Guerra</span></h1>
+    <div class="bajo">
+      <p>Cirugía plástica sin promesas irreales. Primero te evaluamos; después decides tú.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <a class="btn btn-cobre magnetico" href="https://drmarioguerra.com/reservar">Agendar valoración →</a>
+        <a class="btn btn-vidrio magnetico wa-link" href="#" target="_blank" rel="noreferrer">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="env bento" aria-label="En cifras">
+  <div class="tile t-1 rev">
+    <span class="k">Por qué él</span>
+    <h2>Te dice lo que es posible. <span>Y lo que no.</span></h2>
+    <p>Cada paciente es diferente, y cada resultado también. Valoración clara, técnica y criterio, y acompañamiento antes, durante y después.</p>
+  </div>
+  <div class="tile foto t-foto rev"><img src="https://drmarioguerra.com/marca/doctor-retrato.jpg" alt="Retrato del Dr. Mario Guerra" style="object-position:50% 20%"><span class="rotulo">Dr. Mario Guerra</span></div>
+  <div class="tile rev"><div class="num" data-cuenta="8">+8</div><p>años en cirugía plástica y reconstructiva</p></div>
+  <div class="tile rev"><div class="num" data-cuenta="500">+500</div><p>procedimientos realizados</p></div>
+  <div class="tile t-ancha rev"><div class="num">24<em>/</em>7</div><p>Línea de emergencias para pacientes operados, todos los días.</p></div>
+  <div class="tile t-ancha rev" style="display:flex;flex-direction:column;justify-content:space-between;gap:18px"><span class="k">Tu valoración</span><div style="font:700 clamp(1.8rem,3.4vw,3rem)/1 var(--display);letter-spacing:-.04em">Presencial <em style="font-style:normal;color:var(--cobre)">u</em> online</div><p style="margin-top:0">En el consultorio de Bella Vista o por videollamada, desde donde estés.</p></div>
+</section>
+
+<section class="env proc" id="procedimientos">
+  <div class="proc-cab rev">
+    <h2>Qué<br>se puede<br>hacer</h2>
+    <p>Pasa el cursor por cada procedimiento. Recuperación y anestesia de referencia; tu caso se define en la valoración.</p>
+  </div>
+  <div class="filtros" id="filtros"></div>
+  <ul class="filas" id="filas"></ul>
+</section>
+<div class="preview" id="preview" aria-hidden="true"><img alt=""></div>
+
+<section class="frase" id="frase">
+  <div class="pega"><div class="orbe" aria-hidden="true"></div><h2 id="frase-h">Sin promesas<span>irreales.</span></h2></div>
+</section>
+
+<section class="env sino" id="sino">
+  <div class="rev">
+    <span class="k">El compromiso</span>
+    <h2 style="margin-top:16px">Lo que el doctor sí hace. Y lo que no.</h2>
+    <div class="interruptor" id="inter" data-v="si" role="group" aria-label="Ver lo que sí o lo que no">
+      <span class="bola"></span>
+      <button aria-pressed="true" data-v="si">Sí hace</button>
+      <button aria-pressed="false" data-v="no">No hace</button>
+    </div>
+  </div>
+  <ul id="sino-lista"></ul>
+</section>
+
+<section class="env" aria-label="En quirófano">
+  <span class="k">En quirófano</span>
+  <div class="quir" style="margin-top:24px">
+    <figure><img src="https://drmarioguerra.com/marca/quirofano-a.jpg" alt="El Dr. Guerra operando"><figcaption>Técnica</figcaption></figure>
+    <figure><img src="https://drmarioguerra.com/marca/quirofano-b.jpg" alt="El Dr. Guerra durante una cirugía"><figcaption>Seguridad</figcaption></figure>
+    <figure><img src="https://drmarioguerra.com/marca/quirofano-c.jpg" alt="El Dr. Guerra en el quirófano"><figcaption>Criterio</figcaption></figure>
+  </div>
+</section>
+
+<section class="env" id="consulta" style="padding-bottom:clamp(90px,12vw,160px)">
+  <span class="k">La valoración · presencial u online</span>
+  <h2 class="rev" style="font:800 clamp(2.4rem,6vw,5.6rem)/.9 var(--display);letter-spacing:-.05em;margin-top:16px;text-transform:uppercase">Tu primera consulta</h2>
+  <div class="pasos">
+    <div class="paso rev"><h3>El doctor te evalúa</h3><p>Escucha lo que buscas y revisa tu caso.</p></div>
+    <div class="paso rev"><h3>Aclara tus dudas</h3><p>Procedimiento, recuperación y cuidados.</p></div>
+    <div class="paso rev"><h3>Tu presupuesto</h3><p>Personalizado, con planes de financiamiento.</p></div>
+    <div class="paso rev"><h3>Tú decides la fecha</h3><p>Sin apuro, cuando estés lista.</p></div>
+  </div>
+  <div class="tile rev" style="margin-top:14px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px">
+    <div><span class="k">Resultados reales</span><p style="font:700 clamp(1.6rem,3.4vw,2.8rem)/1 var(--display);letter-spacing:-.03em;color:var(--hueso);margin-top:10px;max-width:none">Casos y antes/después en @drmarioguerra</p></div>
+    <a class="btn btn-vidrio magnetico" href="https://www.instagram.com/drmarioguerra/" target="_blank" rel="noreferrer">Ver Instagram ↗</a>
+  </div>
+</section>
+
+<section class="cierre" id="contacto">
+  <div class="orbe" style="left:30%;top:10%" aria-hidden="true"></div>
+  <div class="env" style="position:relative">
+    <span class="k">Agenda</span>
+    <h2 style="margin-top:20px">Hablemos<br>de ti.</h2>
+    <div class="acc">
+      <a class="btn btn-cobre magnetico" href="https://drmarioguerra.com/reservar">Agendar consulta →</a>
+      <a class="btn btn-vidrio magnetico wa-link" href="#" target="_blank" rel="noreferrer">Escribir por WhatsApp</a>
+    </div>
+    <div class="datos">
+      <div><span class="k">Dónde</span>Av. 3H entre calle 70 y 71, Bella Vista, Maracaibo<br><a href="https://maps.app.goo.gl/FNh72gqEtimSv26XA" target="_blank" rel="noreferrer" style="color:var(--brasa)">Cómo llegar ↗</a></div>
+      <div><span class="k">Contacto</span>WhatsApp +1 832 593 0835<br>Emergencias 24/7: 0424 650 2649</div>
+      <div><span class="k">Redes</span><a href="https://www.instagram.com/drmarioguerra/" target="_blank" rel="noreferrer">Instagram</a> · <a href="https://www.tiktok.com/@drmarioguerraoficial" target="_blank" rel="noreferrer">TikTok</a> · <a href="https://www.facebook.com/DRMARIOGUERRA" target="_blank" rel="noreferrer">Facebook</a></div>
+    </div>
+    <div class="pie"><span>© Dr. Mario Guerra</span><span>Las imágenes pueden no representar resultados reales. Los resultados varían en cada paciente.</span></div>
+  </div>
+</section>
+
+<a class="wa wa-link" href="#" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.6-1.3.1-.1 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+
+<script>
+const WA='https://wa.me/18325930835?text='+encodeURIComponent('Hola, quisiera información sobre una consulta de valoración.');
+document.querySelectorAll('.wa-link').forEach(a=>a.href=WA);
+const quieto=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const conMouse=matchMedia('(hover:hover)').matches;
+
+// Título letra por letra
+document.querySelectorAll('#titulo .fila').forEach((f,fi)=>{f.innerHTML=[...f.textContent].map((c,i)=>`<span class="le" style="animation-delay:${fi*.18+i*.045}s">${c}</span>`).join('')});
+
+// Foco de luz: sigue al cursor; en teléfono deriva solo
+const luz=document.getElementById('luz'),hero=document.getElementById('hero');
+if(!quieto){
+  let tx=62,ty=38,x=62,y=38,t=0;
+  if(conMouse) hero.addEventListener('mousemove',e=>{const r=hero.getBoundingClientRect();tx=(e.clientX-r.left)/r.width*100;ty=(e.clientY-r.top)/r.height*100});
+  (function anim(){t+=.006;if(!conMouse){tx=62+Math.sin(t)*16;ty=36+Math.cos(t*1.3)*10}x+=(tx-x)*.08;y+=(ty-y)*.08;luz.style.setProperty('--mx',x+'%');luz.style.setProperty('--my',y+'%');requestAnimationFrame(anim)})();
+}
+
+// Tarjetas: brillo que sigue el cursor + inclinación 3D
+if(conMouse&&!quieto) document.querySelectorAll('.tile').forEach(t=>{
+  t.addEventListener('mousemove',e=>{const r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;t.style.setProperty('--x',px*100+'%');t.style.setProperty('--y',py*100+'%');t.style.transform=`perspective(900px) rotateX(${(.5-py)*7}deg) rotateY(${(px-.5)*7}deg)`});
+  t.addEventListener('mouseleave',()=>t.style.transform='');
+});
+
+// Botones magnéticos
+if(conMouse&&!quieto) document.querySelectorAll('.magnetico').forEach(b=>{
+  b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.25}px,${(e.clientY-r.top-r.height/2)*.35}px)`});
+  b.addEventListener('mouseleave',()=>b.style.transform='');
+});
+
+// Procedimientos
+const P={Cuerpo:[['Lipoescultura','2–3 semanas · general'],['Abdominoplastia','2–3 semanas · general'],['Mela abdominal','2–3 semanas · general'],['Minidermo','2–3 semanas · general'],['Lipo de papada','2–3 semanas · general'],['Corrección de cicatrices','2–3 semanas · general'],['Recambio de implantes','2–3 semanas · general'],['Reconstrucción genital','2–3 semanas · general']],
+Mamas:[['Aumento mamario','2–3 semanas · general'],['Mastopexia con implantes','4 semanas · general'],['Mastopexia sin implantes','2–3 semanas · general'],['Reducción mamaria','2–3 semanas · general'],['Reconstrucción de mamas','2–3 semanas · general']],
+Rostro:[['Blefaroplastia superior','2–3 semanas · general'],['Blefaroplastia inferior','2–3 semanas · general'],['Otoplastia','2–3 semanas · general'],['Pabellón auricular','2–3 semanas · general']],
+'Sin quirófano':[['Armonización facial','Sin reposo · local'],['Toxina botulínica','Sin reposo · local'],['Ácido hialurónico','Sin reposo · local'],['Aumento de labios','Sin reposo · local']]};
+const FOTO={Cuerpo:'quirofano-b.jpg',Mamas:'consulta-implante.jpg',Rostro:'doctor-retrato.jpg','Sin quirófano':'consulta-escritorio.jpg'};
+const filas=document.getElementById('filas'),filtros=document.getElementById('filtros');
+filas.innerHTML=Object.entries(P).flatMap(([c,l])=>l.map(([n,d])=>`<li data-c="${c}"><b>${n}</b><small>${c} · ${d}</small></li>`)).join('');
+['Todos',...Object.keys(P)].forEach((c,i)=>{const b=document.createElement('button');b.textContent=c;b.setAttribute('aria-pressed',i===0);b.onclick=()=>{filtros.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));filas.querySelectorAll('li').forEach(li=>li.classList.toggle('out',c!=='Todos'&&li.dataset.c!==c))};filtros.appendChild(b)});
+const prev=document.getElementById('preview'),pimg=prev.querySelector('img');
+if(conMouse&&!quieto){
+  let px=0,py=0,cx=0,cy=0;
+  addEventListener('mousemove',e=>{px=e.clientX;py=e.clientY});
+  (function mv(){cx+=(px-cx)*.15;cy+=(py-cy)*.15;prev.style.left=cx+'px';prev.style.top=cy+'px';requestAnimationFrame(mv)})();
+  filas.addEventListener('mouseover',e=>{const li=e.target.closest('li');if(!li)return;pimg.src='https://drmarioguerra.com/marca/'+FOTO[li.dataset.c];prev.classList.add('on')});
+  filas.addEventListener('mouseleave',()=>prev.classList.remove('on'));
+}
+
+// Sí / No
+const SI=['Te escucha y evalúa tu caso con honestidad.','Te dice si lo que buscas es posible y, si no, te propone alternativas.','Te muestra casos similares para que sepas qué esperar.','Te acompaña antes, durante y después, con revisiones incluidas.'];
+const NO=['No te promete resultados irreales ni te dice solo lo que quieres oír.','No te vende procedimientos que no necesitas.','No te da un presupuesto sin evaluarte primero.','No te apura para decidir.'];
+const inter=document.getElementById('inter'),sl=document.getElementById('sino-lista');
+function sino(v){inter.dataset.v=v;inter.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));sl.innerHTML=(v==='si'?SI:NO).map((t,i)=>`<li style="animation-delay:${i*70}ms"><i>${v==='si'?'✓':'✕'}</i>${t}</li>`).join('')}
+inter.querySelectorAll('button').forEach(b=>b.onclick=()=>sino(b.dataset.v));sino('si');
+
+// Aparecer, contadores, círculos
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.2});
+document.querySelectorAll('.rev,.paso').forEach(el=>io.observe(el));
+// Una figura recortada a cero no cuenta como visible para el navegador: se vigila el mosaico entero.
+const ioq=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;ioq.unobserve(e.target);e.target.querySelectorAll('figure').forEach((f,i)=>setTimeout(()=>f.classList.add('on'),i*180))}),{threshold:.15});
+document.querySelectorAll('.quir').forEach(q=>ioq.observe(q));
+const ioc=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;ioc.unobserve(e.target);const fin=+e.target.dataset.cuenta,t0=performance.now();const p=t=>{const k=Math.min(1,(t-t0)/1700);e.target.textContent='+'+Math.round(fin*(1-Math.pow(1-k,4)));if(k<1)requestAnimationFrame(p)};if(!quieto)requestAnimationFrame(p)}),{threshold:.5});
+document.querySelectorAll('[data-cuenta]').forEach(el=>ioc.observe(el));
+
+// Frase que crece
+const frase=document.getElementById('frase'),fh=document.getElementById('frase-h');
+function pintar(){if(quieto)return;const r=frase.getBoundingClientRect();const k=Math.min(1,Math.max(0,-r.top/(frase.offsetHeight-innerHeight)));fh.style.setProperty('--s',(.55+k*.6).toFixed(3));fh.style.setProperty('--o',(.15+k*1.2).toFixed(3))}
+let pend=false;addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;pintar()})}},{passive:true});pintar();
+</script>
+</body>
+</html>

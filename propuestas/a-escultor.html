@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta A · Escultor — Dr. Mario Guerra</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap">
+<style>
+:root{
+  --marfil:#EFE8DF; --marfil-2:#E4DACD; --papel:#F7F3EE;
+  --tinta:#14110F; --tinta-2:#4A423B; --gris:#857A70;
+  --cobre:#A0603A; --cobre-claro:#C98B62;
+  --serif:"Instrument Serif", "Times New Roman", serif;
+  --sans:"Manrope", ui-sans-serif, system-ui, sans-serif;
+  --suave:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--marfil);color:var(--tinta);font-family:var(--sans);font-size:16px;line-height:1.6;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+.envoltura{width:100%;padding-inline:clamp(16px,5vw,80px);margin-inline:auto;max-width:1600px}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:600;color:var(--cobre)}
+.serif{font-family:var(--serif);font-weight:400}
+em{font-style:italic;color:var(--cobre)}
+:focus-visible{outline:2px solid var(--cobre);outline-offset:3px;border-radius:4px}
+
+/* ── Botones ── */
+.btn{display:inline-flex;align-items:center;gap:.7em;padding:16px 26px;border-radius:999px;font-weight:600;font-size:14.5px;letter-spacing:.01em;position:relative;overflow:hidden;isolation:isolate;transition:color .4s var(--suave)}
+.btn::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;transform:translateY(101%);transition:transform .5s var(--suave)}
+.btn:hover::before{transform:none}
+.btn-oscuro{background:var(--tinta);color:var(--marfil)}
+.btn-oscuro::before{background:var(--cobre)}
+.btn-linea{border:1px solid var(--tinta);color:var(--tinta)}
+.btn-linea::before{background:var(--tinta)}
+.btn-linea:hover{color:var(--marfil)}
+.btn .fl{transition:transform .4s var(--suave)}
+.btn:hover .fl{transform:translateX(5px)}
+
+/* ── Navegación ── */
+.nav{position:fixed;inset:0 0 auto;z-index:50;transition:transform .5s var(--suave),background .4s}
+.nav .envoltura{display:flex;align-items:center;gap:24px;height:76px}
+.nav.solida{background:color-mix(in srgb,var(--marfil) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav.oculta{transform:translateY(-100%)}
+.logo{font-family:var(--serif);font-size:24px;letter-spacing:.01em;white-space:nowrap}
+.logo small{font-family:var(--sans);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin-left:10px}
+.nav ul{display:flex;gap:30px;list-style:none;margin-left:auto;font-size:14px}
+.nav ul a{position:relative}
+.nav ul a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:var(--cobre);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--suave)}
+.nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav .btn{padding:11px 20px;font-size:13.5px}
+@media(max-width:900px){.nav ul{display:none}.nav .btn{margin-left:auto}.logo small{display:none}}
+
+/* ── Hero ── */
+.hero{min-height:100svh;padding-top:110px;padding-bottom:60px;display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,5vw,80px);align-items:center}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(3.4rem,10.5vw,10.5rem);line-height:.88;letter-spacing:-.02em}
+.hero h1 .l{display:block;overflow:hidden;padding-bottom:.06em}
+.hero h1 .l>span{display:inline-block;transform:translateY(110%);animation:sube 1.2s var(--suave) forwards}
+.hero h1 .l:nth-child(2)>span{animation-delay:.12s}.hero h1 .l:nth-child(3)>span{animation-delay:.24s}
+@keyframes sube{to{transform:none}}
+.hero .bajada{max-width:30rem;font-size:clamp(1rem,1.6vw,1.15rem);color:var(--tinta-2);margin-top:30px;opacity:0;animation:aparece 1s .6s var(--suave) forwards}
+.hero .acciones{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px;opacity:0;animation:aparece 1s .75s var(--suave) forwards}
+@keyframes aparece{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero .quien{display:flex;align-items:center;gap:14px;margin-bottom:26px;opacity:0;animation:aparece 1s .1s var(--suave) forwards}
+.hero .quien span{height:1px;width:48px;background:var(--cobre)}
+.arco{position:relative;border-radius:999px 999px 18px 18px;overflow:hidden;aspect-ratio:3/4.1;background:var(--marfil-2);clip-path:inset(100% 0 0 0 round 999px 999px 18px 18px);animation:cortina 1.5s .2s var(--suave) forwards}
+@keyframes cortina{to{clip-path:inset(0 0 0 0 round 999px 999px 18px 18px)}}
+.arco img{width:100%;height:118%;object-fit:cover;object-position:78% 20%;transform:translateY(var(--dy,0)) scale(1.06);will-change:transform}
+.hero-foto{position:relative}
+.sello{position:absolute;left:-46px;bottom:40px;width:132px;height:132px;border-radius:50%;background:var(--tinta);color:var(--marfil);display:grid;place-items:center;box-shadow:0 20px 40px -20px rgba(20,17,15,.6)}
+.sello svg{position:absolute;inset:0;animation:gira 18s linear infinite}
+.sello b{font-family:var(--serif);font-weight:400;font-size:30px;font-style:italic;color:var(--cobre-claro)}
+@keyframes gira{to{transform:rotate(360deg)}}
+.cifras{display:flex;gap:clamp(20px,4vw,56px);margin-top:46px;opacity:0;animation:aparece 1s .9s var(--suave) forwards}
+.cifras div{border-top:1px solid color-mix(in srgb,var(--tinta) 20%,transparent);padding-top:12px}
+.cifras b{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,4vw,3rem);line-height:1;display:block}
+.cifras span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;padding-top:96px}
+  .hero-foto{max-width:420px;width:88%;margin-inline:auto}
+  .sello{left:-14px;width:104px;height:104px;bottom:24px}
+}
+
+/* ── Cinta ── */
+.cinta{border-block:1px solid color-mix(in srgb,var(--tinta) 14%,transparent);padding:26px 0;overflow:hidden;white-space:nowrap}
+.cinta .pista{display:inline-flex;animation:cinta 55s linear infinite}
+.cinta span{font-family:var(--serif);font-size:clamp(2rem,5.5vw,4.4rem);padding-inline:.5em;display:inline-flex;align-items:center;gap:.6em}
+.cinta span:nth-child(even){font-style:italic;color:var(--cobre)}
+.cinta span::after{content:"✦";font-size:.35em;color:var(--cobre-claro);font-style:normal}
+@keyframes cinta{to{transform:translateX(-50%)}}
+
+/* ── Manifiesto que se pinta palabra por palabra ── */
+.manifiesto{padding-block:clamp(90px,14vw,190px)}
+.manifiesto p{font-family:var(--serif);font-size:clamp(1.9rem,4.6vw,4.2rem);line-height:1.12;max-width:22ch;letter-spacing:-.01em}
+.manifiesto .pal{opacity:.14;transition:opacity .25s linear}
+.manifiesto .pal.on{opacity:1}
+.manifiesto .firma{display:flex;align-items:center;gap:16px;margin-top:44px;color:var(--gris);font-size:14px}
+.manifiesto .firma img{width:56px;height:56px;border-radius:50%;object-fit:cover;object-position:50% 15%}
+
+/* ── Mapa del cuerpo ── */
+.mapa{background:var(--papel);padding:clamp(80px,10vw,140px) 0}
+.mapa-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(30px,6vw,100px);align-items:start}
+.titulo{font-family:var(--serif);font-weight:400;font-size:clamp(2.6rem,6.4vw,5.6rem);line-height:.95;letter-spacing:-.02em}
+.mapa-foto{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;background:var(--marfil-2)}
+.mapa-foto img{width:100%;height:100%;object-fit:cover}
+.mapa-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(239,232,223,.55),transparent 45%)}
+.punto{position:absolute;z-index:2;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--marfil);border:0;cursor:pointer;box-shadow:0 0 0 0 rgba(239,232,223,.7);animation:late 2.4s infinite}
+.punto::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--cobre)}
+.punto.activo{background:var(--cobre);animation:none;box-shadow:0 0 0 8px rgba(160,96,58,.25)}
+.punto.activo::after{background:var(--marfil)}
+.punto .et{position:absolute;left:30px;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--tinta);color:var(--marfil);font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;padding:7px 10px;border-radius:99px;opacity:0;transition:opacity .3s}
+.punto:hover .et,.punto.activo .et{opacity:1}
+@keyframes late{70%{box-shadow:0 0 0 16px rgba(239,232,223,0)}100%{box-shadow:0 0 0 0 rgba(239,232,223,0)}}
+.pestanas{display:flex;flex-wrap:wrap;gap:8px;margin:34px 0 26px}
+.pestanas button{font:600 13px var(--sans);padding:10px 18px;border-radius:99px;border:1px solid color-mix(in srgb,var(--tinta) 22%,transparent);background:transparent;color:var(--tinta);cursor:pointer;transition:all .3s var(--suave)}
+.pestanas button[aria-selected=true]{background:var(--tinta);color:var(--marfil);border-color:var(--tinta)}
+.lista-proc{list-style:none}
+.lista-proc li{display:grid;grid-template-columns:1fr auto;gap:6px 20px;padding:18px 0;border-bottom:1px solid color-mix(in srgb,var(--tinta) 12%,transparent);animation:aparece .6s var(--suave) both}
+.lista-proc li b{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,2.4vw,1.75rem);line-height:1.1}
+.lista-proc li span{font-size:12.5px;color:var(--gris);text-align:right;line-height:1.5}
+.nota{font-size:13px;color:var(--gris);margin-top:20px}
+@media(max-width:900px){.mapa-grid{grid-template-columns:1fr}.lista-proc li{grid-template-columns:1fr}.lista-proc li span{text-align:left}}
+
+/* ── Doctor ── */
+.doctor{padding-block:clamp(90px,12vw,170px)}
+.doctor-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(30px,7vw,120px);align-items:center}
+.doctor .arco{animation:none;clip-path:none;aspect-ratio:3/4}
+.doctor .arco img{object-position:50% 18%;height:120%}
+.doctor p.grande{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.5rem);line-height:1.18;margin-top:26px}
+.doctor p.chico{color:var(--tinta-2);margin-top:22px;max-width:36rem}
+.sellos{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px}
+.sellos div{background:var(--papel);border-radius:16px;padding:22px}
+.sellos b{font-family:var(--serif);font-weight:400;font-size:clamp(2.2rem,4vw,3.4rem);line-height:1;display:block}
+.sellos span{font-size:12.5px;color:var(--gris);display:block;margin-top:8px;line-height:1.4}
+@media(max-width:900px){.doctor-grid{grid-template-columns:1fr}.doctor .arco{max-width:420px;width:90%}.sellos{grid-template-columns:1fr 1fr 1fr;gap:8px}.sellos div{padding:16px 12px}}
+
+/* ── Quirófano horizontal ── */
+.quirofano{background:var(--tinta);color:var(--marfil);overflow:clip}
+.quirofano .riel{display:flex;gap:clamp(16px,3vw,40px);padding:clamp(80px,10vw,130px) clamp(16px,5vw,80px);width:max-content;align-items:center}
+.q-intro{width:min(80vw,440px);flex:none}
+.q-intro .titulo{color:var(--marfil)}
+.q-intro p{color:color-mix(in srgb,var(--marfil) 70%,transparent);margin-top:22px}
+.q-foto{flex:none;width:min(70vw,420px);aspect-ratio:2/3;border-radius:18px;overflow:hidden;position:relative}
+.q-foto:nth-child(odd){transform:translateY(40px)}
+.q-foto img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--suave)}
+.q-foto:hover img{transform:scale(1.06)}
+.q-foto figcaption{position:absolute;left:18px;bottom:16px;font-family:var(--serif);font-size:1.6rem;font-style:italic;color:var(--marfil);text-shadow:0 2px 20px rgba(0,0,0,.5)}
+.q-texto{flex:none;width:min(70vw,360px);font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.1}
+@media(max-width:900px){.quirofano .riel{width:auto;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.quirofano .riel>*{scroll-snap-align:start}.q-foto:nth-child(odd){transform:none}}
+
+/* ── Sí / No ── */
+.sino{display:grid;grid-template-columns:1fr 1fr}
+.sino>div{padding:clamp(70px,9vw,130px) clamp(20px,5vw,80px)}
+.sino .si{background:var(--marfil-2)}
+.sino .no{background:var(--tinta);color:var(--marfil)}
+.sino h3{font-family:var(--serif);font-weight:400;font-size:clamp(4rem,11vw,9rem);line-height:.8;font-style:italic}
+.sino .si h3{color:var(--cobre)}.sino .no h3{color:var(--cobre-claro)}
+.sino p.d{font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin-top:18px;opacity:.7}
+.sino ul{list-style:none;margin-top:38px}
+.sino li{padding:18px 0;border-top:1px solid color-mix(in srgb,currentColor 18%,transparent);font-size:clamp(1rem,1.5vw,1.15rem)}
+@media(max-width:800px){.sino{grid-template-columns:1fr}}
+
+/* ── Consulta ── */
+.consulta{padding-block:clamp(90px,12vw,170px)}
+.consulta-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(30px,7vw,120px)}
+.pegado{position:sticky;top:110px;align-self:start}
+.pasos{list-style:none}
+.pasos li{display:grid;grid-template-columns:auto 1fr;gap:28px;padding:34px 0;border-bottom:1px solid color-mix(in srgb,var(--tinta) 14%,transparent)}
+.pasos .n{font-family:var(--serif);font-size:clamp(3rem,6vw,5rem);line-height:.8;color:var(--cobre);font-style:italic}
+.pasos h4{font-family:var(--serif);font-weight:400;font-size:clamp(1.5rem,2.6vw,2.2rem);line-height:1.1}
+.pasos p{color:var(--tinta-2);margin-top:8px;font-size:15px}
+.modalidades{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:34px}
+.modalidades div{border:1px solid color-mix(in srgb,var(--tinta) 16%,transparent);border-radius:16px;padding:20px}
+.modalidades b{font-family:var(--serif);font-weight:400;font-size:1.6rem;display:block}
+.modalidades span{font-size:13px;color:var(--gris)}
+@media(max-width:900px){.consulta-grid{grid-template-columns:1fr}.pegado{position:static}}
+
+/* ── Resultados ── */
+.resultados{background:var(--papel);padding:clamp(80px,10vw,140px) 0}
+.ig{display:grid;grid-template-columns:1.2fr .8fr;gap:30px;align-items:end;border-top:1px solid color-mix(in srgb,var(--tinta) 18%,transparent);padding-top:40px;margin-top:40px}
+.ig a.handle{font-family:var(--serif);font-size:clamp(2.4rem,7vw,6.5rem);line-height:.95;display:inline-block;position:relative}
+.ig a.handle::after{content:"↗";font-size:.45em;color:var(--cobre);margin-left:.15em;display:inline-block;transition:transform .4s var(--suave)}
+.ig a.handle:hover::after{transform:translate(6px,-6px)}
+@media(max-width:800px){.ig{grid-template-columns:1fr}}
+
+/* ── Cierre ── */
+.cierre{background:var(--tinta);color:var(--marfil);padding:clamp(90px,12vw,170px) 0 60px;position:relative;overflow:hidden}
+.cierre h2{font-family:var(--serif);font-weight:400;font-size:clamp(3.4rem,12vw,12rem);line-height:.85;letter-spacing:-.03em}
+.cierre h2 em{color:var(--cobre-claro)}
+.cierre .acciones{display:flex;flex-wrap:wrap;gap:12px;margin-top:44px}
+.cierre .btn-claro{background:var(--marfil);color:var(--tinta)}
+.cierre .btn-claro::before{background:var(--cobre-claro)}
+.cierre .btn-borde{border:1px solid color-mix(in srgb,var(--marfil) 40%,transparent);color:var(--marfil)}
+.cierre .btn-borde::before{background:var(--marfil)}
+.cierre .btn-borde:hover{color:var(--tinta)}
+.datos{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:90px;padding-top:40px;border-top:1px solid color-mix(in srgb,var(--marfil) 16%,transparent);font-size:14.5px;color:color-mix(in srgb,var(--marfil) 75%,transparent)}
+.datos .kicker{color:var(--cobre-claro);display:block;margin-bottom:12px}
+.datos a:hover{color:var(--marfil)}
+.pie{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-top:70px;font-size:12px;color:color-mix(in srgb,var(--marfil) 45%,transparent)}
+@media(max-width:800px){.datos{grid-template-columns:1fr}}
+
+/* ── Flotantes ── */
+.wa{position:fixed;right:18px;bottom:18px;z-index:60;width:58px;height:58px;border-radius:50%;background:var(--tinta);color:var(--marfil);display:grid;place-items:center;box-shadow:0 14px 30px -12px rgba(20,17,15,.6);transition:transform .4s var(--suave)}
+.wa:hover{transform:scale(1.08) rotate(-6deg)}
+.cursor{position:fixed;left:0;top:0;z-index:100;pointer-events:none;opacity:0;width:40px;height:40px;margin:-20px 0 0 -20px;border:1px solid var(--cobre);border-radius:50%;transition:width .3s var(--suave),height .3s var(--suave),margin .3s var(--suave),background .3s;mix-blend-mode:multiply}
+.cursor.grande{width:74px;height:74px;margin:-37px 0 0 -37px;background:rgba(160,96,58,.12)}
+@media (hover:none),(max-width:900px){.cursor{display:none}}
+
+/* ── Aparecer al bajar ── */
+.rev{opacity:0;transform:translateY(30px);transition:opacity 1s var(--suave),transform 1s var(--suave)}
+.rev.on{opacity:1;transform:none}
+.rev-arco{clip-path:inset(100% 0 0 0 round 999px 999px 18px 18px);transition:clip-path 1.4s var(--suave)}
+.rev-arco.on{clip-path:inset(0 0 0 0 round 999px 999px 18px 18px)}
+.marca-propuesta{position:fixed;left:14px;bottom:14px;z-index:60;background:var(--tinta);color:var(--marfil);font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:8px 12px;border-radius:99px;opacity:.85}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .rev,.rev-arco{opacity:1;transform:none;clip-path:none}
+  .arco img{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="cursor" aria-hidden="true"></div>
+<a class="marca-propuesta" href="/propuestas">Propuesta A · Escultor</a>
+
+<header class="nav" id="nav">
+  <div class="envoltura">
+    <a href="#inicio" class="logo">Mario Guerra <small>Cirujano plástico</small></a>
+    <ul>
+      <li><a href="#procedimientos">Procedimientos</a></li>
+      <li><a href="#doctor">El doctor</a></li>
+      <li><a href="#consulta">La consulta</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <a class="btn btn-oscuro" href="https://drmarioguerra.com/reservar">Agendar <span class="fl">→</span></a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="envoltura hero">
+    <div>
+      <p class="kicker quien"><span></span>Dr. Mario Guerra · Maracaibo</p>
+      <h1><span class="l"><span>El arte</span></span><span class="l"><span>de lo</span></span><span class="l"><span><em>natural.</em></span></span></h1>
+      <p class="bajada">Cirugía plástica, estética y reconstructiva con una valoración honesta: te decimos qué es posible, qué no, y te acompañamos en todo el proceso.</p>
+      <div class="acciones">
+        <a class="btn btn-oscuro" href="https://drmarioguerra.com/reservar">Agendar valoración <span class="fl">→</span></a>
+        <a class="btn btn-linea wa-link" href="#" target="_blank" rel="noreferrer">Escribir por WhatsApp</a>
+      </div>
+      <div class="cifras">
+        <div><b data-cuenta="8">+8</b><span>Años</span></div>
+        <div><b data-cuenta="500">+500</b><span>Procedimientos</span></div>
+        <div><b>24/7</b><span>Emergencias</span></div>
+      </div>
+    </div>
+    <div class="hero-foto">
+      <div class="arco"><img src="https://drmarioguerra.com/marca/hero-modelo.jpg" alt="El Dr. Mario Guerra con una paciente" data-paralaje="0.08"></div>
+      <a class="sello" href="https://drmarioguerra.com/reservar" aria-label="Agenda tu valoración">
+        <svg viewBox="0 0 132 132" aria-hidden="true"><defs><path id="circ" d="M66,66 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0"/></defs>
+          <text font-family="Manrope" font-size="10.5" letter-spacing="3.2" fill="#EFE8DF"><textPath href="#circ">AGENDA TU VALORACIÓN · PRESENCIAL U ONLINE ·</textPath></text></svg>
+        <b>MG</b>
+      </a>
+    </div>
+  </section>
+
+  <div class="cinta" aria-hidden="true"><div class="pista" id="cinta"></div></div>
+
+  <section class="envoltura manifiesto">
+    <p class="kicker" style="margin-bottom:28px">Nuestro enfoque</p>
+    <p id="manifiesto">Cada paciente es diferente, y cada resultado también. Aquí no te vendemos un procedimiento: te evaluamos, te explicamos tus opciones y te acompañamos en todo el proceso.</p>
+    <div class="firma"><img src="https://drmarioguerra.com/marca/doctor-retrato.jpg" alt=""><span>Dr. Mario Guerra<br>Cirujano plástico y reconstructivo</span></div>
+  </section>
+
+  <section class="mapa" id="procedimientos">
+    <div class="envoltura mapa-grid">
+      <div class="mapa-foto rev">
+        <img src="https://drmarioguerra.com/marca/hero-modelo.jpg" alt="Toca una zona para ver sus procedimientos">
+        <button class="punto" data-zona="rostro" style="left:75.5%;top:15%"><span class="et">Rostro</span></button>
+        <button class="punto" data-zona="mamas" style="left:73%;top:34%"><span class="et">Mamas</span></button>
+        <button class="punto" data-zona="cuerpo" style="left:72.5%;top:49%"><span class="et">Cuerpo</span></button>
+      </div>
+      <div>
+        <p class="kicker">Procedimientos</p>
+        <h2 class="titulo" style="margin-top:18px">Toca una <em>zona</em>.</h2>
+        <p style="color:var(--tinta-2);margin-top:20px;max-width:32rem">Cada procedimiento con su tiempo de recuperación y tipo de anestesia. El presupuesto se define en la valoración: cada cuerpo responde distinto.</p>
+        <div class="pestanas" role="tablist" id="pestanas"></div>
+        <ul class="lista-proc" id="lista"></ul>
+        <p class="nota">Los tiempos son de referencia. Tu caso se define en la consulta.</p>
+        <a class="btn btn-oscuro" style="margin-top:28px" href="https://drmarioguerra.com/reservar">¿No sabes cuál? Agenda tu valoración <span class="fl">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="doctor envoltura" id="doctor">
+    <div class="doctor-grid">
+      <div class="arco rev-arco"><img src="https://drmarioguerra.com/marca/doctor-retrato.jpg" alt="Retrato del Dr. Mario Guerra" data-paralaje="0.06"></div>
+      <div class="rev">
+        <p class="kicker">El doctor</p>
+        <h2 class="titulo" style="margin-top:18px">Honesto antes que <em>complaciente.</em></h2>
+        <p class="grande">Técnica y criterio para ayudarte a lograr lo que buscas, con una valoración clara y sin promesas irreales.</p>
+        <p class="chico">Si lo que buscas es posible, te explica cómo. Si no lo es, te propone alternativas y te dice por qué. Antes, durante y después: con revisiones incluidas.</p>
+        <div class="sellos">
+          <div><b data-cuenta="8">+8</b><span>años de experiencia</span></div>
+          <div><b data-cuenta="500">+500</b><span>procedimientos realizados</span></div>
+          <div><b>✦</b><span>certificaciones vigentes</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="quirofano" id="quirofano">
+    <div class="riel" id="riel">
+      <div class="q-intro">
+        <p class="kicker" style="color:var(--cobre-claro)">En quirófano</p>
+        <h2 class="titulo" style="margin-top:18px">Así trabaja <em>el doctor.</em></h2>
+        <p>Cada cirugía con su equipo completo y el mismo criterio: técnica, seguridad y un resultado que se vea natural.</p>
+      </div>
+      <figure class="q-foto"><img src="https://drmarioguerra.com/marca/quirofano-a.jpg" alt="El Dr. Guerra operando"><figcaption>Técnica</figcaption></figure>
+      <div class="q-texto">Un equipo completo en cada cirugía.</div>
+      <figure class="q-foto"><img src="https://drmarioguerra.com/marca/quirofano-b.jpg" alt="El Dr. Guerra durante una cirugía"><figcaption>Seguridad</figcaption></figure>
+      <figure class="q-foto"><img src="https://drmarioguerra.com/marca/quirofano-c.jpg" alt="El Dr. Guerra en el quirófano"><figcaption>Criterio</figcaption></figure>
+      <div class="q-texto" style="color:var(--cobre-claro);font-style:italic">Resultados que se ven naturales.</div>
+    </div>
+  </section>
+
+  <section class="sino">
+    <div class="si rev">
+      <h3>Sí.</h3><p class="d">Lo que el Dr. Guerra sí hace</p>
+      <ul><li>Te escucha y evalúa tu caso con honestidad.</li><li>Te dice si lo que buscas es posible y, si no, te propone alternativas.</li><li>Te muestra casos similares para que sepas qué esperar.</li><li>Te acompaña antes, durante y después, con revisiones incluidas.</li></ul>
+    </div>
+    <div class="no rev">
+      <h3>No.</h3><p class="d">Lo que el Dr. Guerra no hace</p>
+      <ul><li>No te promete resultados irreales ni te dice solo lo que quieres oír.</li><li>No te vende procedimientos que no necesitas.</li><li>No te da un presupuesto sin evaluarte primero.</li><li>No te apura para decidir.</li></ul>
+    </div>
+  </section>
+
+  <section class="consulta envoltura" id="consulta">
+    <div class="consulta-grid">
+      <div class="pegado">
+        <p class="kicker">La valoración</p>
+        <h2 class="titulo" style="margin-top:18px">Tu primera <em>consulta.</em></h2>
+        <div class="modalidades">
+          <div><b>Presencial</b><span>En el consultorio, Bella Vista, Maracaibo</span></div>
+          <div><b>Online</b><span>Por videollamada, desde donde estés</span></div>
+        </div>
+        <a class="btn btn-oscuro" style="margin-top:28px" href="https://drmarioguerra.com/reservar">Escoger día y hora <span class="fl">→</span></a>
+      </div>
+      <ol class="pasos">
+        <li class="rev"><span class="n">1</span><div><h4>El doctor te evalúa.</h4><p>Escucha lo que buscas y revisa tu caso personalmente.</p></div></li>
+        <li class="rev"><span class="n">2</span><div><h4>Aclara todas tus dudas.</h4><p>Procedimiento, recuperación, anestesia y cuidados, sin apuro.</p></div></li>
+        <li class="rev"><span class="n">3</span><div><h4>Arma tu presupuesto.</h4><p>Personalizado a lo que tú necesitas, con planes de financiamiento.</p></div></li>
+        <li class="rev"><span class="n">4</span><div><h4>Si lo deseas, defines la fecha.</h4><p>Sin presión: decides cuando estés lista.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="resultados">
+    <div class="envoltura">
+      <p class="kicker">Resultados</p>
+      <h2 class="titulo" style="margin-top:18px">Resultados reales de <em>pacientes reales.</em></h2>
+      <div class="ig rev">
+        <a class="handle" href="https://www.instagram.com/drmarioguerra/" target="_blank" rel="noreferrer">@drmarioguerra</a>
+        <p style="color:var(--tinta-2)">Antes y después, videos y casos del día a día, publicados siempre con la autorización de cada paciente. Los resultados varían en cada persona.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cierre" id="contacto">
+    <div class="envoltura">
+      <p class="kicker" style="color:var(--cobre-claro);margin-bottom:28px">Agenda</p>
+      <h2 class="rev">Empieza por <em>conversar.</em></h2>
+      <div class="acciones rev">
+        <a class="btn btn-claro" href="https://drmarioguerra.com/reservar">Agendar consulta <span class="fl">→</span></a>
+        <a class="btn btn-borde wa-link" href="#" target="_blank" rel="noreferrer">Escríbenos por WhatsApp</a>
+      </div>
+      <div class="datos">
+        <div><span class="kicker">Dónde</span>Av. 3H entre calle 70 y 71,<br>sector Bella Vista, Maracaibo<br><a href="https://maps.app.goo.gl/FNh72gqEtimSv26XA" target="_blank" rel="noreferrer" style="color:var(--cobre-claro)">Cómo llegar ↗</a></div>
+        <div><span class="kicker">Contacto</span>WhatsApp +1 832 593 0835<br>Emergencias 24/7: 0424 650 2649</div>
+        <div><span class="kicker">Redes</span><a href="https://www.instagram.com/drmarioguerra/" target="_blank" rel="noreferrer">Instagram</a> · <a href="https://www.tiktok.com/@drmarioguerraoficial" target="_blank" rel="noreferrer">TikTok</a> · <a href="https://www.facebook.com/DRMARIOGUERRA" target="_blank" rel="noreferrer">Facebook</a></div>
+      </div>
+      <div class="pie"><span>© Dr. Mario Guerra · Cirugía plástica, estética y reconstructiva</span><span>Las imágenes pueden no representar resultados reales. Los resultados varían en cada paciente.</span></div>
+    </div>
+  </section>
+</main>
+
+<a class="wa wa-link" href="#" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.6-1.3.1-.1 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+
+<script>
+const WA = 'https://wa.me/18325930835?text=' + encodeURIComponent('Hola, quisiera información sobre una consulta de valoración.');
+document.querySelectorAll('.wa-link').forEach(a => a.href = WA);
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const CATEGORIAS = {
+  rostro: { nombre: 'Rostro', items: [['Blefaroplastia superior','2 a 3 semanas','General'],['Blefaroplastia inferior','2 a 3 semanas','General'],['Otoplastia','2 a 3 semanas','General'],['Reconstrucción del pabellón auricular','2 a 3 semanas','General']] },
+  mamas: { nombre: 'Mamas', items: [['Aumento mamario','2 a 3 semanas','General'],['Mastopexia con implantes','4 semanas','General'],['Mastopexia sin implantes','2 a 3 semanas','General'],['Reducción mamaria','2 a 3 semanas','General'],['Reconstrucción de mamas','2 a 3 semanas','General']] },
+  cuerpo: { nombre: 'Cuerpo', items: [['Lipoescultura','2 a 3 semanas','General'],['Abdominoplastia','2 a 3 semanas','General'],['Mela abdominal','2 a 3 semanas','General'],['Minidermo','2 a 3 semanas','General'],['Lipo de papada','2 a 3 semanas','General'],['Corrección de cicatrices','2 a 3 semanas','General'],['Recambio de implantes','2 a 3 semanas','General'],['Reconstrucción genital','2 a 3 semanas','General']] },
+  sin: { nombre: 'Sin quirófano', items: [['Armonización facial','Sin reposo','Tópica o local'],['Toxina botulínica (Botox)','Sin reposo','Tópica o local'],['Ácido hialurónico','Sin reposo','Tópica o local'],['Aumento de labios','Sin reposo','Tópica o local']] },
+};
+const pest = document.getElementById('pestanas'), lista = document.getElementById('lista');
+function abrir(z){
+  pest.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.zona === z));
+  document.querySelectorAll('.punto').forEach(p => p.classList.toggle('activo', p.dataset.zona === z));
+  lista.innerHTML = CATEGORIAS[z].items.map((p,i) => `<li style="animation-delay:${i*60}ms"><b>${p[0]}</b><span>Recuperación ${p[1].toLowerCase()}<br>Anestesia ${p[2].toLowerCase()}</span></li>`).join('');
+}
+Object.entries(CATEGORIAS).forEach(([k,c]) => { const b=document.createElement('button'); b.role='tab'; b.dataset.zona=k; b.textContent=c.nombre; b.onclick=()=>abrir(k); pest.appendChild(b); });
+document.querySelectorAll('.punto').forEach(p => p.onclick = () => abrir(p.dataset.zona));
+abrir('cuerpo');
+
+// Cinta
+const nombres = Object.values(CATEGORIAS).flatMap(c => c.items.map(i => i[0])).filter(n => !n.startsWith('Reconstrucción del'));
+const pista = document.getElementById('cinta');
+pista.innerHTML = [...nombres, ...nombres].map(n => `<span>${n}</span>`).join('');
+
+// Manifiesto palabra por palabra
+const man = document.getElementById('manifiesto');
+man.innerHTML = man.textContent.split(' ').map(p => `<span class="pal">${p}</span>`).join(' ');
+const palabras = [...man.querySelectorAll('.pal')];
+if (quieto) palabras.forEach(p => p.classList.add('on'));
+
+// Aparecer al entrar
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} }), {threshold:.15});
+document.querySelectorAll('.rev').forEach(el => io.observe(el));
+// Lo recortado a cero no cuenta como visible: se vigila a su contenedor.
+const ioa = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.querySelectorAll(':scope > .rev-arco').forEach(x => x.classList.add('on')); ioa.unobserve(e.target);} }), {threshold:.1});
+document.querySelectorAll('.rev-arco').forEach(el => ioa.observe(el.parentElement));
+
+// Contadores
+const ioc = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return; ioc.unobserve(e.target);
+  const fin = +e.target.dataset.cuenta, t0 = performance.now();
+  const paso = t => { const k = Math.min(1,(t-t0)/1600); e.target.textContent = '+' + Math.round(fin*(1-Math.pow(1-k,4))); if (k<1) requestAnimationFrame(paso); };
+  if (!quieto) requestAnimationFrame(paso);
+}), {threshold:.5});
+document.querySelectorAll('[data-cuenta]').forEach(el => ioc.observe(el));
+
+// Scroll: nav, parallax, manifiesto, quirófano horizontal
+const nav = document.getElementById('nav'), riel = document.getElementById('riel'), qui = document.getElementById('quirofano');
+let antes = 0, pend = false;
+function horizontalActivo(){ return innerWidth > 900 && !quieto; }
+function medirQuirofano(){
+  if (!horizontalActivo()){ qui.style.height=''; riel.style.transform=''; riel.parentElement.style.position=''; return; }
+  const extra = riel.scrollWidth - innerWidth;
+  qui.style.height = (innerHeight + extra) + 'px';
+}
+function pintar(){
+  pend = false;
+  const y = scrollY;
+  nav.classList.toggle('solida', y > 30);
+  nav.classList.toggle('oculta', y > antes && y > 500); antes = y;
+  if (!quieto){
+    document.querySelectorAll('[data-paralaje]').forEach(img => {
+      const r = img.parentElement.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) return;
+      img.style.setProperty('--dy', ((r.top + r.height/2 - innerHeight/2) * -(+img.dataset.paralaje)).toFixed(1) + 'px');
+    });
+    const r = man.getBoundingClientRect();
+    const k = Math.min(1, Math.max(0, (innerHeight*.85 - r.top) / (r.height + innerHeight*.35)));
+    palabras.forEach((p,i) => p.classList.toggle('on', i < k * palabras.length * 1.15));
+  }
+  if (horizontalActivo()){
+    const r = qui.getBoundingClientRect();
+    const extra = riel.scrollWidth - innerWidth;
+    const k = Math.min(1, Math.max(0, -r.top / (qui.offsetHeight - innerHeight)));
+    riel.style.position = 'sticky';
+    riel.style.top = '0';
+    riel.style.height = '100vh';
+    riel.style.transform = `translate3d(${-extra*k}px,0,0)`;
+  }
+}
+addEventListener('scroll', () => { if(!pend){pend=true;requestAnimationFrame(pintar);} }, {passive:true});
+addEventListener('resize', () => { medirQuirofano(); pintar(); });
+addEventListener('load', () => { medirQuirofano(); pintar(); });
+medirQuirofano(); pintar();
+
+// Cursor
+const cur = document.querySelector('.cursor');
+if (matchMedia('(hover:hover)').matches && !quieto){
+  let x=0,y=0,cx=0,cy=0;
+  addEventListener('mousemove', e => { x=e.clientX; y=e.clientY; cur.style.opacity=1; });
+  (function mover(){ cx+=(x-cx)*.18; cy+=(y-cy)*.18; cur.style.transform=`translate(${cx}px,${cy}px)`; requestAnimationFrame(mover); })();
+  document.querySelectorAll('a,button').forEach(el => { el.addEventListener('mouseenter',()=>cur.classList.add('grande')); el.addEventListener('mouseleave',()=>cur.classList.remove('grande')); });
+}
+</script>
+</body>
+</html>
