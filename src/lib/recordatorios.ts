@@ -8,6 +8,7 @@ import { cuotasVencidas } from './dinero';
 import { sincronizarLeads, correrSeguimientos } from './leads';
 import { correrPostconsulta } from './postconsulta';
 import { avisarCitasProximas } from './proxima';
+import { reportarUsoMeta } from './usoMeta';
 import type { Cita } from './tipos';
 
 type CitaConPaciente = Cita & { paciente_nombre: string; whatsapp: string };
@@ -193,6 +194,13 @@ export async function correrTick() {
     notificar('pago_sin_verificar', `${c.paciente} — ${cuando}: ${que}.`, '/panel');
     db.prepare('UPDATE citas SET pago_aviso_at = ? WHERE id = ?').run(ahora, c.id);
     reporte.pagos++;
+  }
+
+  // Consumo de WhatsApp al panel de admin de Fénix, una vez por hora (el tick
+  // corre cada 15 minutos). Que falle no puede tumbar los recordatorios.
+  if (Number(ahora.slice(14, 16)) < 15) {
+    try { Object.assign(reporte, { usoMeta: (await reportarUsoMeta(2)).ok }); }
+    catch (e) { console.error('uso meta', e); }
   }
 
   // La cita que viene en ~30 minutos: aviso al panel y al teléfono.
