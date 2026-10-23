@@ -6,7 +6,7 @@ import { db, cfgNum } from '@/lib/db';
 import { exigirPermiso } from '@/lib/permisos';
 import {
   bloquearAgenda, cancelarCita, citaPorId, crearCita, buscarOCrearPaciente,
-  marcarCompletada, reprogramarCita,
+  marcarCompletada, reprogramarCita, citaActivaDe,
 } from '@/lib/citas';
 import { conflictos } from '@/lib/agenda';
 import { soloFecha } from '@/lib/fechas';
@@ -42,6 +42,15 @@ export async function agendarManual(_prev: Respuesta | null, datos: FormData): P
     const e = primerError(validarNombre(nombre), validarCedula(cedula), validarWhatsapp(whatsapp));
     if (e) return { ok: false, error: e };
     pacienteId = buscarOCrearPaciente({ nombre, cedula, whatsapp }).id;
+  }
+
+  if (tipo === 'valoracion') {
+    const p = db.prepare('SELECT cedula, whatsapp FROM pacientes WHERE id = ?').get(pacienteId) as
+      { cedula: string; whatsapp: string } | undefined;
+    const ya = p ? citaActivaDe({ cedula: p.cedula, whatsapp: p.whatsapp }) : null;
+    if (ya) {
+      return { ok: false, error: `Este paciente (o alguien con su mismo número) ya tiene una valoración el ${ya.fecha_hora}. Reprográmala en vez de crear otra.` };
+    }
   }
 
   const choques = conflictos(inicio, duracion);

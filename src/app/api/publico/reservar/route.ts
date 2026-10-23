@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { db, cfgNum } from '@/lib/db';
 import { tasaDelDia } from '@/lib/tasa';
 import { cupoDisponible, duracionDe } from '@/lib/agenda';
-import { buscarOCrearPaciente, crearCita, citaPorToken } from '@/lib/citas';
+import { buscarOCrearPaciente, crearCita, citaPorToken, citaActivaDe } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
 import { enviarPlantilla, linkGestion, claveParaCita } from '@/lib/mensajeria';
 import { permitido, ipDe } from '@/lib/ratelimit';
@@ -63,6 +63,20 @@ export async function POST(req: Request) {
   // Reprogramación: viene con el token de la cita anterior.
   const anterior = b.desde ? citaPorToken(b.desde) : undefined;
   const excluir = anterior && ['reservada', 'confirmada'].includes(anterior.estado) ? anterior.id : undefined;
+
+  // Una sola cita por persona: quien ya tiene una la reprograma, no aparta otra.
+  const yaTiene = citaActivaDe({ cedula: b.cedula, whatsapp: b.whatsapp, excluir });
+  if (yaTiene) {
+    // La fecha solo se dice si coincide la cédula, que es lo que ya muestra
+    // "buscar mi cita". Con el teléfono solo, no se revela nada.
+    const cuando = yaTiene.porCedula
+      ? ` para el ${fechaLarga(soloFecha(yaTiene.fecha_hora))} a las ${hora12(soloHora(yaTiene.fecha_hora))}`
+      : '';
+    return NextResponse.json(
+      { error: `Ya tienes una cita apartada${cuando}. Solo se puede tener una a la vez: si necesitas otro día, reprográmala desde el enlace que te llegó por WhatsApp o con "Ya tengo una cita". Si es para otra persona, usa su cédula y su número.` },
+      { status: 409 }
+    );
+  }
 
   // La página solo ofrece horarios con la anticipación mínima, pero la API no
   // lo revisaba: un envío directo podía apartar una hora para dentro de un rato.

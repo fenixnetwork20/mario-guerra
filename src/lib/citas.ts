@@ -2,7 +2,7 @@ import 'server-only';
 import { sincronizarIngresoCita, moverIngresoCita } from './dinero';
 import { db, cfgNum } from './db';
 import { tokenNuevo, cupoDisponible } from './agenda';
-import { enviarPlantilla, linkGestion } from './mensajeria';
+import { enviarPlantilla, linkGestion, normalizarTelefono } from './mensajeria';
 import { notificar } from './notificaciones';
 import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora, sumarMinutos } from './fechas';
 import type { Cita, Paciente } from './tipos';
@@ -39,6 +39,38 @@ export type NuevaCita = {
   cirugiaId?: number | null;
   revisionId?: number | null;
 };
+
+/**
+ * La consulta viva de una persona, si ya tiene una. Regla del consultorio: una
+ * sola cita por cédula y por teléfono. Kelymar Perozo llegó a tener dos
+ * valoraciones apartadas a la vez y otra paciente reservó de nuevo con otro
+ * número mientras la primera seguía en pie: el cupo se pierde y el pago se
+ * cuenta dos veces. Para cambiar de día está "reprogramar", que mueve la misma.
+ *
+ * Solo cuentan valoraciones y controles pedidos por el link: cirugías y
+ * revisiones postoperatorias conviven con otras citas a propósito.
+ */
+export function citaActivaDe(d: { cedula?: string; whatsapp?: string; excluir?: number }) {
+  const cedula = (d.cedula ?? '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  const tel = d.whatsapp ? normalizarTelefono(d.whatsapp) : '';
+  const filas = db.prepare(
+    `SELECT c.id, c.fecha_hora, c.token_gestion, p.cedula, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE (c.tipo = 'valoracion' OR (c.tipo = 'revision' AND c.origen = 'link'))
+        AND c.estado IN ('reservada', 'confirmada')
+        AND c.fecha_hora >= ?
+        AND c.id != ?
+      ORDER BY c.fecha_hora`
+  // Desde dos horas atrás, como buscar-cita: la que está en curso también cuenta.
+  ).all(sumarMinutos(ahoraVET(), -120), d.excluir ?? 0) as Array<{
+    id: number; fecha_hora: string; token_gestion: string; cedula: string; whatsapp: string;
+  }>;
+  const f = filas.find((x) =>
+    (cedula && x.cedula.replace(/^V/, '') === cedula.replace(/^V/, '')) ||
+    (tel && normalizarTelefono(x.whatsapp) === tel));
+  if (!f) return null;
+  return { ...f, porCedula: Boolean(cedula && f.cedula.replace(/^V/, '') === cedula.replace(/^V/, '')) };
+}
 
 export function crearCita(n: NuevaCita): Cita {
   const duracion = n.duracion ?? cfgNum('duracion_cita', 60);
