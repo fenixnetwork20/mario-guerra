@@ -321,3 +321,6 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- ALTER TABLE citas ADD COLUMN postconsulta_at TEXT;
 -- Aviso de "cita en 30 minutos" al consultorio: una sola vez por cita.
 -- ALTER TABLE citas ADD COLUMN aviso_previo_at TEXT;
+-- Aviso de "no confirmó, llamarla" en lugar de cancelar sola (ver auto_cancelar
+-- en config, apagado por defecto): una sola vez por cita.
+-- ALTER TABLE citas ADD COLUMN sin_confirmar_aviso_at TEXT;

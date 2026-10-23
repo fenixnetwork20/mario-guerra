@@ -128,6 +128,26 @@ export async function correrTick() {
       continue;
     }
 
+    // Llegó la hora de cancelar y no confirmó. Se cancela sola SOLO si está
+    // prendido `auto_cancelar` y la persona no dejó rastro de pago. Del 20 al
+    // 22/10 Meta aceptó los recordatorios pero casi no los entregó: el sistema
+    // canceló siete citas por "no confirmó" y Nathalie Sánchez llegó al
+    // consultorio con su cita borrada y su pago hecho. Por defecto, entonces,
+    // no se cancela: se avisa al panel para que la llamen.
+    const pago = c.pago_estado === 'verificado' || Boolean(c.pago_archivo || c.pago_referencia);
+    if (ahora >= m.cancelar && (!cfgNum('auto_cancelar', 0) || pago)) {
+      if (!c.sin_confirmar_aviso_at) {
+        notificar(
+          'sin_confirmar',
+          `${c.paciente_nombre} no confirmó su cita del ${fechaLarga(soloFecha(c.fecha_hora))} ${hora12(soloHora(c.fecha_hora))}`
+            + `${pago ? ' (ya mandó su pago)' : ''}. La cita sigue en pie: llámala al ${c.whatsapp}, puede que no le haya llegado el recordatorio.`,
+          `/panel/pacientes/${c.paciente_id}`
+        );
+        db.prepare('UPDATE citas SET sin_confirmar_aviso_at = ? WHERE id = ?').run(ahora, c.id);
+      }
+      continue;
+    }
+
     // Auto-cancelación por no confirmar: libera el cupo y avisa con link de reagendar.
     if (ahora >= m.cancelar) {
       await cancelarCita(c.id, {

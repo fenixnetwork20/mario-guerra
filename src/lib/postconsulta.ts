@@ -106,6 +106,7 @@ export async function correrPostconsulta(op: { soloPaciente?: number; ignorarFra
       citaId: c.id,
       destino: c.whatsapp,
       variables: { nombre, fecha, hora: hora12c, link },
+      nota: false, // deja la suya, más clara, más abajo
     });
     // Se marca aunque falle: un número malo no puede reintentarse cada 15 minutos.
     // El fallo queda en Mensajería.

@@ -72,12 +72,18 @@ export function dentroDeVentana(ultimo: string, cuando: string): boolean {
   return cuando <= sumarMinutos(ultimo, MARGEN_HORAS * 60);
 }
 
-/** ¿Este teléfono ya tiene una cita viva? Se compara normalizado en los dos lados. */
+/**
+ * ¿Este teléfono ya es de un paciente? Se compara normalizado en los dos lados.
+ *
+ * Cuenta cualquier cita, también la cancelada: a Nathalie Sánchez se le canceló
+ * sola la suya, llegó al consultorio, escribió "tengo cita hoy" y a las 6 de la
+ * tarde le cayó "me quedé con la duda de si pude ayudarte". El seguimiento es
+ * para quien preguntó y no agendó, no para pacientes.
+ */
 export function yaAgendo(telefono: string): boolean {
   const t = normalizarTelefono(telefono);
   const filas = db.prepare(
-    `SELECT p.whatsapp FROM citas c JOIN pacientes p ON p.id = c.paciente_id
-      WHERE c.estado IN ('reservada','confirmada','completada')`
+    `SELECT DISTINCT p.whatsapp FROM citas c JOIN pacientes p ON p.id = c.paciente_id`
   ).all() as Array<{ whatsapp: string }>;
   return filas.some((f) => normalizarTelefono(f.whatsapp) === t);
 }
@@ -142,10 +148,13 @@ export async function sincronizarLeads() {
     // paciente, la conversación está en sus manos y el seguimiento no se mete.
     // Si el paciente escribió después y nadie le respondió (pasó con quien
     // preguntó el precio de una lipo y esperó tres días), no está atendido.
+    // También cuando Valentina la pasó a una persona (nota interna): eso ya es
+    // del consultorio aunque nadie haya contestado todavía.
     const humano = ms.some((m: Record<string, unknown>) =>
       m.message_type === 1 &&
-      Boolean((m.content_attributes as Record<string, unknown> | undefined)?.external_echo) &&
-      Number(m.created_at ?? 0) >= ultimoEpoch);
+      Number(m.created_at ?? 0) >= ultimoEpoch &&
+      (Boolean((m.content_attributes as Record<string, unknown> | undefined)?.external_echo) ||
+        (Boolean(m.private) && /pas[oó] esta conversaci[oó]n a una persona/i.test(String(m.content ?? '')))));
     const textos = entrantes
       .map((m: Record<string, string>) => (m.content || '').trim())
       .filter(Boolean);

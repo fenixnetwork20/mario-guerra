@@ -87,6 +87,8 @@ type Envio = {
   citaId?: number | null;
   destino: string;               // whatsapp del paciente, sin normalizar
   variables: Variables;
+  /** false = no dejar la nota en el chat (quien llama deja la suya). */
+  nota?: boolean;
 };
 
 /**
@@ -116,7 +118,7 @@ export async function enviarPlantilla(e: Envio): Promise<boolean> {
   const pl = db
     .prepare('SELECT * FROM plantillas_mensajes WHERE clave = ?')
     .get(e.clave) as
-    | { clave: string; meta_template_name: string | null; idioma: string; variables: string; activa: number }
+    | { clave: string; nombre: string; meta_template_name: string | null; idioma: string; variables: string; activa: number; cuerpo_ejemplo: string | null }
     | undefined;
 
   const destino = normalizarTelefono(e.destino);
@@ -149,5 +151,40 @@ export async function enviarPlantilla(e: Envio): Promise<boolean> {
 
   const r = await prov.enviar(destino, pl.meta_template_name || pl.clave, pl.idioma, valores);
   registrar(prov.nombre === 'simulado' ? 'simulado' : r.ok ? 'enviado' : 'error', r.respuesta);
+  if (r.ok && prov.nombre === 'meta' && e.nota !== false) {
+    const texto = (pl.cuerpo_ejemplo || '').replace(/\{\{(\d+)\}\}/g, (_, n) => valores[Number(n) - 1] ?? '') || valores.filter(Boolean).join(' · ');
+    await notaEnChat(destino, `Plantilla "${pl.nombre}" enviada por el sistema:\n\n${texto}`);
+  }
   return r.ok;
+}
+
+/**
+ * Nota interna en la conversación del paciente con lo que se le mandó.
+ *
+ * Las plantillas salen directo por la API de Meta y Odichat no las ve: en el
+ * chat de Nathalie Sánchez no aparecía ni la reserva ni los dos recordatorios,
+ * y el consultorio no tenía cómo saber qué se le había dicho. Solo se anota si
+ * ya hay conversación: crear una desde aquí podría despertar al bot.
+ */
+async function notaEnChat(telefono: string, texto: string) {
+  const token = process.env.ODICHAT_TOKEN;
+  if (!token) return;
+  const base = 'https://portal.odichat.app/api/v1/accounts/11';
+  const h = { api_access_token: token, 'Content-Type': 'application/json', 'User-Agent': 'marioguerra/1.0' };
+  try {
+    const c = await fetch(`${base}/contacts/search?q=${encodeURIComponent(telefono)}`, { headers: h, signal: AbortSignal.timeout(10000) })
+      .then((x) => x.json());
+    const contacto = (c?.payload ?? []).find((x: { phone_number?: string }) =>
+      (x.phone_number || '').replace(/\D/g, '') === telefono);
+    if (!contacto) return;
+    const cv = await fetch(`${base}/contacts/${contacto.id}/conversations`, { headers: h, signal: AbortSignal.timeout(10000) })
+      .then((x) => x.json());
+    const conv = (cv?.payload ?? []).find((x: { inbox_id: number }) =>
+      x.inbox_id === Number(process.env.ODICHAT_INBOX || 85));
+    if (!conv) return;
+    await fetch(`${base}/conversations/${conv.id}/messages`, {
+      method: 'POST', headers: h, signal: AbortSignal.timeout(10000),
+      body: JSON.stringify({ content: texto, message_type: 'outgoing', private: true }),
+    });
+  } catch { /* la nota es ayuda: que falle no puede tumbar el envío */ }
 }
