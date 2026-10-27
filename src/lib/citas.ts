@@ -106,8 +106,22 @@ export function citaPorId(id: number) {
   ).get(id) as (Cita & { paciente_nombre: string; cedula: string; whatsapp: string }) | undefined;
 }
 
+/**
+ * Confirmar avisa al consultorio. Antes no: el doctor veía llegar "no ha
+ * confirmado" y "cancelada", nunca "confirmó", y sentía que nadie confirmaba.
+ */
 export function confirmarCita(id: number): boolean {
   const r = db.prepare("UPDATE citas SET estado = 'confirmada' WHERE id = ? AND estado = 'reservada'").run(id);
+  if (r.changes > 0) {
+    const c = citaPorId(id);
+    if (c) {
+      notificar(
+        'cita_confirmada',
+        `${c.paciente_nombre} confirmó su cita del ${fechaLarga(soloFecha(c.fecha_hora))} ${hora12(soloHora(c.fecha_hora))}${c.modalidad === 'online' ? ' (videollamada)' : ''}`,
+        `/panel/agenda?fecha=${soloFecha(c.fecha_hora)}`
+      );
+    }
+  }
   return r.changes > 0;
 }
 
