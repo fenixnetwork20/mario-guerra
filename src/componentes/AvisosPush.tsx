@@ -95,7 +95,7 @@ export function AvisosPush() {
         <p className="text-[14px] text-[var(--color-tinta-2)] mt-2 leading-relaxed">
           {estado === 'encendido'
             ? 'Este aparato ya recibe los avisos del consultorio, aunque tengas el panel cerrado.'
-            : 'Recibe un aviso cuando entra una reserva, cuando un paciente cancela y cuando el bot pasa una conversación a una persona.'}
+            : 'Recibe un aviso cuando entra una reserva, cuando un paciente confirma, cancela o escribe que no va, cuando alguien no confirmó y hay que llamarlo, y cuando el bot pasa una conversación a una persona.'}
         </p>
         <p className="text-[12.5px] text-[var(--color-tinta-3)] mt-2 leading-relaxed">
           Se activa por aparato: hazlo en el teléfono y en la computadora por separado.
