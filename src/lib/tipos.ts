@@ -25,6 +25,7 @@ export type Cita = {
   r1_enviado_at: string | null;
   r2_enviado_at: string | null;
   sin_confirmar_aviso_at?: string | null;
+  aviso_no_va_at?: string | null;
   /** El cobro de la consulta. El cupo no depende de esto: la cita ya está
    *  apartada aunque el pago siga por verificar. */
   pago_estado: 'pendiente' | 'verificado' | 'rechazado' | 'por_devolver' | 'devuelto';

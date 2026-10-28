@@ -324,3 +324,6 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- Aviso de "no confirmó, llamarla" en lugar de cancelar sola (ver auto_cancelar
 -- en config, apagado por defecto): una sola vez por cita.
 -- ALTER TABLE citas ADD COLUMN sin_confirmar_aviso_at TEXT;
+-- El paciente escribió por WhatsApp que no va (leads.ts avisarSiNoVa): aviso
+-- al consultorio una vez y ya no se le piden confirmaciones.
+-- ALTER TABLE citas ADD COLUMN aviso_no_va_at TEXT;

@@ -118,6 +118,9 @@ export async function correrTick() {
     }
 
     if (c.estado !== 'reservada') continue; // ya confirmó: no se le escribe más
+    // Escribió que no va (ver avisarSiNoVa): el consultorio ya lo sabe, y
+    // pedirle que confirme una cita a la que dijo que no viene sobra.
+    if (c.aviso_no_va_at) continue;
 
     // Quien reserva ya metido en la ventana de confirmación nunca tuvo ocasión
     // de confirmar: su recordatorio y hasta el momento de cancelar ya habían

@@ -227,8 +227,12 @@ try {
 
     // El bot puede figurar encendido y aun así no contestar. La prueba de que
     // está vivo es que a cada mensaje del paciente le siga uno suyo.
-    const ultimoPaciente = [...ms].reverse().find((m) => m.message_type === 0);
-    if (ultimoPaciente && (ultimoPaciente.created_at ?? 0) < Date.now() / 1000 - 900) {
+    // Solo mensajes con texto: un sticker o una reacción (llegan vacíos) no
+    // piden respuesta. Y solo los de esta vuelta (desde la anterior): el de
+    // Laura Giusti, un sticker del 26/10, se avisó cada 3 horas durante dos días.
+    const ultimoPaciente = [...ms].reverse().find((m) => m.message_type === 0 && (m.content || '').trim());
+    if (ultimoPaciente && (ultimoPaciente.created_at ?? 0) < Date.now() / 1000 - 900
+        && (ultimoPaciente.created_at ?? 0) > desde - 900) {
       const contestado = ms.some(
         (m) => m.message_type === 1 && !m.private && (m.created_at ?? 0) > (ultimoPaciente.created_at ?? 0)
       );

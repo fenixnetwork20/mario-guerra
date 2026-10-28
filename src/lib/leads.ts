@@ -2,7 +2,7 @@ import 'server-only';
 import { db } from './db';
 import { normalizarTelefono, baseUrl, enviarPlantilla } from './mensajeria';
 import { notificar } from './notificaciones';
-import { ahoraVET, horaVET, desdeEpochVET, sumarDias, sumarMinutos, soloFecha } from './fechas';
+import { ahoraVET, horaVET, desdeEpochVET, sumarDias, sumarMinutos, soloFecha, soloHora, fechaLarga, hora12 } from './fechas';
 
 /**
  * Seguimiento de la gente que preguntó por WhatsApp y no agendó.
@@ -126,6 +126,54 @@ function detectarTema(textos: string[]): string | null {
   return terminos.get(hallados.sort((a, b) => b.length - a.length)[0]) ?? null;
 }
 
+const NO_VA = new RegExp([
+  'no (voy a |vamos a )?(poder|puedo|podre|podemos|podremos) (ir|asistir|llegar|acudir)',
+  'no (voy|vamos) a (ir|asistir)',
+  'no (voy|vamos) a poder',
+  '(cancelar|anular|suspender) (la|mi|esa) (cita|consulta|valoracion)',
+  '(cambiar|mover|reprogramar|correr|rodar) (la|mi|esa) (cita|consulta|valoracion)',
+  'imposible (ir|asistir|llegar)',
+].join('|'));
+
+/**
+ * Un paciente con cita escribe que no va a poder ir. Valentina le explica cómo
+ * cancelar o mover su cita, pero no puede hacerlo por él, y si el paciente no
+ * lo hace la cita queda en pie: a Carmen Castellanos, que avisó la noche
+ * anterior, le siguió llegando "todavía no has confirmado" y quedó como que no
+ * asistió. Se avisa al consultorio una vez por cita y se le deja de recordar.
+ */
+function avisarSiNoVa(tel: string, entrantes: Array<Record<string, unknown>>) {
+  const limpia = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const hace2Dias = Date.now() / 1000 - 48 * 3600;
+  const dijo = entrantes.filter((m) =>
+    Number(m.created_at ?? 0) > hace2Dias && NO_VA.test(limpia(String(m.content ?? ''))));
+  if (!dijo.length) return;
+
+  const ahora = ahoraVET();
+  const citas = db.prepare(
+    `SELECT c.id, c.fecha_hora, c.created_at, c.paciente_id, p.nombre, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE c.estado IN ('reservada','confirmada') AND c.aviso_no_va_at IS NULL
+        AND c.fecha_hora >= ? AND c.fecha_hora <= ?`
+  ).all(ahora, sumarDias(ahora, 7)) as Array<{
+    id: number; fecha_hora: string; created_at: string; paciente_id: number; nombre: string; whatsapp: string;
+  }>;
+  for (const c of citas) {
+    if (normalizarTelefono(c.whatsapp) !== tel) continue;
+    // Lo dijo después de reservar esta cita (si no, hablaba de una anterior).
+    // created_at de la cita está en UTC (datetime('now')), igual que el epoch.
+    const reservo = Date.parse(c.created_at.replace(' ', 'T') + 'Z') / 1000;
+    const m = dijo.find((x) => Number(x.created_at) >= reservo);
+    if (!m) continue;
+    notificar(
+      'cancelo_paciente',
+      `${c.nombre} escribió que no puede ir a su cita del ${fechaLarga(soloFecha(c.fecha_hora))} ${hora12(soloHora(c.fecha_hora))}: "${String(m.content).slice(0, 120)}". Cancélala o muévela en su ficha para liberar el cupo.`,
+      `/panel/pacientes/${c.paciente_id}`
+    );
+    db.prepare('UPDATE citas SET aviso_no_va_at = ? WHERE id = ?').run(ahora, c.id);
+  }
+}
+
 /** Lee el buzón y anota a los que preguntaron. No escribe nada todavía. */
 export async function sincronizarLeads() {
   if (!TOKEN) return { leidas: 0, nuevos: 0, cerrados: 0 };
@@ -140,6 +188,7 @@ export async function sincronizarLeads() {
     const ms = (await odi(`/conversations/${c.id}/messages`))?.payload ?? [];
     const entrantes = ms.filter((m: Record<string, unknown>) => m.message_type === 0);
     if (!entrantes.length) continue;
+    avisarSiNoVa(tel, entrantes);
 
     const ultimoEpoch = Math.max(...entrantes.map((m: Record<string, number>) => m.created_at ?? 0));
     const ultimo = desdeEpochVET(ultimoEpoch);
