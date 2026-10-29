@@ -6,6 +6,7 @@ import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import { MarcoPublico, Portada, Divisor } from '@/componentes/MarcoPublico';
 import { Aparece } from '@/componentes/Aparece';
 import { AccionesCita } from '@/componentes/AccionesCita';
+import { SubirPago } from '@/componentes/SubirPago';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,12 @@ export default async function PaginaCita({
   const esNueva = nueva === '1';
   // Confirmar solo se ofrece cuando toca: desde que pudo salir el recordatorio.
   const puedeConfirmar = puedeConfirmarse(cita);
+  // Subir el pago: citas vivas que pagan y no tienen un comprobante pendiente de revisar.
+  const activa = ['reservada', 'confirmada'].includes(cita.estado);
+  const pagaConsulta = cita.tipo !== 'revision' && cita.pago_estado !== 'no_aplica';
+  const ofrecerPago = activa && pagaConsulta && ['pendiente', 'rechazado'].includes(cita.pago_estado);
+  // Ya mandó comprobante y falta que el consultorio lo revise: se le dice, no se le pide otro.
+  const pagoEnRevision = cita.pago_estado === 'pendiente' && Boolean(cita.pago_archivo);
 
   return (
     <MarcoPublico>
@@ -81,6 +88,17 @@ export default async function PaginaCita({
               puedeConfirmar={puedeConfirmar}
               abrirConfirmar={confirmar === '1' && puedeConfirmar}
             />
+            {ofrecerPago && (
+              <div className="mt-5">
+                <SubirPago
+                  token={token}
+                  modalidad={cita.modalidad ?? 'presencial'}
+                  efectivo={cita.pago_metodo === 'efectivo'}
+                  rechazado={cita.pago_estado === 'rechazado'}
+                  enRevision={pagoEnRevision}
+                />
+              </div>
+            )}
           </Aparece>
         </div>
       </section>

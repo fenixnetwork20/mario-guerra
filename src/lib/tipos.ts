@@ -28,7 +28,7 @@ export type Cita = {
   aviso_no_va_at?: string | null;
   /** El cobro de la consulta. El cupo no depende de esto: la cita ya está
    *  apartada aunque el pago siga por verificar. */
-  pago_estado: 'pendiente' | 'verificado' | 'rechazado' | 'por_devolver' | 'devuelto';
+  pago_estado: 'pendiente' | 'no_aplica' | 'verificado' | 'rechazado' | 'por_devolver' | 'devuelto';
   pago_monto_usd: number | null;
   pago_monto_bs: number | null;
   pago_tasa: number | null;
