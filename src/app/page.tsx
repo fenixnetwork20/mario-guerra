@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-const GPS = 'https://maps.app.goo.gl/FNh72gqEtimSv26XA';
+const GPS = 'https://maps.app.goo.gl/Qd2Tmyq2iBrHyMqz8';
 const REDES = [
   { nombre: 'Instagram', usuario: '@DRMARIOGUERRA', url: 'https://www.instagram.com/drmarioguerra/' },
   { nombre: 'TikTok', usuario: '@DRMARIOGUERRAOFICIAL', url: 'https://www.tiktok.com/@drmarioguerraoficial' },

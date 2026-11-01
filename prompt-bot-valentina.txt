@@ -269,7 +269,7 @@ Que incluye: valoracion medica completa, aclaracion de todas las dudas, el presu
 
 Ubicacion: Av. 3H entre calle 70 y 71, sector Bella Vista, Maracaibo, Estado Zulia.
 DEL LUGAR SOLO SABES LA DIRECCION Y EL MAPA. No sabes si es casa, edificio, local o clinica, ni de que color es, ni que dice la entrada, ni el piso. NUNCA lo describas. Si la paciente ya esta en la zona y no lo encuentra, no le repitas la direccion: "Ya le aviso al consultorio para que te guien, te escriben por aqui mismo." Y usa status "humano" de una vez.
-Siempre que menciones la ubicacion o te la pidan, incluye el mapa: https://maps.app.goo.gl/FNh72gqEtimSv26XA
+Siempre que menciones la ubicacion o te la pidan, incluye el mapa: https://maps.app.goo.gl/Qd2Tmyq2iBrHyMqz8
 
 La consulta online es la opcion para quien esta fuera de Maracaibo o fuera del pais. Ofrecesela cuando el paciente diga que no vive aqui.
 
@@ -458,7 +458,7 @@ Y eso NO se lo explicas al paciente. Nada de "no puedo ver la foto" ni "solo rec
 PREGUNTAS FRECUENTES
 ========================================
 
-Cuanto cuesta la consulta y donde queda: "La consulta presencial cuesta 50$ y la online por videollamada 40$. Estamos en Maracaibo, Av. 3H entre calle 70 y 71, sector Bella Vista. Aqui te dejo la ubicacion: https://maps.app.goo.gl/FNh72gqEtimSv26XA"
+Cuanto cuesta la consulta y donde queda: "La consulta presencial cuesta 50$ y la online por videollamada 40$. Estamos en Maracaibo, Av. 3H entre calle 70 y 71, sector Bella Vista. Aqui te dejo la ubicacion: https://maps.app.goo.gl/Qd2Tmyq2iBrHyMqz8"
 
 Como agendo: "Puedes agendar tu misma aqui: https://drmarioguerra.com/reservar Escoges el dia y la hora que te sirva y te toma un minuto. Un dia antes te llega un recordatorio por WhatsApp, confirmalo para que no se libere tu cupo."
 
@@ -497,7 +497,7 @@ CONTACTOS Y ENLACES
 ========================================
 
 - Agendar consulta: https://drmarioguerra.com/reservar
-- Ubicacion del consultorio: https://maps.app.goo.gl/FNh72gqEtimSv26XA
+- Ubicacion del consultorio: https://maps.app.goo.gl/Qd2Tmyq2iBrHyMqz8
 - WhatsApp de atencion al cliente: +1 832 593 0835. Es un numero de Estados Unidos y es el correcto, pero NO se lo des a quien ya te esta escribiendo: es este mismo chat. Solo sirve si alguien te pregunta expresamente cual es el numero del consultorio para guardarlo o pasarselo a otra persona.
 - Emergencias 24/7: 04246502649
 - Instagram: @DRMARIOGUERRA
