@@ -2,10 +2,10 @@ import { moverIngresoCita } from '@/lib/dinero';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { db, cfgNum } from '@/lib/db';
+import { db, cfg, cfgNum } from '@/lib/db';
 import { tasaDelDia } from '@/lib/tasa';
 import { cupoDisponible, duracionDe } from '@/lib/agenda';
-import { buscarOCrearPaciente, crearCita, citaPorToken, citaActivaDe } from '@/lib/citas';
+import { buscarOCrearPaciente, crearCita, citaPorToken, citaActivaDe, historialPaciente, avisarFrenado } from '@/lib/citas';
 import { notificar } from '@/lib/notificaciones';
 import { enviarPlantilla, linkGestion, claveParaCita } from '@/lib/mensajeria';
 import { permitido, ipDe } from '@/lib/ratelimit';
@@ -76,6 +76,31 @@ export async function POST(req: Request) {
       { error: `Ya tienes una cita apartada${cuando}. Solo se puede tener una a la vez: si necesitas otro día, reprográmala desde el enlace que te llegó por WhatsApp o con "Ya tengo una cita". Si es para otra persona, usa su cédula y su número.` },
       { status: 409 }
     );
+  }
+
+  // Tope a los cambios. Quien ya movió su cita varias veces, o cancela y falta,
+  // pasa por el consultorio: cada cambio suelta un cupo cuando ya nadie lo toma.
+  // Los controles (gratis, pacientes operados) no se frenan.
+  if (!esControl) {
+    const h = historialPaciente({ cedula: b.cedula, whatsapp: b.whatsapp });
+    const wa = cfg('whatsapp_consultorio', '');
+    const escribenos = `escríbenos por WhatsApp${wa ? ` al ${wa}` : ''} y el consultorio te ayuda.`;
+    if (excluir && !h.puedeMover) {
+      avisarFrenado(b.nombre, `quiso mover su cita otra vez (ya la movió ${h.cambios} veces)`);
+      return NextResponse.json(
+        { error: `Ya cambiaste la fecha de tu cita ${h.cambios} veces, que es lo máximo que se puede hacer desde la página. Para moverla otra vez, ${escribenos}` },
+        { status: 409 }
+      );
+    }
+    if (!excluir && !h.puedeReservar) {
+      const n = (k: number) => `${k} cita${k === 1 ? '' : 's'}`;
+      const que = [h.cancelaciones && `canceló ${n(h.cancelaciones)}`, h.faltas && `faltó a ${n(h.faltas)}`].filter(Boolean).join(' y ');
+      avisarFrenado(b.nombre, `quiso reservar de nuevo (${que} en los últimos meses)`);
+      return NextResponse.json(
+        { error: `No pudimos apartar esta cita desde la página porque tienes citas anteriores canceladas o a las que no asististe. Para agendar, ${escribenos}` },
+        { status: 409 }
+      );
+    }
   }
 
   // La página solo ofrece horarios con la anticipación mínima, pero la API no
@@ -161,7 +186,7 @@ export async function POST(req: Request) {
 
   const cita = db.transaction(() => {
     if (excluir) {
-      db.prepare("UPDATE citas SET estado = 'reprogramada' WHERE id = ?").run(excluir);
+      db.prepare("UPDATE citas SET estado = 'reprogramada', cambio_por = 'paciente' WHERE id = ?").run(excluir);
     }
     return crearCita({
       pacienteId: paciente.id,

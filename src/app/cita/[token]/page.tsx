@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { cfg } from '@/lib/db';
-import { citaPorToken } from '@/lib/citas';
+import { citaPorToken, historialPaciente } from '@/lib/citas';
 import { puedeConfirmarse } from '@/lib/recordatorios';
 import { fechaLarga, hora12, soloFecha, soloHora } from '@/lib/fechas';
 import { MarcoPublico, Portada, Divisor } from '@/componentes/MarcoPublico';
@@ -33,6 +33,8 @@ export default async function PaginaCita({
   const ofrecerPago = activa && pagaConsulta && ['pendiente', 'rechazado'].includes(cita.pago_estado);
   // Ya mandó comprobante y falta que el consultorio lo revise: se le dice, no se le pide otro.
   const pagoEnRevision = cita.pago_estado === 'pendiente' && Boolean(cita.pago_archivo);
+  // Quien ya movió su cita el máximo de veces la cambia por el consultorio.
+  const puedeMover = cita.tipo === 'revision' || historialPaciente({ cedula: cita.cedula, whatsapp: cita.whatsapp }).puedeMover;
 
   return (
     <MarcoPublico>
@@ -86,6 +88,7 @@ export default async function PaginaCita({
               cuando={cuando}
               whatsappConsultorio={wa}
               puedeConfirmar={puedeConfirmar}
+              puedeMover={puedeMover}
               abrirConfirmar={confirmar === '1' && puedeConfirmar}
             />
             {ofrecerPago && (

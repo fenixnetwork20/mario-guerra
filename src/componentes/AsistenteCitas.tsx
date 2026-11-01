@@ -22,6 +22,8 @@ type CitaHallada = {
   token: string; estado: string; modalidad: string; cuando: string;
   /** La confirmación se abre el día anterior, cuando sale el recordatorio. */
   puedeConfirmar: boolean;
+  /** Ya la movió el máximo de veces: otro cambio lo hace el consultorio. */
+  puedeMover?: boolean;
 };
 type Modo = 'menu' | 'agendar' | 'control' | 'confirmar' | 'gestionar';
 
@@ -829,10 +831,17 @@ function PorCedula({
           )
         ) : (
           <div className="mt-5 grid gap-2">
-            <button className="btn btn-cobre py-3 text-[15px]"
-              onClick={() => router.push(`/reservar?desde=${elegida.token}`)}>
-              Reprogramar para otro día
-            </button>
+            {elegida.puedeMover !== false ? (
+              <button className="btn btn-cobre py-3 text-[15px]"
+                onClick={() => router.push(`/reservar?desde=${elegida.token}`)}>
+                Reprogramar para otro día
+              </button>
+            ) : (
+              <p className="text-[14px] text-[var(--color-nude)]/75 leading-relaxed">
+                Ya cambiaste la fecha de esta cita el máximo de veces que se puede desde aquí.
+                Si necesitas otro día, escríbenos por WhatsApp y el consultorio te ayuda.
+              </p>
+            )}
             <button className="btn btn-peligro-vidrio py-3 text-[15px]" onClick={() => setModal('cancelar')}>
               Cancelar mi cita
             </button>

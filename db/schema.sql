@@ -327,3 +327,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- El paciente escribió por WhatsApp que no va (leads.ts avisarSiNoVa): aviso
 -- al consultorio una vez y ya no se le piden confirmaciones.
 -- ALTER TABLE citas ADD COLUMN aviso_no_va_at TEXT;
+-- Quién movió la cita al marcarla 'reprogramada': 'paciente' (desde su enlace)
+-- o 'consultorio' (panel). historialPaciente solo le cuenta al paciente lo suyo
+-- para el tope de cambios (config max_cambios_paciente, por defecto 2).
+-- ALTER TABLE citas ADD COLUMN cambio_por TEXT;

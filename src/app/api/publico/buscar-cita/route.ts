@@ -4,6 +4,7 @@ import { permitido, ipDe } from '@/lib/ratelimit';
 import { ahoraVET, fechaLarga, hora12, soloFecha, soloHora, sumarMinutos } from '@/lib/fechas';
 import { normalizarCedula, validarCedula } from '@/lib/validar';
 import { puedeConfirmarse } from '@/lib/recordatorios';
+import { historialPaciente } from '@/lib/citas';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
   ).all(normalizarCedula(b.cedula), sumarMinutos(ahoraVET(), -120)) as Fila[];
 
   if (!filas.length) return NextResponse.json({ error: GENERICO }, { status: 404 });
+  const { puedeMover } = historialPaciente({ cedula: b.cedula });
 
   return NextResponse.json({
     citas: filas.map((f) => ({
@@ -63,6 +65,7 @@ export async function POST(req: Request) {
       estado: f.estado,
       modalidad: f.modalidad ?? 'presencial',
       puedeConfirmar: puedeConfirmarse(f),
+      puedeMover,
       cuando: `${fechaLarga(soloFecha(f.fecha_hora))} a las ${hora12(soloHora(f.fecha_hora))}`,
     })),
   });

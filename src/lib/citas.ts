@@ -72,6 +72,50 @@ export function citaActivaDe(d: { cedula?: string; whatsapp?: string; excluir?: 
   return { ...f, porCedula: Boolean(cedula && f.cedula.replace(/^V/, '') === cedula.replace(/^V/, '')) };
 }
 
+/**
+ * Lo que una persona ha movido, cancelado o faltado en los últimos meses,
+ * sumando todas sus fichas (por cédula o por teléfono, como citaActivaDe).
+ * Kelymar Perozo movió su consulta tres veces en dos semanas y en el medio
+ * apartó otra: cada cambio libera un cupo tarde, cuando ya no lo toma nadie.
+ * Solo cuenta lo que hizo el paciente: lo que movió o canceló el consultorio
+ * (bloqueos de agenda, cancelaciones desde el panel) no se le carga a él.
+ */
+export function historialPaciente(d: { cedula?: string; whatsapp?: string }) {
+  const cedula = (d.cedula ?? '').replace(/[^0-9A-Za-z]/g, '').toUpperCase().replace(/^V/, '');
+  const tel = d.whatsapp ? normalizarTelefono(d.whatsapp) : '';
+  const dias = cfgNum('dias_historial_paciente', 90);
+  const filas = db.prepare(
+    `SELECT c.estado, c.cambio_por, c.motivo_cancelacion, p.cedula, p.whatsapp
+       FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+      WHERE (c.tipo = 'valoracion' OR (c.tipo = 'revision' AND c.origen = 'link'))
+        AND c.created_at >= datetime('now', ?)`
+  ).all(`-${dias} days`) as Array<{
+    estado: string; cambio_por: string | null; motivo_cancelacion: string | null; cedula: string; whatsapp: string;
+  }>;
+  const suyas = filas.filter((x) =>
+    (cedula && x.cedula.replace(/^V/, '') === cedula) ||
+    (tel && normalizarTelefono(x.whatsapp) === tel));
+  const cambios = suyas.filter((x) => x.estado === 'reprogramada' && x.cambio_por === 'paciente').length;
+  const cancelaciones = suyas.filter((x) => x.estado === 'cancelada' && x.motivo_cancelacion === 'Cancelada por el paciente').length;
+  const faltas = suyas.filter((x) => x.estado === 'no_asistio').length;
+  return {
+    cambios, cancelaciones, faltas,
+    /** Puede mover su cita él mismo desde el enlace. */
+    puedeMover: cambios < cfgNum('max_cambios_paciente', 2),
+    /** Puede apartar una consulta nueva él mismo. */
+    puedeReservar: cancelaciones + faltas < cfgNum('max_cancelaciones_paciente', 2),
+  };
+}
+
+/** Avisa al consultorio que a alguien se le frenó la reserva (una vez al día por persona). */
+export function avisarFrenado(nombre: string, motivo: string) {
+  const mensaje = `${nombre} ${motivo}. La página no le dejó hacerlo sola: si corresponde, agéndala o muévela tú desde el panel.`;
+  const ya = db.prepare(
+    "SELECT 1 FROM notificaciones WHERE tipo = 'paciente_frenado' AND mensaje = ? AND fecha >= datetime('now', '-1 day')"
+  ).get(mensaje);
+  if (!ya) notificar('paciente_frenado', mensaje, '/panel/agenda');
+}
+
 export function crearCita(n: NuevaCita): Cita {
   const duracion = n.duracion ?? cfgNum('duracion_cita', 60);
   const token = tokenNuevo();
@@ -207,7 +251,7 @@ export function reprogramarCita(citaId: number, nuevaFechaHora: string): Cita | 
   if (!cupoDisponible(nuevaFechaHora, vieja.duracion, citaId)) return null;
 
   return db.transaction(() => {
-    db.prepare("UPDATE citas SET estado = 'reprogramada' WHERE id = ?").run(citaId);
+    db.prepare("UPDATE citas SET estado = 'reprogramada', cambio_por = 'consultorio' WHERE id = ?").run(citaId);
     const nueva = crearCita({
       pacienteId: vieja.paciente_id,
       tipo: vieja.tipo,

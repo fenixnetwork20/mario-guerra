@@ -9,11 +9,13 @@ import { api } from '@/lib/rutas';
 type Estado = 'reservada' | 'confirmada' | 'cancelada' | 'reprogramada' | 'completada' | 'no_asistio';
 
 export function AccionesCita({
-  token, estadoInicial, cuando, whatsappConsultorio, puedeConfirmar, abrirConfirmar = false,
+  token, estadoInicial, cuando, whatsappConsultorio, puedeConfirmar, puedeMover = true, abrirConfirmar = false,
 }: {
   token: string; estadoInicial: Estado; cuando: string; whatsappConsultorio: string;
   /** La confirmación se abre el día anterior, cuando sale el recordatorio. */
   puedeConfirmar: boolean;
+  /** Ya la movió el máximo de veces: otro cambio lo hace el consultorio. */
+  puedeMover?: boolean;
   /** Viene del enlace del recordatorio (`?confirmar=1`): abre el diálogo de una vez. */
   abrirConfirmar?: boolean;
 }) {
@@ -100,9 +102,15 @@ export function AccionesCita({
                 Confirmar asistencia
               </button>
             )}
-            <Link href={`/reservar?desde=${token}`} className="btn btn-borde">Reprogramar</Link>
+            {puedeMover && <Link href={`/reservar?desde=${token}`} className="btn btn-borde">Reprogramar</Link>}
             <button className="btn btn-peligro" onClick={() => setModal('cancelar')}>Cancelar cita</button>
           </div>
+          {!puedeMover && (
+            <p className="text-[13px] text-[var(--color-tinta-2)]">
+              Ya cambiaste la fecha de esta cita el máximo de veces que se puede desde aquí.
+              Si necesitas otro día, escríbenos por WhatsApp{whatsappConsultorio ? ` al ${whatsappConsultorio}` : ''}.
+            </p>
+          )}
         </section>
       )}
 
