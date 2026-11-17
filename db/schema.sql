@@ -331,3 +331,5 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads_wa(estado, ultimo_mensaje_a
 -- o 'consultorio' (panel). historialPaciente solo le cuenta al paciente lo suyo
 -- para el tope de cambios (config max_cambios_paciente, por defecto 2).
 -- ALTER TABLE citas ADD COLUMN cambio_por TEXT;
+-- Video de precios (config video_precios): una sola vez por conversación de Chatwoot.
+-- CREATE TABLE IF NOT EXISTS videos_enviados (conversacion INTEGER PRIMARY KEY, fecha TEXT NOT NULL DEFAULT (datetime('now')));

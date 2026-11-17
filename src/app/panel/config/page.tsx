@@ -3,11 +3,13 @@ import { exigirSesion } from '@/lib/auth';
 import { puede } from '@/lib/permisos';
 import { AvisosPush } from '@/componentes/AvisosPush';
 import { SubirQR } from '@/componentes/SubirQR';
+import { SubirVideoPrecios } from '@/componentes/SubirVideoPrecios';
 import { Seccion, Vacio } from '@/componentes/ui';
 import { BotonForm } from '@/componentes/FormulariosFicha';
 import { FormAjustes, FormHorario, FormProcedimiento, FormUsuario } from '@/componentes/FormsConfig';
 import {
-  guardarAjustes, guardarHorario, eliminarHorario, guardarProcedimiento, guardarUsuario, subirQR, quitarQR } from '@/acciones/config';
+  guardarAjustes, guardarHorario, eliminarHorario, guardarProcedimiento, guardarUsuario, subirQR, quitarQR,
+  subirVideoPrecios, quitarVideoPrecios } from '@/acciones/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +51,18 @@ export default async function Config() {
           <SubirQR cual="pm_qr" titulo="Pago móvil" cargado={Boolean(cfg.pm_qr)} subir={subirQR} quitar={quitarQR} />
           <SubirQR cual="binance_qr" titulo="Binance" cargado={Boolean(cfg.binance_qr)} subir={subirQR} quitar={quitarQR} />
         </div>
+      </Seccion>
+
+      <Seccion
+        titulo="Video de precios"
+        descripcion="El doctor explicando por qué el precio de la cirugía sale de la valoración. El bot lo manda por WhatsApp, con un mensaje corto, la primera vez que alguien pregunta el precio de una cirugía."
+      >
+        <SubirVideoPrecios
+          cargado={Boolean(cfg.video_precios)}
+          enviados={(db.prepare('SELECT COUNT(*) n FROM videos_enviados').get() as { n: number }).n}
+          subir={subirVideoPrecios}
+          quitar={quitarVideoPrecios}
+        />
       </Seccion>
 
       <Seccion titulo="Ajustes generales">

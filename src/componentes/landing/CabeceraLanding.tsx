@@ -10,6 +10,7 @@ const ENLACES = [
   { href: '#procedimientos', texto: 'Procedimientos' },
   { href: '#doctor', texto: 'Sobre el Dr.' },
   { href: '#resultados', texto: 'Resultados' },
+  { href: '#pagos', texto: 'Formas de pago' },
   { href: '#contacto', texto: 'Contacto' },
 ];
 

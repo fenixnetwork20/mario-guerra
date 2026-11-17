@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
     // Dos núcleos. Lo que evita colgar el VPS es el `nice` del
     // script de build en package.json, no el número de núcleos.
     cpus: 2,
-    serverActions: { bodySizeLimit: '12mb' },
+    // 17 MB: el video de precios puede pesar hasta 16 MB, el tope de WhatsApp.
+    serverActions: { bodySizeLimit: '17mb' },
   },
 };
 

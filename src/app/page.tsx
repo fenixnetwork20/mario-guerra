@@ -14,6 +14,7 @@ import { BarraMovil } from '@/componentes/landing/BarraMovil';
 import { Movimiento } from '@/componentes/landing/Movimiento';
 import { Cinta } from '@/componentes/landing/Cinta';
 import { Contador } from '@/componentes/landing/Contador';
+import { FormasDePago } from '@/componentes/landing/FormasDePago';
 
 export const dynamic = 'force-dynamic';
 
@@ -303,6 +304,11 @@ export default function Landing() {
               El doctor ofrece planes que se adaptan a cada paciente. Los conversamos contigo en la
               consulta para encontrar la mejor opción.
             </p>
+            <p className="text-[14px] text-[var(--color-tinta-2)] mt-4 leading-relaxed">
+              <span className="marca text-[9.5px] text-[var(--color-cobre)] block mb-2">Cómo se paga</span>
+              Pago móvil, Zelle, Binance o efectivo en el consultorio.{' '}
+              <a href="#pagos" className="underline underline-offset-4 text-[var(--color-cobre)]">Ver los datos de pago</a>
+            </p>
             <Link href="/reservar" className="btn btn-principal brillo py-3 px-6 mt-8">
               Agendar consulta <span className="flecha" aria-hidden>→</span>
             </Link>
@@ -372,7 +378,9 @@ export default function Landing() {
               </ul>
             </Aparece>
 
-            
+            <Aparece retraso={90}>
+              <FormasDePago />
+            </Aparece>
           </div>
         </div>
       </section>

@@ -5,6 +5,10 @@ import { db, guardarConfig } from '@/lib/db';
 import { exigirPermiso } from '@/lib/permisos';
 import { hashClave } from '@/lib/auth';
 import type { Respuesta } from '@/componentes/FormAccion';
+import { sincronizarBot } from '@/lib/botDatos';
+
+/** El bot de WhatsApp da los datos de pago por chat: que no se quede con los viejos. */
+const avisarAlBot = () => void sincronizarBot().then((r) => { if (!r.ok) console.error('sincronizar bot', r.motivo); }).catch((e) => console.error('sincronizar bot', e));
 
 const HORA = /^\d{2}:\d{2}$/;
 
@@ -46,6 +50,7 @@ export async function guardarAjustes(_prev: Respuesta | null, datos: FormData): 
   guardarConfig('mensajeria_activa', datos.get('mensajeria_activa') === '1' ? '1' : '0');
   guardarConfig('efectivo_activo', datos.get('efectivo_activo') === '1' ? '1' : '0');
 
+  avisarAlBot();
   revalidatePath('/panel/config');
   revalidatePath('/panel');
   return { ok: true, aviso: 'Configuración guardada.' };
@@ -153,4 +158,40 @@ export async function quitarQR(_prev: Respuesta | null, datos: FormData): Promis
   revalidatePath('/panel/config');
   revalidatePath('/reservar');
   return { ok: true, aviso: 'Código quitado.' };
+}
+
+/**
+ * Video del doctor explicando por qué el precio sale de la valoración. El bot
+ * lo manda una vez por conversación cuando preguntan el precio de una cirugía
+ * (/api/bot/video-precio). WhatsApp no acepta videos de más de 16 MB.
+ */
+export async function subirVideoPrecios(_prev: Respuesta | null, datos: FormData): Promise<Respuesta> {
+  await exigirPermiso('configuracion');
+  const archivo = datos.get('archivo');
+  if (!(archivo instanceof File) || !archivo.size) return { ok: false, error: 'Escoge el video.' };
+  if (!/^video\/(mp4|3gpp)$/.test(archivo.type)) {
+    return { ok: false, error: 'WhatsApp solo acepta video MP4. Exporta el video en MP4 y vuelve a subirlo.' };
+  }
+  if (archivo.size > 16 * 1024 * 1024) {
+    return { ok: false, error: `El video pesa ${(archivo.size / 1048576).toFixed(1)} MB y WhatsApp acepta hasta 16 MB. Compártelo comprimido (por ejemplo, reenviándolo por WhatsApp a ti mismo) y súbelo de nuevo.` };
+  }
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const carpeta = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
+  await fs.mkdir(carpeta, { recursive: true });
+  const nombre = `video-precios-${Date.now()}.${archivo.type === 'video/3gpp' ? '3gp' : 'mp4'}`;
+  await fs.writeFile(path.join(carpeta, nombre), Buffer.from(await archivo.arrayBuffer()));
+  db.prepare('INSERT INTO config (clave,valor) VALUES (?,?) ON CONFLICT(clave) DO UPDATE SET valor=excluded.valor')
+    .run('video_precios', nombre);
+  avisarAlBot();
+  revalidatePath('/panel/config');
+  return { ok: true, aviso: 'Video guardado. El bot ya lo manda cuando pregunten precios de cirugías.' };
+}
+
+export async function quitarVideoPrecios(): Promise<Respuesta> {
+  await exigirPermiso('configuracion');
+  db.prepare("UPDATE config SET valor = '' WHERE clave = 'video_precios'").run();
+  avisarAlBot();
+  revalidatePath('/panel/config');
+  return { ok: true, aviso: 'Video quitado. El bot deja de mandarlo.' };
 }
