@@ -802,7 +802,7 @@ function PorCedula({
           <p className="text-[16px] font-semibold leading-snug text-white">{elegida.cuando}</p>
           <p className="text-[13px] text-[var(--color-nude)]/60 mt-1">
             {elegida.modalidad === 'online' ? 'Por videollamada' : 'En el consultorio'} ·{' '}
-            {yaConfirmada ? 'Confirmada' : 'Falta confirmar'}
+            {yaConfirmada ? 'Confirmada' : 'Reservada · falta por confirmar, te escribiremos un día antes'}
           </p>
         </div>
 

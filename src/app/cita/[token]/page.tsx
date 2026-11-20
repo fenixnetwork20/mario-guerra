@@ -69,6 +69,11 @@ export default async function PaginaCita({
               <p className="marca text-[9.5px] text-[var(--color-cobre)]">{cita.tipo === 'revision' ? 'Cita de control' : 'Consulta de valoración'}</p>
               <EstadoPill estado={cita.estado} />
             </div>
+            {cita.estado === 'reservada' && (
+              <p className="mt-3 text-[13px] opacity-75">
+                Falta por confirmar: te escribiremos por WhatsApp un día antes.
+              </p>
+            )}
 
             <dl className="mt-5 grid sm:grid-cols-2 gap-x-6 gap-y-4 text-[14px]">
               <Dato titulo="Paciente" valor={cita.paciente_nombre} />
@@ -120,7 +125,7 @@ function Dato({ titulo, valor }: { titulo: string; valor: string }) {
 
 function EstadoPill({ estado }: { estado: string }) {
   const mapa: Record<string, { texto: string; clase: string }> = {
-    reservada: { texto: 'Falta confirmar', clase: 'bg-[var(--color-aviso-luz)] text-[var(--color-aviso)]' },
+    reservada: { texto: 'Reservada', clase: 'bg-[var(--color-acento-luz)] text-[var(--color-acento)]' },
     confirmada: { texto: 'Confirmada', clase: 'bg-[var(--color-acento-luz)] text-[var(--color-acento)]' },
     cancelada: { texto: 'Cancelada', clase: 'bg-[var(--color-alerta-luz)] text-[var(--color-alerta)]' },
     reprogramada: { texto: 'Reprogramada', clase: 'bg-[var(--color-papel-2)] text-[var(--color-tinta-2)]' },
